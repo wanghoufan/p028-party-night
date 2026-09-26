@@ -4,7 +4,9 @@ import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/brand/ServiceWorkerRegistration";
 import { StorageGuard } from "@/components/brand/StorageGuard";
 import { SoundProvider } from "@/components/audio/SoundProvider";
+import { ExitConfirmGuard } from "@/components/system/ExitConfirmGuard";
 import { VersionGuard } from "@/components/system/VersionGuard";
+import { EXIT_GUARD_INIT_SCRIPT } from "@/lib/system/exit-guard";
 
 export const metadata: Metadata = {
   title: "Party Night",
@@ -35,8 +37,8 @@ const isSelfContained = process.env.PARTY_NIGHT_OUTPUT === "export";
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <head>{isSelfContained && <meta httpEquiv="Content-Security-Policy" content={selfContainedCsp} />}<Script id="party-night-theme-init" strategy="beforeInteractive">{themeInitScript}</Script></head>
-      <body>{children}<StorageGuard /><ServiceWorkerRegistration /><VersionGuard /><SoundProvider /></body>
+      <head>{isSelfContained && <meta httpEquiv="Content-Security-Policy" content={selfContainedCsp} />}<script id="party-night-exit-guard-init">{EXIT_GUARD_INIT_SCRIPT}</script><Script id="party-night-theme-init" strategy="beforeInteractive">{themeInitScript}</Script></head>
+      <body>{children}<StorageGuard /><ServiceWorkerRegistration /><VersionGuard /><SoundProvider /><ExitConfirmGuard /></body>
     </html>
   );
 }

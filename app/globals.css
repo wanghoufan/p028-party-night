@@ -224,6 +224,8 @@ textarea {
 .danger-modal-icon svg { width: 2rem; }
 .modal strong { color: #ff657a; font-size: .82rem; }
 .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.4rem; }
+/* 返回键退出确认（Change A）：沿用既有弹层文案样式，只写固定文案，不带任何局内信息。 */
+.exit-confirm__text { margin: .2rem 0 1rem; color: var(--color-text-soft); font-size: .85rem; line-height: 1.6; }
 
 /* B9 私密互选：全屏不透明遮罩（传手机时旁人看不到上一人/下一位的任何内容）。 */
 .mutual-backdrop { position: fixed; z-index: 60; inset: 0; display: grid; align-content: center; padding: 1.2rem 1.2rem max(1.2rem, env(safe-area-inset-bottom)); background: #05060f; }

@@ -57,3 +57,21 @@
 - Key在线验证（2026-09-26，用户上手实测PASS）：Note 11T Pro+（IN9LZTAYV4UGU4JF）Chrome生产站（VPN下可达），AI设置页Key显示sk-···已持久化，provider选中态保持，点“测试连接”=连接成功。注：adb代点按钮两次无状态反馈（用户手点一次即成功），机器触达与真人触达不等价，RG判定以真人手点为准；persist勾选框曾出现一次未解释的失勾（待观察，复现即开Change A）。
 - Key App端持久化（2026-09-26，真机实测PASS）：同一台11T Pro+自包含App内用户填Key保存（配置已保存）→TM执行force-stop→重进→设置/AI页Key仍显示sk-···、持久化勾选保持。App杀进程重启不丢Key，关闭B-2真机验证环。
 - 直连双通道（2026-09-26，用户手点PASS）：新包（原生传输+动态报错）install -r保留Key；OpenCode Go测试连接成功约3000ms（中转多一跳，正常），DeepSeek约700ms。CORS/原生通道成立。
+
+## Change A「返回键退出确认」新构建真机验证（2026-09-27 04:09，编排者实测）
+
+- 设备：`IN9LZTAYV4UGU4JF`（Redmi 22041216UC / xagapro，USB，全程 `-s` 指定；12 Pro `indq5xfi6hovay4d` 未碰）
+- 包：Change A 返工后重建（同自包含 release web 资产 + 新增 `@capacitor/app@7.1.2` 原生插件，debug 签名包装机），`install -r` = Success
+- 离线条件：飞行模式 `airplane_mode_on=1`、Mac `:3000` 无监听（curl 000）
+- 实测 5 项（截图 `/tmp/exitguard-back1.png` 为首页按返回后的确认框）：
+
+| 项 | 操作 | 实测 |
+|---|---|---|
+| ① 冷启动首页按硬件返回 | `input keyevent KEYCODE_BACK` | 弹「要退出 Party Night 吗？」＋正文「不小心点到返回了？点「继续玩」就留在这里。」＋按钮 `["退出","继续玩"]`，App 未退出 ✓ |
+| ② 点「继续玩」 | CDP 点击 | 确认框关闭、`url` 仍 `https://localhost/`、App 未退出 ✓ |
+| ③ 确认框开着再按返回 | `KEYCODE_BACK` | 确认框关闭（`[role=dialog]` 计数 1→0）、App 仍在前台、未静默退出 ✓；`data-pn-exit-guard-armed=1` |
+| ④ 有上一层时返回 | 组局 tab 进 `/setup/` → `KEYCODE_BACK` | 正常回退到首页 `https://localhost/`，**确认框计数 0**（不误弹、不多一次点击）✓ |
+| ⑤ 点「退出」真退出 | 打开确认框 → 点 `退出` | `App.exitApp()` 生效：`mCurrentFocus` 切到 `com.miui.home/…Launcher`，App 退到桌面 ✓（`pidof` 仍返回 16852 属 Android 进程缓存，Activity 已 finish、用户视角已退出） |
+
+- 设备状态已复原：飞行模式关闭（`airplane_mode_on=0`）。
+- 结论：**Android 硬件返回 + 确认框 + 真退出，真机 PASS**。冷启动直达深路由（`/setup`）立刻返回这一项无法用 adb 直达（App 无 deep link 入口），已由 reviewer 与 QA 在**与真机同一份 `out/` 静态导出产物**上各独立实测 18/18 与 24/24 覆盖（armed=1、留站内、弹框，无 `about:blank`）。
