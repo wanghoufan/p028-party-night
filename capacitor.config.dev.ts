@@ -11,6 +11,12 @@ export const devConfig: CapacitorConfig = {
   appId: 'night.party.app',
   appName: 'PartyNight',
   webDir: 'public',
+  // WebView 底色（与 release 配置同值）：色值来源 = Web 主题真源 app/globals.css 的
+  // --color-bg-night (#080b1a)，与 app/layout.tsx 的 viewport.themeColor "#080B1A"、
+  // android res/values/colors.xml 的 pn_splash_background 同一值，不另造颜色。
+  // 作用：Capacitor Bridge 启动时用 webView.setBackgroundColor 把 WebView 底色钉住，
+  // 消掉「网页首帧渲染前」那段 WebView 默认白底空窗（原生启动屏是深色，白底会闪一下白）。
+  backgroundColor: '#080B1A',
   server: {
     // 生产站 PWA 本体未动；恢复外网后可切回 https://party-night-v1-2.vercel.app/
     url: 'http://192.168.31.60:3000/',

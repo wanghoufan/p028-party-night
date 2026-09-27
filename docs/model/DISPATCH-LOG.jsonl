@@ -144,3 +144,8 @@
 {"date":"2026-09-27","task":"ChangeA P3尾斜杠测试口径修复","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"exit-confirm.spec.ts:94正则放宽可选尾斜杠；dev与out/各11 passed；未改实现"}
 {"date":"2026-09-27","task":"ChangeA 真机验证(编排者本窗口直驱)","role":"qa","model":"本窗口直驱","used":"主","runtime":"本窗口","result":"PASS","note":"11T Pro+硬件返回5项实测PASS：出框/继续玩/框开再返回只关框//setup回退不弹框/退出到桌面"}
 {"date":"2026-09-27","task":"ChangeA supervisor终检","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"有条件PASS：允许commit+push+再次重冻NEW RC；P0=0/P1=0"}
+{"date":"2026-09-27","task":"ChangeA 修白屏启动屏(原生主题色+图标)","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"colors.xml+styles.xml+pn_splash layer-list+删11个纯白png+globals.css html/body背景；gradle资源编译过"}
+{"date":"2026-09-27","task":"ChangeA 补WebView底色(真机复测仍有白)","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"capacitor dev/release 加 backgroundColor #080B1A；cap sync 后复测白亮帧0"}
+{"date":"2026-09-27","task":"ChangeA 复评 启动屏白屏修复","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blockingP1=0；建议不引入splash-screen挂起；P2图标不可见+颜色漂移断言"}
+{"date":"2026-09-27","task":"ChangeA QA终审 启动屏白屏","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"全门禁绿(unit927/E2E105+4skip/build/export)；aapt2核实图标与底色在包内；P0=0/P1=0"}
+{"date":"2026-09-27","task":"ChangeA 启动录屏逐帧验证(编排者本窗口直驱)","role":"qa","model":"本窗口直驱","used":"主","runtime":"本窗口","result":"PASS","note":"改前48/97帧纯白→改后0/112白亮帧；快 screencap 与10倍慢放复核均无白帧"}

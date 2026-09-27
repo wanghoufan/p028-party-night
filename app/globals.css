@@ -47,6 +47,11 @@ html,
 body {
   min-height: 100%;
   margin: 0;
+  /* 首帧兜底底色：Capacitor 的 WebView 在 config 未设 backgroundColor 时是 WebView 默认白底，
+     这里让 HTML 一解析就先有深色画布，不必等 <link> 样式表完全生效。
+     用变量而不是裸 Hex：:root[data-theme="light"] 会把 --color-bg-night 覆盖成 #f7f5ff，
+     所以浅色主题下这条会跟着变浅，不会被写死成深色。 */
+  background: var(--color-bg-night);
 }
 
 body {

@@ -76,3 +76,28 @@
 
 - 设备状态已复原：飞行模式关闭（`airplane_mode_on=0`）。
 - 结论：**Android 硬件返回 + 确认框 + 真退出，真机 PASS**。冷启动直达深路由（`/setup`）立刻返回这一项无法用 adb 直达（App 无 deep link 入口），已由 reviewer 与 QA 在**与真机同一份 `out/` 静态导出产物**上各独立实测 18/18 与 24/24 覆盖（armed=1、留站内、弹框，无 `about:blank`）。
+
+## 启动画面白屏专项（2026-09-27 11:15~11:27，编排者真机录屏逐帧实测）
+
+**问题**：用户报「启动画面是白色」。
+
+**根因（两个，都靠证据定位，不是猜的）**
+1. **原生启动屏是模板自带的纯白图**：`android/app/src/main/res/drawable/splash.png` 实测 480x320、98.8% 像素接近纯白、无任何图标，被 `AppTheme.NoActionBarLaunch` 的 `android:background` 引用；同时 Android 12+ 的 `windowSplashScreenBackground` / `windowSplashScreenAnimatedIcon` 从未设置。
+2. **WebView 自身默认白底**：两份 capacitor 配置都没写 `backgroundColor`，Capacitor `Bridge` 的 `webView.setBackgroundColor` 分支从未执行。第一轮只修①后复测，录屏里**仍有约 0.7s 纯白且无图标**，才暴露出这一层。
+
+**改法（配色与图标全部取自项目现有 theme，未另造）**
+- 底色 `#080B1A` = `app/globals.css` 的 `--color-bg-night` = `app/layout.tsx` 的 themeColor（`res/values/colors.xml` 新增 `pn_splash_background`）
+- 图标 = App 自己的启动图标 `@mipmap/ic_launcher`（`windowSplashScreenAnimatedIcon` + 窗口 layer-list 居中 `@mipmap/ic_launcher_foreground`）
+- 删除模板自带的 11 个纯白 `splash.png`；`AppTheme.NoActionBar` 窗口底色由 `@null` 改为同一深色；`postSplashScreenTheme` 切回真实主题
+- capacitor dev/release 两份配置加 `backgroundColor: '#080B1A'`；`globals.css` 的 `html, body` 补 `background: var(--color-bg-night)`（浅色主题自动跟随）
+
+**逐帧验证（设备 11T Pro+ `IN9LZTAYV4UGU4JF`，Android 14 / MIUI，自包含 release web 资产 + debug 签名包装机，install -r Success）**
+
+| 取证方式 | 改前 | 改后 |
+|---|---|---|
+| 录屏 30fps 逐帧（YAVG 亮度） | 第 22~69 帧纯白，峰值 230，无图标 | **白亮帧 0**（112 帧，亮度全程 27~74） |
+| 录屏原生帧率统计 | 97 帧中 48 帧纯白（占 49.5%） | 112 帧中白亮帧 **0** |
+| 快速连续 screencap（14 张） | — | 启动段全为深色主题底，无白帧 |
+| 动画放慢 10 倍后录屏（325 帧） | — | 白亮帧 **0** |
+
+**残留（如实记录）**：APK 内 `windowSplashScreenAnimatedIcon=@mipmap/ic_launcher` 已核实存在（aapt2 dump），但本机启动段中心区逐帧扫描**没有任何图标像素**——MIUI 的启动动画覆盖了系统启动屏，图标太快看不到。code-reviewer 与 qa 均判定不为此引入 `@capacitor/splash-screen` 挂起启动屏（会人为延长启动、伤手感），记 P2：若日后要让图标可见，再单独立项。
