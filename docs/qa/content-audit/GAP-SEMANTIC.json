@@ -8,6 +8,7 @@
     "reviewer2": "_semantic/s2.jsonl",
     "adjudication": "_semantic/adjudication.jsonl",
     "independentScan": "_semantic/independent-scan.jsonl",
+    "independentScanCredential": "_semantic/independent-scan.CREDENTIAL.json",
     "literal": "GAP-LITERAL.json",
     "themeSplit": "_semantic/theme-split.jsonl"
   },
@@ -17,8 +18,29 @@
     "adjudication": "凡一方命中一方未命中，或同一 card 的 level 不同，一律抽入 _semantic/adjudication-input.jsonl 交第三方独立仲裁；仲裁者只看题面，不看 s1/s2 结论",
     "adjudicationCount": 3,
     "independentScan": "第三方独立全库扫描（opencode / muse-spark-1.3-contributor-free，只看题面）对 5 个零命中主题额外佐证；输出 0 行 = 五主题各 0 命中",
+    "independentScanCompletion": "「扫描已完成」只由 _semantic/independent-scan.CREDENTIAL.json（非空机器凭证）证明，禁止用载荷文件是否存在判定；凭证与当前 SSOT sourceHash / 零命中主题 querySetHash / resultCount 任一不符即 fail-closed（非 0 退出）",
     "themeSplit": "「亲密/性观念」把身体互动动作与亲密边界/性观念态度混成一个数字，会误导拍板；本拆分由独立第三方（opencode / muse-spark-1.3-contributor-free，只看题面、不看任何既有标签）对该主题的 semanticHits ∪ literalHits 逐题二分，真源 _semantic/theme-split.jsonl。分类不由脚本臆造：cardId 集合与预期不符即记 mismatch，不给结论。",
     "note": "semanticHits==0 只有在两名 reviewer 全库扫下来都是 0 且无待仲裁分歧时才写「语义空白」；词面 0 命中永不单独作为主题空白的证据"
+  },
+  "scanCredential": {
+    "path": "_semantic/independent-scan.CREDENTIAL.json",
+    "completed": true,
+    "resultCount": 0,
+    "querySetHash": "0512313e92f12ec0d68cf290eeb1226d4b080e15a914d3d3bffc3192ce32370b",
+    "sourceHash": "1dca99092360d0acdf1e4a8ed893f132850ed8f8618df307e2210620b0aee09c",
+    "generatedAt": "2026-09-27T14:28:56.603Z",
+    "algorithm": "sha256",
+    "payload": "_semantic/independent-scan.jsonl",
+    "payloadLines": 0,
+    "payloadBytes": 0,
+    "zeroHitThemes": [
+      "人生目标/理想生活",
+      "前任/过去关系",
+      "吃醋/占有",
+      "底线/雷区",
+      "异性朋友/异性友谊边界"
+    ],
+    "verified": true
   },
   "agreement": [
     {

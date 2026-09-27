@@ -32,6 +32,7 @@
  *    semanticHits 无独立来源时只能记 UNREVIEWED。
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { verifyScanCredential, type SsotCard } from "./audit-a1-scan-credential";
 
 const ROOT = process.cwd();
 const DIR = `${ROOT}/docs/qa/content-audit`;
@@ -252,6 +253,10 @@ const stable = readJson<StableLabels>(`${DIR}/STABLE-LABELS.json`);
 const ranks = readJson<{ low: Row[]; high: Row[] }>(`${DIR}/_ranks.json`);
 const adjudication = readJsonl<Adj>(`${DIR}/_calib/adjudication.jsonl`);
 const rows = readJsonl<Row>(`${DIR}/CONTENT-AUDIT-350.jsonl`);
+/** A.2｜独立扫描凭证校验所需的「当前 SSOT 350 题」，与 audit-a1-semantic.ts 同一真源、同一口径。 */
+const ssotCards = readJson<{ mainlineCards: SsotCard[] }>(`${ROOT}/lib/v2-content/generated/v2-ssot.generated.json`).mainlineCards;
+/** 独立扫描的查询集口径 = GAP-LITERAL 中 literalHits === 0 的主题（当前 5 个）。 */
+const zeroHitThemes = gap.themes.filter((t) => t.literalHits === 0).map((t) => t.theme);
 
 const byId = new Map(rows.map((r) => [r.cardId, r]));
 const N = stats.N;
@@ -1595,6 +1600,30 @@ for (const [k, v] of stats.threeAxis.slice(0, 15)) cmpCell(`threeAxis:${k}`, "S#
   probeText("gap:phaseB:notImplemented", "G#6.2", G, "不新增 SSOT 内容");
 }
 
+/* ⑩b 第三方独立全库扫描：判定权在**非空机器凭证**，不在「载荷文件是否存在」        */
+/*   fail-closed：凭证缺失/0 字节/completed!==true/sourceHash 或 querySetHash 与实际  */
+/*   不符/resultCount 与载荷行数不符 → 记失败项并对账 FAIL（不回退成 existsSync）。   */
+{
+  try {
+    const v = verifyScanCredential(
+      `${DIR}/_semantic/independent-scan.CREDENTIAL.json`,
+      `${DIR}/_semantic/independent-scan.jsonl`,
+      { ssotCards, zeroHitThemes },
+    );
+    push("scanCredential:completed", "SCAN", 1, v.credential.completed ? 1 : 0);
+    push("scanCredential:resultCount==payloadLines", "SCAN", v.payloadLines, v.credential.resultCount);
+    push("scanCredential:payloadBytes", "SCAN", v.payloadBytes, v.credential.payloadBytes);
+    push("scanCredential:sourceHash==currentSsot", "SCAN", 1, v.credential.sourceHash === v.sourceHash ? 1 : 0);
+    push("scanCredential:querySetHash==currentZeroHitThemes", "SCAN", 1, v.credential.querySetHash === v.querySetHash ? 1 : 0);
+    /* 报告措辞必须与凭证结论同向：独立扫描被引用，且 0 命中是明说的（不是「文件在就行」）。 */
+    probeText("scanCredential:reportCitesScan", "SCAN", G, "第三方独立全库扫描");
+    probeText("scanCredential:reportCitesZeroHits", "SCAN", G, "均为 0 命中");
+  } catch (e) {
+    console.error(`\n[scanCredential] fail-closed：${(e as Error).message}`);
+    push("scanCredential:verify", "SCAN", 1, 0);
+  }
+}
+
 /* ⑪ CALIBRATION-REPORT.md（逐轴 κ + raw agreement + 5/23 分列 + lean + drift） */
 {
   probeText("calib:weightedLinearDeclared", "C#0", C, "linear weighted kappa");
@@ -1834,7 +1863,7 @@ const NOT_VERIFIED: { item: string; why: string }[] = [
   { item: "ROUTER-MONTE-CARLO-exposure.csv 全量行、_ranks.json 全量题面", why: "属输入真源与中间产物；报告只渲染头部若干行/榜位" },
   { item: "MC-TRACE.json 逐轮字段值", why: "本脚本只核验 trace 文件存在与终止原因集合；逐轮内容由 QA 直接读 JSON 复核" },
   { item: "STABLE-LABELS.json#reviewedCards 的逐卡复审标签、GAP-SEMANTIC.json#themes 的逐题语义命中清单与 subthemes 逐卡归属理由", why: "逐卡/逐题标签属明细数据；报告只渲染各轴 κ、分布、命中卡清单与子类张数/卡号（清单已逐条渲染，但卡内每条文本不与 JSON 逐字对账，子类 reason 只在 _semantic/theme-split.jsonl 留痕）" },
-  { item: "_stable/_batches/*.out.txt（第三方仲裁原始输出）与 _semantic/*.md 证据说明", why: "外部通道原始留痕，非本脚本产物；其结论已固化为 arbitration.jsonl / independent-scan.jsonl 后进入对账范围" },
+  { item: "_stable/_batches/*.out.txt（第三方仲裁原始输出）与 _semantic/*.md 证据说明", why: "外部通道原始留痕，非本脚本产物；其结论已固化为 arbitration.jsonl / independent-scan.jsonl，并由 independent-scan.CREDENTIAL.json（非空机器凭证：completed + resultCount + sourceHash + querySetHash）绑定当前 SSOT 与查询集后进入对账范围" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -1876,6 +1905,7 @@ console.log(`  literalHits：主题表 ${int(gap.themes.length)} 行 + 词条明
 console.log(`  Monte Carlo：overallCompleted20 按 MC_LABELS ${int(MC_LABELS.length)} 键 fail-closed 对账；perTable ${int(mc.perTable.length)} 桌型×12 列；分档 ${int(mc.cohortByIntensityLimit.length)}；曝光玩法 ${int(Object.keys(mc.exposureByGameType).length)}×6；MATCH 覆盖前后对比`);
 console.log(`  校准 κ：${int(calib.pairResults.length)} 对 × ${int(axisKeys.length)} 轴（raw agreement + κ）+ §7 复审标签（${int(stable.drift.length)} 玩法 × ${int(stable.drift[0]!.axes.length)} 轴 κ）`);
 console.log(`  A.2 新增真源：GAP-SEMANTIC.json（语义命中，${int(gapSem.themeCount)} 主题，含「亲密/性观念」子类拆分）、STABLE-LABELS.json（复审标签，${int(stable.reviewedLabelScope.reviewed.length)} 玩法已完成双源复审与分歧仲裁）`);
+console.log(`  独立扫描凭证：_semantic/independent-scan.CREDENTIAL.json（非空机器凭证；「扫描完成」不认载荷文件是否存在，凭 sourceHash/querySetHash/resultCount 与当前 SSOT、零命中主题集合对账）`);
 console.log(`\n不在对账范围的数字（共 ${int(NOT_VERIFIED.length)} 类，均已显式列出）：`);
 for (const n of NOT_VERIFIED) console.log(`  - ${n.item}｜原因：${n.why}`);
 

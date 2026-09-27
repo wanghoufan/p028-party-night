@@ -6,6 +6,7 @@
  *   docs/qa/content-audit/_semantic/s1.jsonl      reviewer#1 命中（只记命中，未命中不落行）
  *   docs/qa/content-audit/_semantic/s2.jsonl      reviewer#2 命中
  *   docs/qa/content-audit/_semantic/adjudication.jsonl  第三方独立仲裁（由 opencode 产出）
+ *   docs/qa/content-audit/_semantic/independent-scan.CREDENTIAL.json  独立扫描机器凭证（判定「扫描完成」的唯一依据）
  *   docs/qa/content-audit/GAP-LITERAL.json        词面命中真源（literalHits）
  *
  * 产出：
@@ -17,17 +18,36 @@
  *  - 两个 reviewer 一致（集合相同、同一 card 的 level 相同）才算一致；
  *  - 一方命中 / 一方未命中，或同一 card level 不同 → 必须进仲裁，未仲裁不得下结论；
  *  - semanticHits==0 只有在「两名 reviewer 全库扫下来都是 0 且无待仲裁分歧」时才允许写「语义空白」；
- *  - 任何情况下都不允许把「词面 0 命中」单独当成主题空白的证据（report 侧再校验一次）。
+ *  - 任何情况下都不允许把「词面 0 命中」单独当成主题空白的证据（report 侧再校验一次）；
+ *  - **「第三方独立扫描已完成」只能由非空机器凭证证明，禁止用载荷文件是否存在判定**
+ *    （_semantic/independent-scan.jsonl 在 0 命中时就是 0 字节，误删后重新 touch 与「扫描完成」无法区分）；
+ *    凭证与当前 SSOT / 查询集任一不符 → fail-closed 抛错、非 0 退出，不回退成 existsSync。
  *
  * 用法：
- *   npx tsx scripts/audit-a1-semantic.ts            （默认）算一致性 + 写 adjudication-input + 汇总终版
+ *   npx tsx scripts/audit-a1-semantic.ts            （默认）算一致性 + 写 adjudication-input + 汇总终版（并 fail-closed 校验扫描凭证）
+ *   npx tsx scripts/audit-a1-semantic.ts --emit-scan-credential
+ *                                                   仅在**真的完成一次新扫描**后用：按当前 SSOT/查询集/载荷重算并（重）签凭证
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { cohenKappa } from "./audit-a1-kappa";
+import {
+  emitScanCredential,
+  normalizedQuerySet,
+  verifyScanCredential,
+  type ScanCredential,
+  type SsotCard,
+} from "./audit-a1-scan-credential";
 
 const ROOT = process.cwd();
 const DIR = `${ROOT}/docs/qa/content-audit`;
 const SEM = `${DIR}/_semantic`;
+
+/** A.2：命令行。默认校验；--emit-scan-credential 显式重签凭证（不得作为常规运行路径）。 */
+const ARGV = process.argv.slice(2);
+const EMIT_SCAN_CREDENTIAL = ARGV.includes("--emit-scan-credential");
+for (const a of ARGV) {
+  if (a !== "--emit-scan-credential") throw new Error(`未知参数：${a}（只接受 --emit-scan-credential）`);
+}
 
 interface Hit { cardId: string; theme: string; level: "explicit" | "implicit"; evidence: string; }
 interface Row { cardId: string; gameType: string; text: string; }
@@ -168,12 +188,30 @@ const adjudication: AdjOut[] = existsSync(ADJ_PATH)
   : [];
 const adjByKey = new Map(adjudication.map((a) => [`${a.cardId}::${a.theme}`, a]));
 
-/* 第三方独立全库扫描（只对 5 个零命中主题做额外佐证；0 行 = 0 命中）。缺失时记 null，不臆造。 */
+/**
+ * 第三方独立全库扫描（只对 5 个零命中主题做额外佐证；0 行 = 0 命中）。
+ *
+ * **判定「扫描完成」只认机器凭证，不认「载荷文件存在」**：
+ * 0 命中时载荷 `independent-scan.jsonl` 本身就是 0 字节（历史证据，必须保留），
+ * 文件存在/被 touch 与「扫描完成且 0 命中」无法区分，故一律以
+ * `independent-scan.CREDENTIAL.json`（非空 + completed + sourceHash + querySetHash 全部可复算）为准。
+ * 任一不符 → 抛错（非 0 退出），**不回退成 existsSync 判定**。
+ */
+const SSOT_PATH = `${ROOT}/lib/v2-content/generated/v2-ssot.generated.json`;
 const SCAN_PATH = `${SEM}/independent-scan.jsonl`;
-const independentScan: Hit[] | null = existsSync(SCAN_PATH)
-  ? readJsonl<Hit>(SCAN_PATH).map((h) => ({ ...h, theme: norm(h.theme) }))
-  : null;
-const scanHitsOf = (theme: string): number | null => (independentScan === null ? null : setOf(independentScan, theme).size);
+const SCAN_CREDENTIAL_PATH = `${SEM}/independent-scan.CREDENTIAL.json`;
+const ssotCards = (JSON.parse(readFileSync(SSOT_PATH, "utf8")) as { mainlineCards: SsotCard[] }).mainlineCards;
+/* 查询集口径 = 当前 GAP-LITERAL 中 literalHits===0 的主题（与独立扫描所问的 5 个主题一致）。 */
+const zeroHitThemes = gap.themes.filter((t) => t.literalHits === 0).map((t) => t.theme);
+const scanInputs = { ssotCards, zeroHitThemes };
+if (EMIT_SCAN_CREDENTIAL) {
+  const c = emitScanCredential(SCAN_CREDENTIAL_PATH, SCAN_PATH, scanInputs);
+  console.log(`[scan-credential] 已重签：sourceHash=${c.sourceHash} querySetHash=${c.querySetHash} resultCount=${c.resultCount}`);
+}
+const scanEvidence = verifyScanCredential(SCAN_CREDENTIAL_PATH, SCAN_PATH, scanInputs);
+const scanCredential: ScanCredential = scanEvidence.credential;
+const independentScan: Hit[] = readJsonl<Hit>(SCAN_PATH).map((h) => ({ ...h, theme: norm(h.theme) }));
+const scanHitsOf = (theme: string): number => setOf(independentScan, theme).size;
 
 /** 终版 semanticHits：以「三方合一」为准——两人一致且命中 → 命中；有分歧 → 取仲裁终判。 */
 interface ThemeFinal {
@@ -235,9 +273,11 @@ const finals: ThemeFinal[] = THEMES.map((theme) => {
     wording = `仍有 ${pending.length} 张待第三方仲裁，**不得下结论**`;
   } else if (semanticHits === 0 && literalHits === 0 && allAgreedEmpty) {
     source = "both-reviewers-agree";
+    /* scanHits 由**凭证背书**的独立扫描算出（不再是「载荷文件存在即可」的 null/数字二值）；
+       措辞与报告 md 逐字一致，凭证信息只在 method/scanCredential 字段留痕。 */
     wording = scanHits === 0
       ? "语义空白（两名独立 reviewer 的 350 题语义复核 + 第三方独立全库扫描 均为 0 命中，且无待仲裁分歧）"
-      : `语义空白（两名独立 reviewer 均为 0 命中；第三方独立扫描 ${scanHits === null ? "未执行" : `${scanHits} 命中`}）`;
+      : `语义空白（两名独立 reviewer 均为 0 命中；第三方独立扫描 ${scanHits} 命中）`;
   } else if (semanticHits === 0 && literalHits > 0) {
     source = "adjudicated";
     wording = `词面命中 ${literalHits} 题，语义复核终判 0 题`;
@@ -310,7 +350,8 @@ const out = {
     reviewer1: "_semantic/s1.jsonl",
     reviewer2: "_semantic/s2.jsonl",
     adjudication: existsSync(ADJ_PATH) ? "_semantic/adjudication.jsonl" : null,
-    independentScan: independentScan === null ? null : "_semantic/independent-scan.jsonl",
+    independentScan: "_semantic/independent-scan.jsonl",
+    independentScanCredential: "_semantic/independent-scan.CREDENTIAL.json",
     literal: "GAP-LITERAL.json",
     themeSplit: existsSync(THEME_SPLIT_PATH) ? "_semantic/theme-split.jsonl" : null,
   },
@@ -319,11 +360,24 @@ const out = {
     agreement: "per-theme raw agreement（350 题二值逐题一致率）+ Jaccard（命中卡集合）+ Cohen κ（350 题二值）",
     adjudication: "凡一方命中一方未命中，或同一 card 的 level 不同，一律抽入 _semantic/adjudication-input.jsonl 交第三方独立仲裁；仲裁者只看题面，不看 s1/s2 结论",
     adjudicationCount: adjudication.length,
-    independentScan: independentScan === null
-      ? "未执行"
-      : "第三方独立全库扫描（opencode / muse-spark-1.3-contributor-free，只看题面）对 5 个零命中主题额外佐证；输出 0 行 = 五主题各 0 命中",
+    independentScan: "第三方独立全库扫描（opencode / muse-spark-1.3-contributor-free，只看题面）对 5 个零命中主题额外佐证；输出 0 行 = 五主题各 0 命中",
+    independentScanCompletion: "「扫描已完成」只由 _semantic/independent-scan.CREDENTIAL.json（非空机器凭证）证明，禁止用载荷文件是否存在判定；凭证与当前 SSOT sourceHash / 零命中主题 querySetHash / resultCount 任一不符即 fail-closed（非 0 退出）",
     themeSplit: SPLIT_NOTE,
     note: "semanticHits==0 只有在两名 reviewer 全库扫下来都是 0 且无待仲裁分歧时才写「语义空白」；词面 0 命中永不单独作为主题空白的证据",
+  },
+  scanCredential: {
+    path: "_semantic/independent-scan.CREDENTIAL.json",
+    completed: scanCredential.completed,
+    resultCount: scanCredential.resultCount,
+    querySetHash: scanCredential.querySetHash,
+    sourceHash: scanCredential.sourceHash,
+    generatedAt: scanCredential.generatedAt,
+    algorithm: scanCredential.algorithm,
+    payload: scanCredential.payload,
+    payloadLines: scanEvidence.payloadLines,
+    payloadBytes: scanEvidence.payloadBytes,
+    zeroHitThemes: normalizedQuerySet(zeroHitThemes),
+    verified: true,
   },
   agreement,
   themes: finals,
@@ -347,6 +401,10 @@ for (const a of agreement) {
 }
 console.log(`待仲裁样本（含元话核实）：${adjInputDedup.length} 条 → _semantic/adjudication-input.jsonl`);
 console.log(`已仲裁：${adjudication.length} 条`);
+console.log(
+  `独立扫描凭证｜ completed=${scanCredential.completed} resultCount=${scanEvidence.payloadLines}（载荷 ${scanEvidence.payloadBytes} 字节）`
+  + ` sourceHash=${scanEvidence.sourceHash} querySetHash=${scanEvidence.querySetHash}（零命中主题 ${normalizedQuerySet(zeroHitThemes).length} 个）`,
+);
 for (const t of finals) console.log(`  ${t.theme.padEnd(14)} literal=${t.literalHits} semantic=${t.semanticHits} 仲裁=${t.adjudicatedCount} 待仲裁=${t.adjudicationPending} 第三方扫描=${t.independentScanHits ?? "未执行"}｜${t.wording}`);
 if (splitTargetFinal?.subthemeSplit) {
   const s = splitTargetFinal.subthemeSplit;

@@ -174,3 +174,8 @@
 {"date":"2026-09-27","task":"Mutual 1TAP supervisor复检放行(补记)","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"复检账本闭环与6文件stage清单；放行后已单独commit 987da2d"}
 {"date":"2026-09-27","task":"neat-freak收尾(A2+Mutual)","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"ark-code-latest模式；清temp残留+HANDOFF事实对齐；未改代码"}
 {"date":"2026-09-27","task":"A2 QA收口回执(追加)","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"追加BUGS-CONTENT-A2收口结论；原FAIL判定保留"}
+{"date":"2026-09-27","task":"PhaseB Sol Planner 产出Change C Plan","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"产出PRODUCT_PLAN_V2.1-CHANGE-C.md；零改动既有文件"}
+{"date":"2026-09-27","task":"PhaseB Research Reviewer复审1","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL 74/100；4个非blockingP1；独立复算H4×I1=0张"}
+{"date":"2026-09-27","task":"PhaseB Planner回修4个P1","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"4条全修；每条给出QA可用的断言句"}
+{"date":"2026-09-27","task":"PhaseB Research Reviewer复评2","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL 86/100；4 P1全CLOSED；Readiness<90待Human定例外放行"}
+{"date":"2026-09-27","task":"审计基建P2 机器凭证","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"existsSync→7判据fail-closed；保留0字节历史证据"}
