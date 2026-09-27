@@ -2,6 +2,7 @@
 
 - Task：复核上轮 CODE_REVIEW-MATRIX-3L.md 两条 P1 的整改是否真闭环，给 RC 放行复评结论
 - Commit：未提交（工作区；本轮复评对象=tests/mac/ai-matrix-3l.ts 增量分支 + docs/qa/ai-content-3l/ 10 格重刷证据 + docs/qa/AI-MATRIX-RESULT.md 重算）
+  - 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）。口径提示：本文第 4 条引用的「§0（…176 合法…173 PASS/3 预期失败/98.3%=173/176）」是复评当时的报告版本；报告随后按 3.3 两格不进分母重算，最终口径为合法分母 **174 ＝ 171 PASS ＋ 3 EXPECTED-ERROR（98.3%）**，与落盘 176 份 JSON 复算一致（`docs/qa/ai-content-3l/`：173 PASS＋3 EXPECTED-ERROR、P0/P1=0，其中 2 格 `local-fallback` 为负向探测）。两处不是矛盾，是分母口径变更。
 - Reviewer：code-reviewer（codebuddy/glm-5.3-flash）
 - Result：**过（P1-1/P1-2 均可关闭；P0=0；P1=0；新增 P2×1 backlog）**
 

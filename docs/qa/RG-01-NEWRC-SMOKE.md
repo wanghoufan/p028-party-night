@@ -3,17 +3,17 @@
 > **证据归属声明（neat-freak 2026-09-27 收口校准，务必先读）**
 >
 > - 本文件 §「结果10项」及文末 Key/直连各条**全部是上一个 RC（commit `cce4306`，已作废）的新构建证据**，构建时间 2026-09-26。
-> - **不得**把这些结论当作本轮 Change B 工作区（HEAD `741e2e9`＋未提交改动）的构建证据；本轮改动动了 `route.ts`／`safety-filter.ts`／`generate-deck.ts`／`pack-switcher.ts`／`MutualCheckSheet.tsx`／`packMinPlayersFloor` 人数下限真源等，行为与旧包不同源。
+> - **不得**把这些结论当作 Change B 新构建的构建证据；Change B 改动已于 2026-09-27 落在 `49d6c75`（main 已 push），涉及 `route.ts`／`safety-filter.ts`／`generate-deck.ts`／`pack-switcher.ts`／`MutualCheckSheet.tsx`／`packMinPlayersFloor` 人数下限真源等，行为与旧包不同源。
 > - 用户 V1.2 §十三与 `PRODUCT_PLAN_V2.0-CHANGE-B.md` §四均明确：旧 RC 的 Key persistence、AI 直连/原生传输、离线启动/恢复证据**不能代替**本轮新构建 smoke。
-> - 本轮新构建 smoke 的落位见下方占位段，**待编排者回填**，在回填前不得据本文件宣称 RG-01 机器侧已过。
+> - 本轮新构建 smoke 已回填（见下方「本轮（Change B）新构建 machine smoke」段，2026-09-27 02:38 实测）：机器侧已过；RG-01 的真人手点项仍未开始，不得据本文件宣称 RG-01 整项已过。
 
 ## 本轮（Change B）新构建 machine smoke｜2026-09-27 02:38 真机实测（编排者回填）
 
-> 状态：**机器侧 PASS（9/10 项实机确认；⑥⑧ 仍按旧 RC 口径留待用户上手）**。构建自本轮 Change B 工作区（HEAD `741e2e9` ＋ 未提交改动），非旧包。
+> 状态：**机器侧 PASS（7/10 项实机确认；⑥⑦⑧ 按旧 RC 口径留待用户上手）**。构建自 Change B 全链改动（该工作区内容已于 2026-09-27 02:49 落为 commit `49d6c75`，main 已 push），非旧包。
 
 | 项 | 值（实测） |
 |---|---|
-| 构建 commit | 工作区 HEAD `741e2e9` ＋ Change B 全部未提交改动（commit 在本 smoke 之后落） |
+| 构建 commit | `49d6c75`（feat(V2 Change B) 收口矩阵+Coverage+Single-Anchor+2人局收口+Mutual单候选，重冻 NEW RC；main 已 push）。时序：APK 产物 02:37、装包 `lastUpdateTime` 02:38:49，该提交落库 02:49 —— 构建早于提交，为同一工作区内容，其间只有本节证据文档落盘、无业务代码改动；RC 身份以 `49d6c75` 为准（`82cec01` 为其上的 Change A 追加） |
 | web 资产 | `pnpm android:release` = `build:export`（静态导出 `out/`）＋ `CAPACITOR_TARGET=release cap sync`；无 `server.url`，origin = `https://localhost`（CDP 实测） |
 | JDK | 本机原只有 openjdk@17（gradle 报「无效的源发行版：21」）；本轮经用户批准 `brew install openjdk@21`（21.0.12.1） |
 | APK | release 产物 `app-release-unsigned.apk`（`android/app/build.gradle` 未配 `signingConfig`）；**装机用同源 release web 资产的 debug 签名包** `app/build/outputs/apk/debug/app-debug.apk`（同 appId `night.party.app`） |
@@ -58,10 +58,11 @@
 - Key App端持久化（2026-09-26，真机实测PASS）：同一台11T Pro+自包含App内用户填Key保存（配置已保存）→TM执行force-stop→重进→设置/AI页Key仍显示sk-···、持久化勾选保持。App杀进程重启不丢Key，关闭B-2真机验证环。
 - 直连双通道（2026-09-26，用户手点PASS）：新包（原生传输+动态报错）install -r保留Key；OpenCode Go测试连接成功约3000ms（中转多一跳，正常），DeepSeek约700ms。CORS/原生通道成立。
 
-## Change A「返回键退出确认」新构建真机验证（2026-09-27 04:09，编排者实测）
+## Change A「返回键退出确认」新构建真机验证（2026-09-27 04:09，编排者实测；对应 commit `82cec01`）
 
+- 构建标识：**`82cec01`**（feat(Change A) 返回键退出确认；时序：debug APK 04:08、装包与实测 04:09，该提交落库 04:31 —— 构建早于提交，为同一工作区内容；NEW RC = `82cec01`，上一 RC `49d6c75` 作废）
 - 设备：`IN9LZTAYV4UGU4JF`（Redmi 22041216UC / xagapro，USB，全程 `-s` 指定；12 Pro `indq5xfi6hovay4d` 未碰）
-- 包：Change A 返工后重建（同自包含 release web 资产 + 新增 `@capacitor/app@7.1.2` 原生插件，debug 签名包装机），`install -r` = Success
+- 包：Change A 返工后重建（同自包含 release web 资产 + 新增 `@capacitor/app@7.1.2` 原生插件，debug 签名包装机；release 产物仍 unsigned，见下遗留），`install -r` = Success
 - 离线条件：飞行模式 `airplane_mode_on=1`、Mac `:3000` 无监听（curl 000）
 - 实测 5 项（截图 `/tmp/exitguard-back1.png` 为首页按返回后的确认框）：
 

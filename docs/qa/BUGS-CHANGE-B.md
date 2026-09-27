@@ -94,7 +94,9 @@
 
 - 本次 Change B 自动化 QA：**PASS**；按用户 §三七条口径，P0=0、blocking P1=0。矩阵侧已销项：PASS。
 - 建议**可以进入 Android release build 与新构建 machine smoke 阶段**，但当前没有执行 Android release build / 新构建 smoke 的证据，不能标为通过或据此重冻 RC。用户 V1.2 §十三的冻结链仍要求新构建 smoke、Reviewer/QA/Supervisor 最终回执完成后，才 commit/push 和 NEW RC。
+  - 事实回填（neat-freak 2026-09-27 收口）：该阶段已完成——Android release build 与新构建 machine smoke 已执行（2026-09-27 02:38 真机，11T Pro+ `IN9LZTAYV4UGU4JF`，飞行模式 ＋ :3000 无进程，`install -r` Success，7/10 项实机确认，详见 `docs/qa/RG-01-NEWRC-SMOKE.md`）；Change B 已随 `49d6c75` 提交并 push，Change A 追加于 `82cec01`，NEW RC = `82cec01`。本 QA 结论与上述门禁数字（unit 902 / E2E 94＋4skip）为 Change B 轮次实测，未随 Change A 的 927 / 105＋4skip 重跑而更新，不构成矛盾。
 - RG-01~RG-07 状态保持 `NOT STARTED / PENDING`，本轮未触设备；RG-01 仍需新 RC 后真人手点，RG-02~RG-07 仍需真人 4/5 人局证据。真机 QA 状态：`NOT VERIFIED`。
+  - 事实回填（neat-freak 2026-09-27 收口）：编排者随后在新构建上完成机器侧真机验证（Change B 段 7/10 实机确认 ＋ Change A 段 5/5 PASS），**不等于**真人 RG 手点：RG-01~RG-07 仍全部 `NOT STARTED`，RG-01 仍待用户手点开局抽卡～mutual/MATCH/隐私等机器不代点项。
 
 ## 真机QA会话能力预检结果
 

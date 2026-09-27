@@ -13,7 +13,7 @@
  - 剩 P0（没完的才列，多一条都不行）：
   - **收口清单已清零**：Change B 16 节全部落地；两处物理依赖（JDK21、11T Pro+ 无线）已解决——`brew install openjdk@21`（用户批准）→ 新自包含 web 资产 + debug 签名包装机；11T Pro+ USB 装机 → 新构建 machine smoke PASS（详见 docs/qa/RG-01-NEWRC-SMOKE.md）。
   - **仅剩真人 Gate（不是代码任务）**：
-- RC状态：**NEW RC = `82cec01`（2026-09-27 04:30 重冻，main 已 push）**；`49d6c75`、`cce4306`、`741e2e9` 均已作废。新构建真机验证：Change B 段 10 项 + Change A 段 5 项均 PASS（详见 docs/qa/RG-01-NEWRC-SMOKE.md）。7/7 前禁版本号升级、禁正式部署。
+- RC状态：**NEW RC = `82cec01`（2026-09-27 04:30 重冻，main 已 push）**；`49d6c75`、`cce4306`、`741e2e9` 均已作废。新构建真机验证：Change B 段 7/10 项实机确认（⑥–⑧ 按 RG 红线留待用户上手连带验证）＋ Change A 段 5/5 项 PASS（详见 docs/qa/RG-01-NEWRC-SMOKE.md）。7/7 前禁版本号升级、禁正式部署。
 - 当前 Task：Change A 已闭环并重冻。当前待办只剩真人 Gate：RG-01（用户手点，含开局抽卡～mutual/MATCH/隐私）与 RG-02~07（真人局，用户排期，现在不排）。Change A 证据链：docs/review/CODE_REVIEW-EXIT-GUARD.md（两轮：初评过 → 返工后复评过，P0=0/P1=0，P3×4 backlog）、docs/qa/BUGS-EXIT-GUARD.md（初验 FAIL P1=1 EXIT-GUARD-001 → 返工 → CLOSED、QA_RESULT PASS 仅覆盖 Web/静态导出）、docs/qa/RG-01-NEWRC-SMOKE.md 末节（真机 5 项 PASS）。
 - 未闭环评审意见：CODE_REVIEW-CHANGE-B-ROUTING.md 过（P0=0/blocking P1=0，P2×3 P3×2）；CODE_REVIEW-CHANGE-B-UI-SAFETY.md 过（P0=0/blocking P1=0，P2×2 P3×3）；CODE_REVIEW-MATRIX-3L.md 的 P1×2 已由复评关闭（新增 P2-5 backlog）；CODE_REVIEW-DEADLOCK-P1.md 过；CODE_REVIEW-AI-GEN-STABILITY.md 过。
 - docs 落盘清单：
@@ -21,20 +21,21 @@
   - 评审：`docs/review/CODE_REVIEW-V1.1.md`、`docs/review/CONVERGE-V1.1.md`
   - QA：`docs/qa/BUGS-V1.1.md`、`docs/qa/V1.1-放行证据.md`
   - 事实备份：`docs/handoff/HANDOFF.md.旧版-2026-09-13`（V1.2 真源）；`docs/pm/V1.3-讨论稿.md`（挂起：7 待定+酒罚默认含决策）
-  - 账本：`docs/model/TASK-MODEL-LOG.jsonl`（86 行）；`docs/model/DISPATCH-LOG.jsonl`（137 行）；`node scripts/model/check-ledger.mjs` = LEDGER-OK（2026-09-27 复核，旧文"DISPATCH 空"为过期快照）
+  - 账本：`docs/model/TASK-MODEL-LOG.jsonl`（92 行）；`docs/model/DISPATCH-LOG.jsonl`（146 行）；`node scripts/model/check-ledger.mjs` = LEDGER-OK（2026-09-27 收口复核：两本均 92/146 行、逐行 JSON 合法、无 `_example` 残留；旧文「86/137 行」与「DISPATCH 空」均为过期快照）
    - V1.6：评审`docs/review/CODE_REVIEW-V1.6.md`（PASS，commit 4ba3d13）、QA`docs/qa/BUGS-V1.6.md`（lint0/typecheck0/511/E2E80+4skip/三处1.5.0）、把关`docs/content/题库把关/`9件（00总览旧180审计+01–07+08新题纲）、终稿`docs/content/题库终稿/`9件（00总览§一终稿350分布3/5/7/14/21+01–07各50+08新题纲）；旧`docs/content/题库审查/`已删（文档搬家映射）；账本35行至V1.6补遗（dup删后27行自验口径作废，以现35行为准）
  - V2-B3：评审`docs/review/CODE_REVIEW-V2-B3.md`（FAIL→返工→复验PASS）、QA`docs/qa/BUGS-V2-B3.md`（lint0/typecheck0/610）；账本随行。
- - 2026-09-26 收口链：评审`docs/review/CODE_REVIEW-AI-GEN-STABILITY.md`（过）/`CODE_REVIEW-DEADLOCK-P1.md`（过）/`CODE_REVIEW-MATRIX-3L.md`（过，P1×2待整改+P2×4）；QA`docs/qa/BUGS-AI-GEN-STABILITY.md`（PASS，终审待更新）/`AI-MATRIX-FULL.md`（OpenCode 80/80，72合法）/`AI-MATRIX-PHONE.md`（24/24，origin运行时口径）/`AI-MATRIX-RESULT.md`（三层 DeepSeek 176合法 98.3% P0=0）/`AI-GEN-DIAG-0926.md`；三层逐格`docs/qa/ai-content-3l/`（176）+修复前备份`ai-content-3l-pre-fix/`+OpenCode旧证据`ai-content/`+DeepSeek旧证据`ai-content-deepseek-0926/`；harness `tests/mac/ai-matrix-3l.ts|ai-matrix-full.ts|ai-matrix-redline.ts`、`tests/phone/ai-matrix-phone.ts`；真机截图`test-results/phone/ai-matrix/`25张（gitignore本地证据）。
+ - 2026-09-26 收口链：评审`docs/review/CODE_REVIEW-AI-GEN-STABILITY.md`（过）/`CODE_REVIEW-DEADLOCK-P1.md`（过）/`CODE_REVIEW-MATRIX-3L.md`（过，P1×2待整改+P2×4）；QA`docs/qa/BUGS-AI-GEN-STABILITY.md`（PASS，终审待更新）/`AI-MATRIX-FULL.md`（OpenCode 80/80，72合法）/`AI-MATRIX-PHONE.md`（24/24，origin运行时口径）/`AI-MATRIX-RESULT.md`（三层 DeepSeek 184 总格/合法 174/98.3% P0=0）/`AI-GEN-DIAG-0926.md`；三层逐格`docs/qa/ai-content-3l/`（176）+修复前备份`ai-content-3l-pre-fix/`+OpenCode旧证据`ai-content/`+DeepSeek旧证据`ai-content-deepseek-0926/`；harness `tests/mac/ai-matrix-3l.ts|ai-matrix-full.ts|ai-matrix-redline.ts`、`tests/phone/ai-matrix-phone.ts`；真机截图原存 `test-results/phone/ai-matrix/`25张（2026-09-27 收口核对：已被后续 playwright 全量跑覆盖清空，现 `test-results/` 只剩 `.last-run.json`；矩阵证据真源是 `docs/qa/ai-content-3l*/` 的逐格 JSON，截图不作门禁证据）。
  - 下一步（Next Single Action）：通知用户「NEW RC `82cec01` 已就绪，可开 RG-01」→ 用户在 11T Pro+ 真人手点跑 RG-01（开局抽卡～mutual/MATCH/隐私等机器不代点项）→ RG-02 需 1男3女/1女3男 真人局（凑不齐保持 PENDING）；RG-01~RG-07 仍须 7/7 PASS 才 Release。
 - 人要拍什么板：
-  - **装 JDK21 需用户点头**（`brew install openjdk@21`，本机只有 17；不装则新 APK 出不来、smoke 无从做起，RC 不能重冻）。
-  - **11T Pro+ 需开机回同一 Wi-Fi**（或插 USB）；12 Pro indq5xfi6hovay4d 仍禁碰，本轮全程未碰。
+  - ~~装 JDK21 需用户点头~~（**已解决**，2026-09-27：用户批准后 `brew install openjdk@21`（21.0.12.1）已装，新 APK 与 machine smoke 均已跑通；见上方「剩 P0」）。
+  - ~~11T Pro+ 需开机回同一 Wi-Fi~~（**已解决**，本轮全程 USB `IN9LZTAYV4UGU4JF`；12 Pro indq5xfi6hovay4d 仍禁碰，本轮全程未碰）。后续若改无线，仍按「回同一 Wi-Fi 或 `adb connect 192.168.31.63:5555`，`getprop ro.serialno` 核同一台」执行。
   - 本轮已由编排者裁定的口径（不再占用用户决策，除非否决）：① DoD#14 昵称口径＝**真名/参与者投影/性别结构/anchor 标志不外发，Host 输入的 displayName 昵称沿用 V1.0 冻结 prompt 行为**（域模型无真实姓名字段；否决则走 Change C 并重冻 prompt fixture）；② Exposure 轮级口径、Coverage offered 终态计数、finalize 不重算边在场性＝P2 backlog 本期放行；③ Single-Anchor 桌 pair opportunity 减半（10 定向+10 非定向交替）的节奏**请用户在 RG-02 真人局前过目**。
   - 收口全绿后 TM 自行 commit+push+重冻（用户已授权本轮收口链），**通知后**才由用户真人手点 RG-01；RG-02~07 真人局由用户排期（现在不排）；局内"移出本局"入口是否加（另报，不拦RC）。
 - permission_request：无。
 - 收尾记一笔（neat-freak 2026-09-22）：docs 与代码已对齐（8 包/规则 8 条/工具 2 个/Session v2；V1.3 讨论稿 2 处已校准）；test-results 空、:3000 无残留进程；README 中英 8 玩法为 TM 后续补齐（校验 DOCUMENTATION_READY）。
  - 收尾记一笔（neat-freak 2026-09-22 V1.6）：docs/content下仅题库把关/9件，题库审查/已删（映射见CODE_REVIEW-V1.6 P2）；V1.6评审/QA/把关/账本35行与代码现状一致（350/陡坡/L1L2/开关/1.5.0）；未碰业务代码。
-  - 收尾记一笔（TM代neat-freak 2026-09-26，通道限额）：docs与代码一致（CHANGE-B评审/QA/RG smoke/AI-MATRIX-PLAN/direct-provider及单测均在位，单测815全绿）；工作区22文件未提交（AI直连+分块+回退提示，HEAD 741e2e9）；未碰业务玩法逻辑；分离前codebuddy deepseek限额切glm；只动11T Pro+（IN9LZTAYV4UGU4JF），12 Pro（indq5xfi6hovay4d）后半程未碰。
+  - 收尾记一笔（TM代neat-freak 2026-09-26，通道限额）：docs与代码一致（CHANGE-B评审/QA/RG smoke/AI-MATRIX-PLAN/direct-provider及单测均在位，单测815全绿）；工作区22文件未提交（AI直连+分块+回退提示，HEAD 741e2e9）；未碰业务玩法逻辑；分离前codebuddy deepseek限额切glm；只动11T Pro+（IN9LZTAYV4UGU4JF），12 Pro（indq5xfi6hovay4d）后半程未碰。（2026-09-27 收口补注：该批「未提交」改动已于当日随 `49d6c75` 提交并 push，见上方 RC 状态。）
+  - 收尾记一笔（neat-freak 2026-09-27，Phase2 收口）：只清残留与文档事实，未碰业务代码/测试/版本号/账本、未 commit。①`.gitignore` 补签名材料（`*.jks`/`*.keystore`/`*.p12`）——`android/.gitignore` 里这两行是注释态，而 release `signingConfig` 仍是待办（RG-01-NEWRC-SMOKE 遗留项），先兜住密钥；本轮构建产物（`out/`、`.next/`、`.static-export-stash/`、`test-results/`、`.vercel/`、`android/**/build/`、`android/app/src/main/assets/`）本已被根规则与 `android/.gitignore` 覆盖，不重复加；实测 `git ls-files -i -c --exclude-standard` 为空＝无「该进仓却被 ignore」的文件，本轮新增的 tests/lib/components/docs 与 `docs/qa/ai-content-3l*` 证据全部在版本库内。②文档事实回填：RG-01-NEWRC-SMOKE（Change B 构建＝`49d6c75`、Change A 段补 `82cec01`、机器侧由误写的「9/10」改为与表格一致的 7/10）、BUGS-EXIT-GUARD（§H 真机项已回填并逐项映射编排者 04:09 实测、§G `next-env.d.ts` 改为按自动生成口径表述）、CODE_REVIEW-EXIT-GUARD（commit 回填＋并入条件里「G 节」笔误订正为 §H）、两份 CHANGE-B 评审与两份 MATRIX-3L 评审（未提交→已随 `49d6c75` 提交；矩阵分母口径 173/176→最终 174＝171＋3）、BUGS-CHANGE-B（无 Android 证据→已补 02:38 machine smoke）、PRODUCT_PLAN_V2.0-CHANGE-B（§七 事实回填：写稿时 RC=BLOCKED 已过期，NEW RC=`82cec01`）。③矩阵数字独立复算与落盘一致：176 份 JSON＝173 PASS＋3 EXPECTED-ERROR、P0/P1=0，合法分母 174＝171 PASS＋3，3.3 两格 `local-fallback`/0 卡＝防线成立 2/2。④三处版本号仍 `1.5.0` 同值未 bump。⑤账本只核对不改：TASK-MODEL-LOG 92 行、DISPATCH-LOG 146 行，逐行 JSON 合法、无 `_example`，`check-ledger.mjs` = LEDGER-OK（上方旧数 86/137 已订正）。⑥根 `agent.md` 与 `temp/` 实际已不在磁盘（.gitignore 规则保留作预防），未删任何东西。⑦未闭环残留见本节「Next Single Action」与 `docs/review/` 的 P2/P3 backlog。
 
 ## 一、当前工作进展（2026-09-22 晚，大交接冻结口）
 
@@ -74,7 +75,7 @@
 - E2E 已知坑（修过，勿回退）：换题后读数必须等 header 轮次推进；Toggle 不用 label 包裹（span+input）；check/uncheck 改 click+断言；seedSession 不删库、版本与 App 对齐（当前 v2）；pack-switch 旧未完成轮记 skipped；顶栏计数只数completed（swap复用、skip不递增）；换一个烧卡不涨轮次。
 - 不擅自 commit/push（修完默认推送部署是用户立规：commit＋push＋手动发版＋线上实测＋生产站地址同步）；不碰 secrets；`docs/sop/` 为规范位。
 - E2E 全量约1分钟；production smoke 需先 `pnpm build` + `pnpm start` 再带 `PARTY_NIGHT_PRODUCTION_SMOKE=true` 跑。
-- 仓库：origin main 已同步（HEAD 741e2e9起后续见git log；push曾切p028-party-night，核对remote）。
+- 仓库：origin main 已同步（本轮已 push，HEAD `96a1e24`、NEW RC `82cec01`；此前 push 曾切 p028-party-night，核对 remote）。
 - 设备规矩：只动11T Pro+（IN9LZTAYV4UGU4JF）；12 Pro（indq5xfi6hovay4d）禁碰（前车之鉴）。
 - 测试连接/开局验证只能真人手点，adb代点无响应（已实证两次），不要再让机器代点。
 

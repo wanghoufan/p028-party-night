@@ -116,3 +116,9 @@ Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、
 - **可选字段边界**：若消费 Player Coverage 看似必须改 `v2-state` schema，先尝试在 ranking 层传入现有 `relationship.playerCoverage` 四字段，并在既有事件/投影处解决展示时机及幂等；不新增第二套 Fairness State。若仍需修改**核心 Relationship State schema**才能实现，暂停 B2，列出最小 schema diff、迁移/恢复影响与测试证据，交 TM 按 Change C 请求 Human Gate。
 - **其他 Change C 触发点**：需变更 D1～D8、D3 Heat/双计数器/9-14-19 节奏、D4 pair 资格、D5 MATCH 双向或上限、Consent 私密生命周期、D7 qualifying/offered/终态、D8 耗尽，或重写 V2 Router 主语义时，停止 Change B，不先改代码。独立 1:N 游戏、重复题库、额外 Gate 也超出本轮授权。
 - **RG 阻塞**：RG-02 若缺 `1男3女/1女3男` 真人局就保持 `PENDING`；自动化七组全绿不能代替真人。RG-03 不增性别比例硬门槛。Release 前仍须 `RG-01～RG-07` 全部 `7/7 PASS`，不能由本轮单测宣称完成。
+
+## 七、事实回填（neat-freak 2026-09-27 收口，只记事实、不改需求与 DoD）
+
+- 写稿时快照：§六 首条「当前 RC = `BLOCKED`」是 2026-09-26 写稿时的状态，**已过期**。Matrix blocker 已由 `docs/qa/BUGS-CHANGE-B.md` 销项（176 份 JSON 复算：合法 174 ＝ 171 PASS ＋ 3 EXPECTED-ERROR、P0/P1=0、3.3 负向探测 2/2 防线成立）。
+- 落地与 RC：本增量 B1～B5 全部落地，随 `49d6c75` 提交并 push（main）；Change A「返回键退出确认」为其上追加（`82cec01`），**NEW RC = `82cec01`**。D1～D8、Heat/Signal/Consent/D7 语义、题库与三处版本号（仍 `1.5.0`）均未改。
+- 仍未闭环（与 §六 一致）：`RG-01～RG-07` 仍 `NOT_STARTED`（Release 前须 7/7）；P2 backlog（Single-Anchor 卡片级 Exposure 口径、Coverage offered 展示侧计数）保持登记未做。

@@ -2,6 +2,7 @@
 
 - Task: Change B · B1（R-CB4 六路径空池封堵）＋B3（R-CB9 Mutual 单候选 UI / R-CB10 隐私回归）＋B4（R-CB11 矩阵 3.3 负向口径）＋B5（pack 契约人数下限收口）
 - Commit: 未提交（工作区；HEAD 741e2e9，与收口链其他单混在同一工作区，本评审只看本单点名文件与段路；B2a/B2b 路由单已过，见 CODE_REVIEW-CHANGE-B-ROUTING.md，不重复评）
+  - 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）；评审当时的「工作区 HEAD 741e2e9 ＋ 未提交改动」即该提交内容。Change A 追加在其上（`82cec01`），NEW RC = `82cec01`。
 - Reviewer: code-reviewer（codebuddy/glm-5.3-flash）
 - Result: **过**（P0=0；blocking P1=0；P2×2、P3×3 记 backlog；1 项口径偏差需人确认）
 

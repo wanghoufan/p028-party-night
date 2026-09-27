@@ -4,6 +4,7 @@
 - Task：AI 前端直连 + 分块 4×10 + OpenCode 优先 + `generationSource` 判定
 - 范围：静态门禁、矩阵证据审查、判定器反向自检及 Mac OpenCode 分块对照诊断；未改业务代码，未触碰设备，未跑 E2E
 - 基线：HEAD `741e2e9`；工作区改动未提交
+  - 事实回填（neat-freak 2026-09-27 收口）：本轮改动已随 `49d6c75` 提交并 push（main）；上一行是 QA 当时的快照。Change A 追加于 `82cec01`，NEW RC = `82cec01`。
 - QA_RESULT：**PASS**（本轮 P0-CORE 放行证据已闭环；`AI-MATRIX-PLAN.md` §8 三层全量矩阵约 195 格列为后续 RG 放行前加强项，按编排者裁定转 backlog）
 
 ## 门禁结果

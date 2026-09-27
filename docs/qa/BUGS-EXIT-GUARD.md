@@ -6,6 +6,7 @@
 - P0：0
 - P1：0（EXIT-GUARD-001 已 CLOSED）
 - 放行建议：Web 与静态导出复验通过；NEW RC 重冻前仍须编排者完成本报告末尾 Android 真机项。真机项未回填前不应宣称 Android 硬件返回行为已验收。
+  - 事实回填（neat-freak 2026-09-27 收口）：Android 真机项已于 2026-09-27 04:09 由编排者在 11T Pro+ 完成——**编排者自定的 5 项口径实测 5/5 PASS**（见 docs/qa/RG-01-NEWRC-SMOKE.md 末节），NEW RC 已重冻为 `82cec01`（main 已 push）。注意两处口径差别：① 那是编排者那套 5 项，与本报告 §H 的 5 项不是同一张单子，本报告第 2/4 项因 App 无 deep link 入口无法逐条在真机跑（§H 已逐项写明由同产物 18/18＋24/24 覆盖）；② 本 QA 的 `QA_RESULT=PASS` 范围口径不变——仍只覆盖 Web 与静态导出，Android 硬件返回与 `App.exitApp()` 由编排者真机记录背书，不并入本 QA 结论。
 
 ## A. EXIT-GUARD-001 冷启动复验
 
@@ -73,16 +74,19 @@
 - Android 生成物差异只有插件引用：`android/capacitor.settings.gradle` 增加 `:capacitor-app` 与相对 `../node_modules/@capacitor/app/android` 路径；`android/app/capacitor.build.gradle` 增加 `implementation project(':capacitor-app')`。没有机器绝对路径或密钥。
 - 三处版本一致且未 bump：`package.json=1.5.0`、`public/version.json=1.5.0`、`public/sw.js CACHE_VERSION=1.5.0`。
 - 退出守门改动仅在本地读写 history、localStorage 与事件；退出按钮调用 `App.exitApp()` / Web `location.replace()`。新增守门代码未见网络上报或遥测调用。
-- `git diff --check` 通过。构建自动生成的 `next-env.d.ts` dev 路径改动已恢复；未改 app/lib/tests/scripts/android 中任何文件。
+- `git diff --check` 通过。`next-env.d.ts` 由构建自动改写（仓库 `82cec01` 提交的内容是 `.next/dev/types/…` 变体，随 `next dev`/`next build` 自动重写），本轮未把它当业务改动处理、也未人工固定其路径形态；未改 app/lib/tests/scripts/android 中任何文件。
 
-## H. 真机项待编排者回填
+## H. 真机项（已回填：2026-09-27 04:09，编排者在 11T Pro+ 实测）
 
-本 QA 未连接设备、未调用 adb。NEW RC 重冻前由编排者在 Android 真机记录：
+本 QA 未连接设备、未调用 adb；下列 5 项由编排者在 NEW RC 真机执行并记录，本节只做映射与背书，不改本 QA 的 `QA_RESULT` 范围（仍只覆盖 Web 与静态导出）。
 
-1. 冷启动首页按一次硬件返回：确认框出现；点「继续玩」后仍留首页。
-2. 从首页进入 `/setup`、`/packs`、`/packs/new`、`/settings/ai`，硬件返回均逐级回退且不弹确认框。
-3. 确认框打开时再按硬件返回只关框；快速连按无静默退出、无重复确认框。
-4. 冷启动直达 `/setup` 后立刻触发硬件返回，验证冷启动空窗已修复；再复测刷新后连续两次返回。
-5. 点确认框「退出」后由 `App.exitApp()` 实际退出应用。
+| QA 项 | 真机实测 | 证据 |
+|---|---|---|
+| 1 冷启动首页按一次硬件返回出确认框；点「继续玩」仍留首页 | PASS | RG-01-NEWRC-SMOKE 末节 ① ②（`/tmp/exitguard-back1.png`） |
+| 2 从首页进入 `/setup`、`/packs`、`/packs/new`、`/settings/ai` 逐级回退且不弹框 | **部分**：真机实测 `/setup`（组局 tab 进入）返回正常回退、确认框计数 0 ⇒ PASS；`/packs`、`/packs/new`、`/settings/ai` **无法用 adb 直达**（App 无 deep link 入口），未在真机跑过，由同一份 `out/` 静态导出产物上的独立复验覆盖：reviewer 18/18（A/B/C/D 四组）、本 QA 24/24（三条深路由各 8 次，无 `about:blank`） | RG-01-NEWRC-SMOKE 末节 ④ 与结论第 3 段；CODE_REVIEW-EXIT-GUARD 返工复核 A 组 10 轮无偶发 |
+| 3 确认框开着再按返回只关框、快速连按无静默退出/无重复框 | PASS | RG-01-NEWRC-SMOKE 末节 ③（dialog 1→0、`data-pn-exit-guard-armed=1`） |
+| 4 冷启动直达 `/setup` 后立刻触发硬件返回 | **真机不可达**（无 deep link 入口）；等价口径已覆盖：head 内联初始化脚本在 `DOMContentLoaded` 前必然执行，armed 必为 1（同产物 A 组 10 轮无偶发；`exit-confirm-cold-start.spec.ts` 5/5；`exit-confirm.spec.ts` dev 与 `out/` 两口径各 11 passed）；commit→head 解析间 54–119ms 的残余空窗按 P3 记账（CODE_REVIEW-EXIT-GUARD 返工复核 §1） | CODE_REVIEW-EXIT-GUARD 返工复核第 1 条与 P3「解析前空窗残余」 |
+| 5 点确认框「退出」后由 `App.exitApp()` 实际退出 | PASS | RG-01-NEWRC-SMOKE 末节 ⑤（`mCurrentFocus` 切到 `com.miui.home/…Launcher`，Activity 已 finish） |
 
-回填设备型号、Android 版本、安装包版本/构建标识、每步实测结果及必要截图/日志。以上真机项完成前，QA 的 PASS 仅覆盖 Web 与静态导出，不覆盖 Android 硬件返回及 `exitApp()`。
+- 回填设备：Redmi 22041216UC / xagapro，序列号 `IN9LZTAYV4UGU4JF`（USB，全程 `-s` 指定；12 Pro `indq5xfi6hovay4d` 未碰）；安装包为 Change A 返工后重建的 debug 签名包（同源 release web 资产 ＋ `@capacitor/app@7.1.2`），`install -r` = Success，对应 commit `82cec01`；设备状态已复原（飞行模式 `airplane_mode_on=0`）。
+- 结论：Android 硬件返回 ＋ 确认框 ＋ 真退出真机 PASS；NEW RC `82cec01` 已重冻。**RG-01 整项仍 NOT_STARTED**——开局抽卡～mutual/MATCH/隐私等真人手点项未开始，机器不得代点。

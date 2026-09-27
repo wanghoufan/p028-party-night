@@ -14,6 +14,10 @@ test-results/
 .vercel
 # 自包含 Release 构建期间 app/api 的临时暂存位（build:export 用完即放回）
 .static-export-stash/
+# 签名材料：android/.gitignore 里这两行是注释状态，而 release signingConfig 尚待补（见 RG-01-NEWRC-SMOKE 遗留项），先在本仓兜住密钥
+*.jks
+*.keystore
+*.p12
 # 治理软链（指母版，跨机器悬空）：本地保留，不入仓
 USER_MODEL_OVERRIDE.md
 

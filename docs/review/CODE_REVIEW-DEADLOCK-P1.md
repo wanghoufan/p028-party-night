@@ -2,6 +2,7 @@
 
 - Task: P1 两人局 pointing-game/most-likely 耗尽死局修复（minPlayers 按在场人数收口 + 耗尽兜底三出口）
 - Commit: 工作区未提交改动（基线 HEAD 741e2e9）
+  - 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）；评审当时的「工作区未提交」即该提交内容。NEW RC = `82cec01`。
 - Reviewer: code-reviewer（codebuddy/glm-5.3-flash）
 - Result: 过
 

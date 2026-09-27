@@ -2,6 +2,7 @@
 
 - Task：评审三层矩阵修复链未提交改动（死局修复已由 CODE_REVIEW-DEADLOCK-P1.md 过，不重评）
 - Commit：未提交（工作区；范围=app/api/generate-session/route.ts、tests/mac/ai-matrix-redline.ts、tests/mac/ai-matrix-3l.ts、tests/unit/generate-session-filter.test.ts、docs/qa/AI-MATRIX-RESULT.md + ai-content-3l/-pre-fix/）
+  - 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）。口径提示：本文「98.3%=173/176」是评审当时的分母；3.3 两格改 `NEGATIVE_BOUNDARY_PROBE` 后不进 App 分母，报告最终口径为合法分母 174＝171 PASS＋3 EXPECTED-ERROR（98.3%），落盘 176 份 JSON 不变（173 PASS＋3 EXPECTED-ERROR，其中 2 格为负向探测）。本文 P1-1/P1-2 已由 CODE_REVIEW-MATRIX-3L-P1-CLOSEOUT.md 判闭环。
 - Reviewer：code-reviewer（codebuddy/glm-5.3-flash）
 - Result：**过**（P0=0；P1=2 带整改单；P2=4 backlog）
 

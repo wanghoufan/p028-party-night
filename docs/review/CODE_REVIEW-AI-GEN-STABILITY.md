@@ -1,4 +1,6 @@
-# CODE REVIEW｜AI 前端直连 + 整局分块生成 + 回退提示（工作区未提交全量，HEAD 741e2e9）
+# CODE REVIEW｜AI 前端直连 + 整局分块生成 + 回退提示（评审时为工作区未提交全量，HEAD 741e2e9）
+
+- 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）；标题与 Commit 行的「工作区未提交」是评审当时快照。Change A 追加于 `82cec01`，NEW RC = `82cec01`。
 
 - Task：AI 前端直连（CapacitorHttp 直连 Provider，绕自包含包无 /api 代理）＋整局分块生成（4 批×10、单批 45s、任一批成功并入、全部失败才回退）＋回退提示＋generationSource 判定＋tests 两矩阵 harness 改造
 - Commit：工作区未提交（HEAD=741e2e9；改动 21 文件 + 67 个 docs/qa/ai-content/ 留存 JSON 未跟踪；lib/ai/direct-provider.ts、lib/domain/generation-source.ts、tests/unit/direct-provider*.test.ts、tests/unit/generation-source.test.ts 为新文件，已全读）

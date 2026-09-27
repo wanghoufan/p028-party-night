@@ -2,6 +2,7 @@
 
 - Task: Change B · B2a（R-CB5/R-CB8 Coverage 软排序接线）+ B2b（R-CB6/R-CB7 Single-Anchor Guard、Anchor Exposure、D7 两层消解）
 - Commit: 未提交（工作区；HEAD 741e2e9，与本轮收口链其他任务改动混在同一工作区，本评审只看本单点名文件与段路）
+  - 事实回填（neat-freak 2026-09-27 收口）：本单改动已随 `49d6c75` 提交并 push（main）；评审当时的「工作区 HEAD 741e2e9 ＋ 未提交改动」即该提交内容。Change A 追加在其上（`82cec01`），NEW RC = `82cec01`。
 - Reviewer: code-reviewer（codebuddy/glm-5.3-flash）
 - Result: **过**（P0=0；blocking P1=0；P2×3、P3×2 记 backlog）
 
