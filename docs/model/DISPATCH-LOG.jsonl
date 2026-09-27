@@ -179,3 +179,9 @@
 {"date":"2026-09-27","task":"PhaseB Planner回修4个P1","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"4条全修；每条给出QA可用的断言句"}
 {"date":"2026-09-27","task":"PhaseB Research Reviewer复评2","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL 86/100；4 P1全CLOSED；Readiness<90待Human定例外放行"}
 {"date":"2026-09-27","task":"审计基建P2 机器凭证","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"existsSync→7判据fail-closed；保留0字节历史证据"}
+{"date":"2026-09-27","task":"PhaseB Sol Planner V2.2 Fixed Content First","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"Human新方向重开；产出V2.2 Plan"}
+{"date":"2026-09-27","task":"PhaseB RR复审V2.2第1轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL79/100 blockingP1=1 A-AI-ISO"}
+{"date":"2026-09-27","task":"PhaseB Planner修A-AI-ISO等","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"点名三处AI入口；4个非blockingP1修好"}
+{"date":"2026-09-27","task":"PhaseB RR复评V2.2第2轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL87/100 blocking=0；新增A-AI-DIRECT"}
+{"date":"2026-09-27","task":"PhaseB Planner短修订三项","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"AI直连旁路守卫+竞品节+9x6集中验收表"}
+{"date":"2026-09-27","task":"PhaseB RR复评V2.2第3轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"PASS 94/100 Gate全勾可交Human Gate"}

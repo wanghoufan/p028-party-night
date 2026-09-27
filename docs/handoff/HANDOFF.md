@@ -3,7 +3,7 @@
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
 - Captured at（YYYY-MM-DD HH:MM）：2026-09-27（**内容质量专项审查 Phase A.2 + Mutual 1TAP 收口均已 CLOSED 并提交（基线 commit Mutual `987da2d`、A.2 `92943e7`、收尾 `2e84b29`）；技术 RC 为 `RC_NEEDS_REFREEZE`（基线 commit：Mutual `987da2d` / A.2 `92943e7` / 收尾 `2e84b29`；**当前 HEAD 与 ahead 数量以 Git 实时状态为准，不在本文件硬编码**），未 bump，工作区干净**）
-- PROJECT_PHASE：（**PLAN_REOPEN_REQUIRED** —— Phase A.2 已 CLOSED：P1#2=CLOSED、P1#1=OPEN/CHANGE_C_CONTENT_MATRIX；不重冻 RC，直接交 `Sol Planner → Research Reviewer → Human Gate` 生成 Phase B 新 Plan / 新 DEV_BASELINE）
+- PROJECT_PHASE（**WAITING_HUMAN_APPROVAL** —— Human 2026-09-27 新方向 **固定题库优先（Fixed Content First）+ AI 暂停正式主线**；`docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 已产出并通过 Research Reviewer **三轮**复审（79 → FAIL/blockingP1=1 → 87 → **PASS 94/100**，Gate 全勾、**无需例外**），DEV_BASELINE 待 Human 批准后设为 `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`；未启动 Builder、未开始 AI 扩题、未批量改 350 题、未重冻 RC、未执行 RG-02）
 - PLAN_VERSION：（PRODUCT_PLAN_V2.0）
 - PLAN_READINESS_SCORE：（83＋Human例外有条件批准）
 - PLAN_GATE：（APPROVED，V2.0 Human Gate终版）
@@ -39,14 +39,7 @@
   - **两个产品口径问题（2026-09-27 A.2 收口后已更新，旧问法作废）**：
     ①**低开放度关系主线结构性断粮**：`intensityLimit ≤2` 的桌，Heat 升到 H3/H4 后关系主线整池零合法卡（Monte Carlo 4,000 局中 1,660 局跑不满 20 轮，lim1 850/850、lim2 810/810）。准确表述是「**relationship 主线发生结构性断粮**」，**不是 App 无法继续游戏**——当前已有「切换玩法」「结束本局」安全出口，且 neutral/expansion 完成轮计入 `sessionCompletedRounds`。**A.2 明确不实施 Heat 改动**（A/B/C 三方案均改冻结 Heat 契约或 Heat 硬过滤；D 若新增 Host 第三决策会碰 D8 冻结），**首选方案 E＝保持 Heat/Router 契约、重做内容覆盖矩阵**（让每个 Heat 档都有足量低强度卡），随 Phase B Change C 一起做。见 `docs/qa/DEADEND-CHANGE-C-IMPACT.md`。**禁止为解决 dead-end 自动提升用户开放度。**
     ②**Heat ≠ Intensity（Human 2026-09-27 明确的产品判断）**：Heat 是「关系推进到多熟」，Intensity 是「用户愿意接受的开放度上限」，二者应近似正交。现状 metadata 把两者做成近似对角绑定（I1→H1–H2、I2→H2–H3、I3→H3–H4、I4/I5→H4）**是错误的建模**。H4 应存在 I1/I2（更深的恋爱观、人生选择、亲密边界、异性朋友边界、理想生活、安全感、冲突方式、关系节奏态度——关系更深但不要求更高尺度）。Phase B 内容矩阵硬要求：ceiling=1 时 H1–H4 都有足量合法 I1；ceiling=2 时 H1–H4 都有足量 I1/I2；不自动提高用户 intensity、不回退 Heat、不绕过硬过滤、不改 D8。**每格具体卡数不得人为拍定**，由 Planner 依 20/25 轮、软去重、pair gating、MATCH、Single-Anchor、玩法库存与 Monte Carlo 反推最小库存，并用真实 Router Monte Carlo 证明 intensity 1/2 也能跑满 20 轮关系主线、不依赖切 neutral 续命。
-  - **P1-MUTUAL-PRIVACY（**blocking P1**；Phase B 必须先修；Human 2026-09-27 指出，编排者确认成立并担责）**
-    - **事实**：`987da2d` 把互选改为「SELECT 提交 → HANDOFF_MASK → **约 1.35s 自动** → 下一位 SELECT」。这解决了「每人 7 次点击」，但**引入真实隐私/完整性漏洞**：上一位若未及时交出手机，下一位的候选与题面会**自动露出**，上一位可见其题面、极端情况下可替下一位点击。
-    - **责任**：编排者改造时引入的缺陷。用户当初只要求「删掉多余确认点击」，**并未要求用定时自动揭屏**；把身份确认换成定时器是编排者的取舍，且**未把「自动揭屏会泄露下一位」作为独立风险上报**——属编排者疏漏。code-reviewer 当时只核了「遮罩零按钮、不回显答案」，未质疑自动推进时机，**检测同样失效**。
-    - **修复原则（Human 2026-09-27 定调）**：**遮罩不得再自动消失**。目标链路：`SELECT 提交 → HANDOFF_MASK 无限等待 → 下一位本人主动执行「查看我的题目 / 我已拿到手机」 → SELECT`。允许增加一次「隐私揭屏动作」。**用户体验需求已重新定义**：「每人只有一次**作答**点击」，而非「整个流程绝对只能点击一次」。UI 同时提示：**「拿到手机后再查看，其他人请不要看屏幕。」**
-    - **禁止（明确）**：延长 1.35s 代替修复；自动猜测手机已交接；生物识别 / 密码等过度方案。
-    - **必须保持**：无上一步；单向选择不落盘；双向才 MATCH；active MATCH≤2；取消本轮可用；stale pair 提交前拦截。
-    - **新增真机验收（必须）**：**上一位长期持有手机时，下一位题面永远不能自动出现**。
-    - **Phase B 要求（交 Planner 设计）**：**隐私优先级高于「绝对只有一次总点击」**。目标＝每人只点一次**作答**，但允许增加一次**隐私揭屏**动作。可接受形态：「我已拿到手机 / 查看我的题目」一次确认，或长按拥屏等**必须由下一位本人完成**的明确动作。**不接受**：仅延长自动等待时间、靠猜测手机已交接完成。同时须保持：无上一步、单向不落盘、双向才 MATCH、active MATCH≤2、取消本轮可用。`mutualPairRunExists` 保留（只是 UI 提交前显式 stale 拦截，底层「非法目标→skip」契约不动，无需回滚）。
+  - ~~P1-MUTUAL-PRIVACY~~ **已作废（2026-09-27 Human 决定 + 编排者承认异误）**——编排者原提出的威胁模型错了：我假设「手机在参与者之间自行传递」，而真实用法是**主持人持有手机并负责逐人递交**，那 1.35s 窗口内手机在主持人手上。正确交互 = **每人一次作答点击**：多候选直接点真实姓名；单候选写真实姓名（现有实现已是 `今晚到现在，你愿意继续了解 {name} 吗？`，已无模糊 TA）；点完立即隐藏、仅中性完成态、不回显对象；**不新增揭屏/身份确认/提交/已遮好等步骤**。待调整仅 `HANDOFF_MASK_MS` 1350→约 1000ms（小改，不影响隐私与流程结构）。
   - **P1-D8-AWAITING-EXIT（**blocking P1**；Phase B 采用严格方案 A，禁止维持现状）**
     - **事实**：Plan D8 冻结的 Host 决策是「结束本局 / 洗牌再玩」**二选一**，但生产 UI 已有「切换玩法」路径；且 `AWAITING_HOST_EXHAUSTION_DECISION` 下若切到 cardless/neutral 玩法，orchestration 可能仍处于 awaiting，形成「UI 可以切、状态机仍认为 awaiting」的模糊态。
     - **代码事实已确认**：`awaitingHostDecision=true` 时 `drawV2SessionCard()` 持续返回 AWAITING，而 `switchPack` / `switchPackAndDeal` 不会清掉该状态。因此当前「切换玩法」不能被描述成正常退出 Awaiting：普通卡牌玩法仍会被 Awaiting 拦住；cardless/neutral 可能切了 UI，但 orchestration 仍 Awaiting。
@@ -60,7 +53,7 @@
   - 评审：`docs/review/CODE_REVIEW-V1.1.md`、`docs/review/CONVERGE-V1.1.md`
   - QA：`docs/qa/BUGS-V1.1.md`、`docs/qa/V1.1-放行证据.md`
   - 事实备份：`docs/handoff/HANDOFF.md.旧版-2026-09-13`（V1.2 真源）；`docs/pm/V1.3-讨论稿.md`（挂起：7 待定+酒罚默认含决策）
-  - 账本：`docs/model/TASK-MODEL-LOG.jsonl`（122 行）；`docs/model/DISPATCH-LOG.jsonl`（181 行）；`node scripts/model/check-ledger.mjs` = LEDGER-OK（2026-09-27 收口复核：两本均 122/181 行、逐行 JSON 合法、无 `_example` 残留；旧文「86/137 行」与「DISPATCH 空」均为过期快照；上一轮收口记的 92/146 亦已被后续派工追加，现行数以本行为准）
+  - 账本：`docs/model/TASK-MODEL-LOG.jsonl`（128 行）；`docs/model/DISPATCH-LOG.jsonl`（187 行）；`node scripts/model/check-ledger.mjs` = LEDGER-OK（2026-09-27 收口复核：两本均 128/187 行、逐行 JSON 合法、无 `_example` 残留；旧文「86/137 行」与「DISPATCH 空」均为过期快照；上一轮收口记的 92/146 亦已被后续派工追加，现行数以本行为准）
    - V1.6：评审`docs/review/CODE_REVIEW-V1.6.md`（PASS，commit 4ba3d13）、QA`docs/qa/BUGS-V1.6.md`（lint0/typecheck0/511/E2E80+4skip/三处1.5.0）、把关`docs/content/题库把关/`9件（00总览旧180审计+01–07+08新题纲）、终稿`docs/content/题库终稿/`9件（00总览§一终稿350分布3/5/7/14/21+01–07各50+08新题纲）；旧`docs/content/题库审查/`已删（文档搬家映射）；账本35行至V1.6补遗（dup删后27行自验口径作废，以现35行为准）
  - V2-B3：评审`docs/review/CODE_REVIEW-V2-B3.md`（FAIL→返工→复验PASS）、QA`docs/qa/BUGS-V2-B3.md`（lint0/typecheck0/610）；账本随行。
  - 2026-09-26 收口链：评审`docs/review/CODE_REVIEW-AI-GEN-STABILITY.md`（过）/`CODE_REVIEW-DEADLOCK-P1.md`（过）/`CODE_REVIEW-MATRIX-3L.md`（过，P1×2待整改+P2×4）；QA`docs/qa/BUGS-AI-GEN-STABILITY.md`（PASS，终审待更新）/`AI-MATRIX-FULL.md`（OpenCode 80/80，72合法）/`AI-MATRIX-PHONE.md`（24/24，origin运行时口径）/`AI-MATRIX-RESULT.md`（三层 DeepSeek 184 总格/合法 174/98.3% P0=0）/`AI-GEN-DIAG-0926.md`；三层逐格`docs/qa/ai-content-3l/`（176）+修复前备份`ai-content-3l-pre-fix/`+OpenCode旧证据`ai-content/`+DeepSeek旧证据`ai-content-deepseek-0926/`；harness `tests/mac/ai-matrix-3l.ts|ai-matrix-full.ts|ai-matrix-redline.ts`、`tests/phone/ai-matrix-phone.ts`；真机截图原存 `test-results/phone/ai-matrix/`25张（2026-09-27 收口核对：已被后续 playwright 全量跑覆盖清空，现 `test-results/` 只剩 `.last-run.json`；矩阵证据真源是 `docs/qa/ai-content-3l*/` 的逐格 JSON，截图不作门禁证据）。
@@ -69,8 +62,8 @@
   - **Mutual 任务隔离（已收口）**：4 个 Mutual 文件（`components/game/MutualCheckSheet.tsx`、`lib/v2-relationship/v2-mutual-check.ts`、`tests/e2e/v2-mutual-flow.spec.ts`、`tests/unit/mutual-check-sheet.test.tsx`，互选面板「每人 1 次点击」）已走 `code-reviewer（PASS）→ QA（PASS）→ supervisor`，并于 `987da2d` **单独 commit**（未与 A.2 合并）。supervisor 首次终检因「Mutual 三派账本零记录」= FAIL（`TASK-MODEL-LOG` 第 111 行，A.1 同类 incident 复发）；账本补记后随本轮收口放行（**无独立第二次 Mutual supervisor 行，供编排者复核**）。
 - 人要拍什么板（**2026-09-27 重载：Phase B Change C 人工决策，共 5 项，编排者不代决**）：
   1. **是否 push 当前全部已审查 commit**（基线：Mutual `987da2d`、Phase A.2 `92943e7`、收尾对齐 `2e84b29`；已通过 reviewer/QA/supervisor）。**本轮不得推送，等 Human 明确授权**；待推数量以 `git rev-list --left-right --count @{u}...HEAD` 实时为准。
-  2. **是否批准进入 Sol Planner 的 Change C Phase B**（`Sol Planner → Research Reviewer → Human Gate`）。
-  3. **是否接受 Mutual 从「1.35s 自动揭屏」改为「下一位本人主动揭屏」**（推荐接受；它会把「每人总点击」从 1 恢复为「1 次作答 + 1 次隐私揭屏」，但隐私优先级高于「绝对一次点击」）。缺口见上方 P1-MUTUAL-PRIVACY。
+  2. **是否批准 Phase B 新方向（Fixed Content First）并进入 Builder**——Plan `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 已过 Reviewer 三轮，最终 **PASS 94/100、Gate 全勾、无需例外放行**。Human 明确说「第二阶段，开发」才进 DEVELOP。
+  3. ~~是否接受 Mutual 从「1.35s 自动揭屏」改为「下一位本人主动揭屏」~~ → **Human 2026-09-27 已决：作废**。真实用法是主持人持机逐人递交，因此不需下一位主动揭屏；保持「每人一次作答点击」即可（现有实现已符合）。
   4. **D8 是否正式允许「切换玩法继续」作为第三个 Host 决策**（B），还是**严格保持 finish/reshuffle 二选一**（A）。缺口见上方 P1-D8-AWAITING-EXIT。
   5. **Phase B 20 轮体验目标最终数值**（仅为待验证假设，未经 Review/Human 不得冻结）：保约 20 轮覆盖 ≥5 个人物维度、中及以上信息轮 ≥8、高信息轮目标 ≥3、连续低/0 信息轮 ≤3、social buffer 约 20%–30%。
   - 已作废、不再占用 Human 决策：① 4 个 Mutual 文件已由 `987da2d` 单独提交；② Router 曝光偏斜已修（P1#2 CLOSED）；③ 「低开放度桌是否自动提开放度」已作废（自动提开放度是明令禁止项）；④ 处置配额 40/82/166/60/2 已被「不按标签自动施工」取代，Phase B 改为先定新内容蓝图、再决定旧题去留；⑤ 两包低增量玩法不删整包，改为「全桌猜/指人 → 被选中本人揭露」结构。
