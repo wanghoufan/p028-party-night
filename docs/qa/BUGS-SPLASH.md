@@ -2,7 +2,7 @@
 
 - 日期：2026-09-27
 - 阶段：Phase2 DEVELOP，Change A 终审
-- 结论：**QA_RESULT=PASS（允许进入待重冻 RC）**
+- 结论：**QA_RESULT=PASS（允许进入待重冻 RC；已并入重冻 RC `eeaebf3`，main 已 push）**
 - 评审：`docs/review/CODE_REVIEW-SPLASH.md` 已给出 P0=0、blocking P1=0；本轮 QA 未发现新增 P0/P1。
 
 ## 验收清单
@@ -36,8 +36,10 @@
 ## RC 建议
 
 **建议本改动并入待重冻 RC。** 重冻后应对最终候选构建再跑一次 Android 启动录屏，确认发布构建与当前已验证资源一致；本轮已提供充分验证，但不能替代候选 RC 本身的最终启动回归。编排者已完成的设备证据可归档引用，无需 QA 再碰设备。
+  - 事实回填（neat-freak 2026-09-27 收口）：RC 已于 2026-09-27 11:35 重冻为 `eeaebf3`（main 已 push），上一 RC `82cec01`、`49d6c75` 作废；**上述「重冻后对最终候选再录一次」已于同日 11:33 由编排者执行**——重新 `install -r` 后录屏 128 帧、白亮帧 0、亮度 27~74，PASS，证据位置 `docs/qa/RG-01-NEWRC-SMOKE.md` 末节《最终候选 RC 复录》。装机包应用代码与 `eeaebf3` 逐文件一致（`git diff --name-only eeaebf3 HEAD -- app lib android capacitor.config*.ts` 为空）。
 
-## 待编排者回填
+## 编排者回填项（已回填：2026-09-27 11:35，NEAT-FREAK 收口核对）
 
-- 将本报告和代码评审结论纳入 HANDOFF/任务账本，并在待重冻 RC 完成后补记候选版本/构建标识及最终启动录屏链接或证据位置。
-- 若安排颜色/配置漂移断言，另建 backlog 任务；本轮没有新增测试。
+- 已回填①（本报告与代码评审结论纳入 HANDOFF/任务账本）：HANDOFF 顶层 Captured at / RC 状态 / 当前 Task 三处均已写明 `eeaebf3`；账本已随 `eeaebf3` 落本轮派工行（TASK-MODEL-LOG 96 行、DISPATCH-LOG 151 行，`node scripts/model/check-ledger.mjs` = LEDGER-OK）。
+- 已回填②（候选版本/构建标识与最终启动录屏证据位置）：见上一节事实回填（`eeaebf3` ＋ RG-01-NEWRC-SMOKE 末节 128 帧 0 白帧）。
+- 待办（不阻塞 Release Gate）：颜色/配置漂移断言仍未新增——本轮 P2-2（`#080B1A` 散在 5 处、dev/release 两份 capacitor `backgroundColor` 无同值守护）已登记在 HANDOFF 二节「当前 Task」与 `docs/pm/PRODUCT_PLAN_V2.0.md` §P2 backlog；P2-1（启动图标本机录屏不可见，MIUI 启动动画覆盖系统启动屏）同址登记，且已定「不为此引入 `@capacitor/splash-screen` 挂起」。两项均为 P2，不进 RG-01~07 的 7/7 门禁。

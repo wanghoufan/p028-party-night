@@ -74,7 +74,7 @@
 - Android 生成物差异只有插件引用：`android/capacitor.settings.gradle` 增加 `:capacitor-app` 与相对 `../node_modules/@capacitor/app/android` 路径；`android/app/capacitor.build.gradle` 增加 `implementation project(':capacitor-app')`。没有机器绝对路径或密钥。
 - 三处版本一致且未 bump：`package.json=1.5.0`、`public/version.json=1.5.0`、`public/sw.js CACHE_VERSION=1.5.0`。
 - 退出守门改动仅在本地读写 history、localStorage 与事件；退出按钮调用 `App.exitApp()` / Web `location.replace()`。新增守门代码未见网络上报或遥测调用。
-- `git diff --check` 通过。`next-env.d.ts` 由构建自动改写（仓库 `82cec01` 提交的内容是 `.next/dev/types/…` 变体，随 `next dev`/`next build` 自动重写），本轮未把它当业务改动处理、也未人工固定其路径形态；未改 app/lib/tests/scripts/android 中任何文件。
+- `git diff --check` 通过。`next-env.d.ts` 由构建自动重写，随 `next dev`/`next build` 在 `.next/dev/types/…` 与 `.next/types/…` 两个变体间切换，本轮未把它当业务改动处理、也未人工固定其路径形态（`82cec01` 提交的是 `.next/dev/types/…` 变体；**2026-09-27 收口订正**：其后的启动白屏 RC `eeaebf3` 已把仓库内容改为 `.next/types/…` 变体，并随 `pnpm build:export` 自动落盘，不需要人工干预）；未改 app/lib/tests/scripts/android 中任何文件。
 
 ## H. 真机项（已回填：2026-09-27 04:09，编排者在 11T Pro+ 实测）
 

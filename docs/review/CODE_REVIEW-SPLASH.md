@@ -1,9 +1,11 @@
 # CODE REVIEW
 
 - Task: Change A 复评｜修白屏启动画面 + 换成 App 自己的图标与主题色（用户 2026-09-27 需求）
-- Commit: 未提交工作区改动（builder 产出，16 文件：11 删 + 5 改 + 2 新增）
+- Commit: **`eeaebf3`**（fix(Change A) 消掉启动白屏，main 已 push，2026-09-27 11:37；其后的 docs 回填提交为 `446dc5c`）
+  - 事实回填（neat-freak 2026-09-27 收口）：评审当时的「未提交工作区改动（16 文件：11 删 + 5 改 + 2 新增）」即该提交内容；**文件数订正为 18**（11＋5＋2＝18，原「16」与自身分项矛盾）。业务文件逐项：删 11 个模板 `splash.png`；改 `res/values/styles.xml`、`app/globals.css`、`capacitor.config.dev.ts`、`capacitor.config.release.ts`、`next-env.d.ts`；新增 `res/values/colors.xml`、`res/drawable/pn_splash.xml`。同批另落 `docs/review/CODE_REVIEW-SPLASH.md`、`docs/qa/BUGS-SPLASH.md`、`docs/qa/RG-01-NEWRC-SMOKE.md` 与两本账本（不计入业务文件数）。NEW RC = `eeaebf3`。
 - Reviewer: code-reviewer（codebuddy/glm-5.3-flash）
 - Result: **过**（P0=0，blocking P1=0；2 条 P2 backlog + 4 条 P3 记录，均不阻塞收工）
+  - 事实回填（neat-freak 2026-09-27 收口）：本结论已并入重冻 RC `eeaebf3`（`docs/qa/BUGS-SPLASH.md` = PASS/建议并入，HANDOFF RC 状态 = `eeaebf3`），三处口径一致。
 
 > Dispatch / Evidence ID 系字段 2.0 已废弃，不填。
 

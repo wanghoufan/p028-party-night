@@ -13,7 +13,7 @@
 
 | 项 | 值（实测） |
 |---|---|
-| 构建 commit | `49d6c75`（feat(V2 Change B) 收口矩阵+Coverage+Single-Anchor+2人局收口+Mutual单候选，重冻 NEW RC；main 已 push）。时序：APK 产物 02:37、装包 `lastUpdateTime` 02:38:49，该提交落库 02:49 —— 构建早于提交，为同一工作区内容，其间只有本节证据文档落盘、无业务代码改动；RC 身份以 `49d6c75` 为准（`82cec01` 为其上的 Change A 追加） |
+| 构建 commit | `49d6c75`（feat(V2 Change B) 收口矩阵+Coverage+Single-Anchor+2人局收口+Mutual单候选，重冻 NEW RC；main 已 push）。时序：APK 产物 02:37、装包 `lastUpdateTime` 02:38:49，该提交落库 02:49 —— 构建早于提交，为同一工作区内容，其间只有本节证据文档落盘、无业务代码改动；RC 身份以 `49d6c75` 为准（`82cec01` 为其上的 Change A 追加；两者之上再叠启动白屏修复 `eeaebf3`＝当前 NEW RC，见文末《最终候选 RC 复录》） |
 | web 资产 | `pnpm android:release` = `build:export`（静态导出 `out/`）＋ `CAPACITOR_TARGET=release cap sync`；无 `server.url`，origin = `https://localhost`（CDP 实测） |
 | JDK | 本机原只有 openjdk@17（gradle 报「无效的源发行版：21」）；本轮经用户批准 `brew install openjdk@21`（21.0.12.1） |
 | APK | release 产物 `app-release-unsigned.apk`（`android/app/build.gradle` 未配 `signingConfig`）；**装机用同源 release web 资产的 debug 签名包** `app/build/outputs/apk/debug/app-debug.apk`（同 appId `night.party.app`） |
@@ -60,7 +60,8 @@
 
 ## Change A「返回键退出确认」新构建真机验证（2026-09-27 04:09，编排者实测；对应 commit `82cec01`）
 
-- 构建标识：**`82cec01`**（feat(Change A) 返回键退出确认；时序：debug APK 04:08、装包与实测 04:09，该提交落库 04:31 —— 构建早于提交，为同一工作区内容；NEW RC = `82cec01`，上一 RC `49d6c75` 作废）
+- 构建标识：**`82cec01`**（feat(Change A) 返回键退出确认；时序：debug APK 04:08、装包与实测 04:09，该提交落库 04:31 —— 构建早于提交，为同一工作区内容；本节测完时 NEW RC = `82cec01`，上一 RC `49d6c75` 作废）
+  - 事实回填（neat-freak 2026-09-27 收口）：`82cec01` 已于同日 11:35 被启动白屏修复 RC **`eeaebf3`** 取代（`82cec01` 与 `49d6c75` 均作废，其间 `5f0745d` 为上一轮收口 docs 提交、非 RC）。本节 5 项证据绑定的是 `82cec01` 装机包，未被 `eeaebf3` 改动覆盖：`git diff --name-only 82cec01 eeaebf3 -- app lib android capacitor.config*.ts` 输出仅 18 个启动屏相关文件（11 个被删 `splash.png`、`res/drawable/pn_splash.xml`、`res/values/colors.xml`、`res/values/styles.xml`、`app/globals.css`、capacitor dev/release 两份配置），返回键实现零改动，故仍计入当前 RC 证据链。
 - 设备：`IN9LZTAYV4UGU4JF`（Redmi 22041216UC / xagapro，USB，全程 `-s` 指定；12 Pro `indq5xfi6hovay4d` 未碰）
 - 包：Change A 返工后重建（同自包含 release web 资产 + 新增 `@capacitor/app@7.1.2` 原生插件，debug 签名包装机；release 产物仍 unsigned，见下遗留），`install -r` = Success
 - 离线条件：飞行模式 `airplane_mode_on=1`、Mac `:3000` 无监听（curl 000）

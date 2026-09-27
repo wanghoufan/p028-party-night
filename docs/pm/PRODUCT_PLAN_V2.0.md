@@ -624,6 +624,7 @@ Release Gate 结论只能为：`PASS（7/7，有完整证据）` 或 `BLOCKED（
 
 ### P2
 
+- [ ] Change A backlog（启动屏白屏修复，RC `eeaebf3`）：① `#080B1A` 散在 `res/values/colors.xml`、capacitor dev/release 两份配置、`globals.css`、`layout.tsx` 共 5 处且无同值守护，改任一处不会报错 → 补一条静态同值断言（同时覆盖静态导出 HTML/CSS 背景变量关系）防漂移；② 启动图标已配置且在 APK 内已核实，但 MIUI 启动动画覆盖系统启动屏，本机逐帧录屏抓不到图标像素（取证手段限制，非实现缺陷）——**决定不为此引入 `@capacitor/splash-screen` 挂起启动屏**（伤启动手感），如日后要图标可见性证据，另立一次性可控动画条件取证项。两项均为 P2，不进 RG-01~07 的 7/7 门禁。
 - [ ] Change B backlog：Single-Anchor Exposure 现按 pair opportunity 轮记录，可能把轮内展示的全桌卡也视为 anchor Exposure；若需按实际展示卡精确判定，另核 Router 回传口径。RG-02 真人局观察非定向插入后 pair opportunity 减半的节奏，由用户判断是否接受。
 - [ ] Change B backlog：`playerCoverage.offeredTargeted` 仍在 `REL_CARD_COMPLETED / REL_CARD_SKIPPED` 终态归约；展示后连续换题可能低估已获机会。若改为展示时幂等计数，须避免与终态重复计数；本轮不据此改写冻结 D7 的 `CARD_PRESENTED -> offered` 终态定义。
 - [ ] 根据真人局调整 drawBands、首次/间隔卡数、cooldown、small-pool 权重与保障窗口，但不改变引擎语义。
