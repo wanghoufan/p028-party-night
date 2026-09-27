@@ -6,7 +6,7 @@
 - DEV_BASELINE：`PRODUCT_PLAN_V2.0`
 - PLAN_READINESS_SCORE：`83/100｜Human 例外有条件批准`（P0=`0`；blocking P1=`0`；剩余 7 分转 Release 前强制 Gate）
 - 输入基线：当前生产 V1.6 brownfield + `docs/content/v6/2026-09-24 - MAC - ChatGPT - Party Night V1.3冻结基线-备份 - V1.1.zip` 内 V1.3 Frozen（schema 2.3）
-- 文档状态：Human Gate 终版已进入 DEVELOP；R1=`PASS`（冻结包内部一致性前置证据）；P0-01=`CLOSED / PASS`（生产旧 350 ↔ V1.3 Frozen 350 外部机器审计）；R2=`PASS AFTER PATCH`（31/31 PASS）；R4/R5 复审=`PASS`（计划契约层关闭，实现证据转 DEVELOP 必过门禁）。Human 已决 D1=切换 V1.3 内容真源、D2=切换 V2 Router 且旧 Router 退役、D3=A、D4=A、D5=每人 active MATCH 上限 2、D6=neutral/expansion 不推进关系、D7=A、D8=A+。`PLAN_GATE=APPROVED`；83 分按 Human 例外有条件批准，剩余验证全部转为 Release 前强制 Gate。Change B 只补实际接线与 RG-02 fixture；`DEV_BASELINE=PRODUCT_PLAN_V2.0` 不变，不据此宣称可 Release
+- 文档状态：Human Gate 终版已进入 DEVELOP；R1=`PASS`（冻结包内部一致性前置证据）；P0-01=`CLOSED / PASS`（生产旧 350 ↔ V1.3 Frozen 350 外部机器审计）；R2=`PASS AFTER PATCH`（31/31 PASS）；R4/R5 复审=`PASS`（计划契约层关闭，实现证据转 DEVELOP 必过门禁）。Human 已决 D1=切换 V1.3 内容真源、D2=切换 V2 Router 且旧 Router 退役、D3=A、D4=A、D5=每人 active MATCH 上限 2、D6=neutral/expansion 不推进关系、D7=A、D8=A+。`PLAN_GATE=APPROVED`；83 分按 Human 例外有条件批准，剩余验证全部转为 Release 前强制 Gate。Change B 只补实际接线与 RG-02 验收口径；`DEV_BASELINE=PRODUCT_PLAN_V2.0` 不变，不据此宣称可 Release
 
 ## PlanConsistency｜V2.0 终版六项收敛结论
 
@@ -592,14 +592,16 @@ Session.participants[playerId]
 > 这是 Human 有条件批准的硬门禁，不是 P2 建议。以下 `RG-01`～`RG-07` 必须 `7/7 PASS`，证据须记录发布候选版本、commit、设备/系统、参与人数、现场条件、步骤、结果与问题处置；任一项未通过均禁止 Release，不得以 unit/E2E、模拟器或口头确认替代真机/真人证据。
 
 - [ ] **RG-01｜真机发布候选与离线恢复**：在实际目标手机安装/打开发布候选，验证 PWA 启动、断网完成 relationship-aware 抽卡、刷新/崩溃后恢复、重新联网无重复计数；确认单向秘密选择未进入 IndexedDB、日志、导出、缓存、analytics 或 AI。
-- [ ] **RG-02｜真人弱光 4 人完整局**：4 名成年真人在目标酒吧/清吧弱光与现场噪声条件下完成至少 20 个 `sessionCompletedRounds`；记录组局、pairGender 录入、单手操作、读字、点击、节奏、跳过与提前结束是否可理解。Change B fixture 固定为 `1男3女` 或 `1女3男`；凑不齐保持 `PENDING`，不得用 `2男2女` 替代并宣称通过。
+- [ ] **RG-02｜真人弱光 4 人完整局**：4 名成年真人，性别比例不限（`2男2女`、`1男3女`、`1女3男` 等均可）；在目标酒吧/清吧弱光与现场噪声条件下完成至少 20 个 `sessionCompletedRounds`，并记录组局、pairGender 录入、单手操作、读字、点击、节奏、跳过与提前结束是否可理解，满足以上原契约且证据完整方可判 `PASS`。
 - [ ] **RG-03｜真人弱光 5 人完整局**：5 名成年真人在同类现场完成至少 20 个 `sessionCompletedRounds`，并实际走一次“再玩 5 轮”至 25；验证 Heat 不回退、第三次 regular mutual 重评与 Session 结算边界。
 - [ ] **RG-04｜真人私密传手机与拒绝安全**：在 4 人或 5 人局实际完成一次 `SYSTEM_MUTUAL_CHECK`；逐人确认身份、遮罩、旁观防泄露、提交耗时、单向结果清除、无交集 no-action、跳过/拒绝无惩罚，参与者口头确认没有被公开或被二次施压。
 - [ ] **RG-05｜真人 Pair 降级与 MATCH 上限 2**：真人验证无合法男女 pair 时中性降级普通玩法且不暴露字段；再以经参与者知情同意的受控路径形成多 MATCH，确认每人 active MATCH 最大为 2、第三个不创建且不泄露达到上限的一方，退出释放名额、暂离不释放名额。
 - [ ] **RG-06｜真人 neutral/expansion 与扩圈 fallback**：在同一局切入 neutral 和 expansion，确认 completed 只推进 `sessionCompletedRounds`，不推进 Heat/Signal/mutual interval；切回后关系状态续接；实际拒绝一次外邀并命中对应 table-only fallback，不二次邀请、不暴露拒绝者。
 - [ ] **RG-07｜真人 5 档保障、耗尽与安全收尾**：在全员清醒、自愿、Intensity=5 且合法 MATCH 的受控局中验证 2 次合格 pair opportunity 内展示合法 5 档、动作级 current consent 与 skip/no-action 不补发；再验证软去重 `5→0`、Host“结束/洗牌再玩”、洗牌保留关系态且旧 Router 不可达，并覆盖 final mutual 的执行或 recent-check suppression。
 
-Change B fixture 补充：RG-03 保持上述原契约，性别比例不新增硬门槛；`1男5女` 本轮只要求自动化验证，不能用其自动化结果替代 RG-02/03 真人证据。
+Change B fixture 补充：RG-02 不限定性别比例；RG-03 保持上述原契约，性别比例不新增硬门槛；`1男5女` 本轮只要求自动化验证，不能用其自动化结果替代 RG-02/03 真人证据。
+
+Single-Anchor（1:N 桌）验证归属：自动化已覆盖 `1男3女/1女3男/1男4女/1男5女` 各 ×20 opportunity，以及 `2男2女/2男3女/3男2女` 各 ×20 回归；这些是自动化证据，不是现场真人证据。Single-Anchor 真人验证不作为 RG-02 的判定门槛：若实际真人局型碰到 1:N 桌，顺带记录曝光节奏与非定向占比；未碰到则该观察项记为「未做」，不阻断 Release，不得写成已验证。本轮不新增第 8 个 Gate。
 
 Release Gate 结论只能为：`PASS（7/7，有完整证据）` 或 `BLOCKED（列出未通过项）`；不存在“部分通过后先发版”。
 
@@ -624,8 +626,8 @@ Release Gate 结论只能为：`PASS（7/7，有完整证据）` 或 `BLOCKED（
 
 ### P2
 
-- [ ] Change A backlog（启动屏白屏修复，RC `eeaebf3`）：① `#080B1A` 散在 `res/values/colors.xml`、capacitor dev/release 两份配置、`globals.css`、`layout.tsx` 共 5 处且无同值守护，改任一处不会报错 → 补一条静态同值断言（同时覆盖静态导出 HTML/CSS 背景变量关系）防漂移；② 启动图标已配置且在 APK 内已核实，但 MIUI 启动动画覆盖系统启动屏，本机逐帧录屏抓不到图标像素（取证手段限制，非实现缺陷）——**决定不为此引入 `@capacitor/splash-screen` 挂起启动屏**（伤启动手感），如日后要图标可见性证据，另立一次性可控动画条件取证项。两项均为 P2，不进 RG-01~07 的 7/7 门禁。
-- [ ] Change B backlog：Single-Anchor Exposure 现按 pair opportunity 轮记录，可能把轮内展示的全桌卡也视为 anchor Exposure；若需按实际展示卡精确判定，另核 Router 回传口径。RG-02 真人局观察非定向插入后 pair opportunity 减半的节奏，由用户判断是否接受。
+- [ ] Change A backlog（启动屏白屏修复，RC `eeaebf3`）：① `#080B1A` 散在 `res/values/colors.xml`、capacitor dev/release 两份配置、`globals.css`、`layout.tsx` 共 5 处且无同值守护，改任一处不会报错 → 补一条静态同值断言（同时覆盖静态导出 HTML/CSS 背景变量关系）防漂移；② 启动图标已配置且在 APK 内已核实，但 MIUI 启动动画覆盖系统启动屏，本机逐帧录屏抓不到图标像素（取证手段限制，非实现缺陷）。用户 2026-09-27 决定「启动图标这样就行了」；此项仅保留背景说明，不引入 `@capacitor/splash-screen` 挂起启动屏，也不再为图标可见性立项。①仍为 P2，②不进后续待办；均不进 RG-01~07 的 7/7 门禁。
+- [ ] Change B backlog：Single-Anchor Exposure 现按 pair opportunity 轮记录，可能把轮内展示的全桌卡也视为 anchor Exposure；若需按实际展示卡精确判定，另核 Router 回传口径。RG-02 可由任意性别比例的 4 人真人局完成；仅当实际局型碰到 1:N 桌时，顺带观察曝光节奏与非定向占比，未碰到记「未做」，不阻断 Release。
 - [ ] Change B backlog：`playerCoverage.offeredTargeted` 仍在 `REL_CARD_COMPLETED / REL_CARD_SKIPPED` 终态归约；展示后连续换题可能低估已获机会。若改为展示时幂等计数，须避免与终态重复计数；本轮不据此改写冻结 D7 的 `CARD_PRESENTED -> offered` 终态定义。
 - [ ] 根据真人局调整 drawBands、首次/间隔卡数、cooldown、small-pool 权重与保障窗口，但不改变引擎语义。
 - [ ] 优化 H3/H4、MATCH 与无 MATCH 的文案和动效；弱光、单手、传手机遮罩可用性打磨。

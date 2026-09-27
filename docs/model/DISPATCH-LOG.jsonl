@@ -149,3 +149,4 @@
 {"date":"2026-09-27","task":"ChangeA 复评 启动屏白屏修复","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blockingP1=0；建议不引入splash-screen挂起；P2图标不可见+颜色漂移断言"}
 {"date":"2026-09-27","task":"ChangeA QA终审 启动屏白屏","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"全门禁绿(unit927/E2E105+4skip/build/export)；aapt2核实图标与底色在包内；P0=0/P1=0"}
 {"date":"2026-09-27","task":"ChangeA 启动录屏逐帧验证(编排者本窗口直驱)","role":"qa","model":"本窗口直驱","used":"主","runtime":"本窗口","result":"PASS","note":"改前48/97帧纯白→改后0/112白亮帧；快 screencap 与10倍慢放复核均无白帧"}
+{"date":"2026-09-27","task":"RG-02桌型不固定+启动图标保持现状(Plan/ChangeB/HANDOFF同步)","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"仅改3份文档；RG-02恢复不限性别比例；Single-Anchor真人验证改非门槛；P2 backlog订正"}

@@ -6,7 +6,7 @@
 
 ## 一、变更定位、冻结边界与 Change C 红线
 
-Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、Mutual 单候选 UI、两人玩法与空池封堵、Matrix 证据及负向边界探测口径，并细化 RG-02 的既有 fixture。D1 内容真源、D2 单一 V2 Router、D3 双计数器、D4 本局男女合法 pair、D5 双向且每人 active MATCH 上限 2、D6 neutral/expansion 不推进关系、D7 展示即 offered 且两次合格 pair opportunity 内提供合法 5 档、D8 耗尽/洗牌策略均不改。不重写 Heat、Signal、Consent、私密互选、内容题库或 Release Gate 数量。
+Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、Mutual 单候选 UI、两人玩法与空池封堵、Matrix 证据及负向边界探测口径，并细化 RG-02 的验收口径。D1 内容真源、D2 单一 V2 Router、D3 双计数器、D4 本局男女合法 pair、D5 双向且每人 active MATCH 上限 2、D6 neutral/expansion 不推进关系、D7 展示即 offered 且两次合格 pair opportunity 内提供合法 5 档、D8 耗尽/洗牌策略均不改。不重写 Heat、Signal、Consent、私密互选、内容题库或 Release Gate 数量。
 
 按用户 V1.2 §0：**“如必须修改核心 Relationship State schema、改变 D1～D8、Heat/MATCH/Consent/D7 语义或重写 Router 主语义，立即停止并按 Change C 报告。”** 按 §十六：**“出现核心契约变更需求时：停止 Change B，按 Change C 报告并等 Human Gate。”** 仅允许在现有 Session participant、Coverage、Router 和 UI 上做局部实现。不得用实现困难自行扩大基线。
 
@@ -27,7 +27,7 @@ Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、
 | R-CB9 | Mutual UI 按**当前合法异性候选数**分支：仅 1 人时显示“今晚到现在，你愿意继续了解 TA 吗？”和“愿意 / 暂时没有”；分别映射唯一候选 / `null`。Routing 的 `SINGLE_ANCHOR_TABLE` 仍按 `1:N,N>=3`，两者解耦。【用户 V1.2 第七节】 | `1男2女` 中多数方即使 Guard=false 也可见 Yes/No；anchor 或多候选继续现有选择 UI。只使用当前合法 pair，不能选非候选人。双向才 MATCH、单向不公开、active MATCH≤2、raw unilateral choice 不落盘。 | `components/game/MutualCheckSheet.tsx`、`lib/v2-relationship/v2-mutual-check.ts`、`tests/unit/mutual-check-sheet.test.tsx`、`tests/unit/v2-mutual-check.test.ts` |
 | R-CB10 | 隐私自动化：`pairGender` 只属本局 Session participant；AI 请求 payload/prompt/log/export 不含 `pairGender`、`male/female` 枚举、anchor 标志、性别数量结构、玩家真实姓名；1:N / Coverage / Mutual candidate 只在本地 Relationship Engine 算。【用户 V1.2 第八节】 | 用带可识别姓名和性别的 fixture 截获实际发送的 AI 请求与日志/导出，逐项负断言；刷新、取消、结束后原始单向选择不存在可恢复持久态。不能仅靠字符串静态搜索代替运行时断言。 | `tests/unit/v2-privacy-regression.test.ts`（建议新增）、`tests/unit/v2-mutual-check.test.ts`、AI 请求组装入口、持久化/导出入口 |
 | R-CB11 | Matrix §3.3 改 `NEGATIVE_BOUNDARY_PROBE`：只测 `pointing-game@2` 与 `most-likely@2`；`compatibility-test` 不属非法人数探测。【用户 V1.2 第九节】 | 探测不算合法 Matrix 格、不进 Release Matrix PASS 分母；允许特造非法请求，仅显式阻止／过滤为空／安全拒绝为预期；Provider 成功响应不能记 App PASS，`local-fallback` 不能记 AI PASS。常规非法组合仍 `SKIPPED-ILLEGAL`、不执行。 | `tests/mac/ai-matrix-3l.ts`、`docs/qa/AI-MATRIX-PLAN.md`、`docs/qa/AI-MATRIX-RESULT.md` |
-| R-CB12 | RG-02 真人 4 人 fixture 固定为 `1男3女` 或 `1女3男`；凑不齐则 PENDING，不能以 `2男2女` 代替宣称通过。RG-03 保持现有 5 人 Gate，优先 `1男4女/1女4男` 但不新增性别硬门槛。`1男5女` 必做自动化，真人后续扩展。【用户 V1.2 第十二节】 | RG-01～RG-07 仍 7/7；RG-02 必须完成原 V2.0 的真人弱光、至少 20 个 `sessionCompletedRounds` 全部要求；RG-03 仍按原契约。无新 Gate 编号。 | `PRODUCT_PLAN_V2.0.md` 的后续同步、`docs/qa/RG-*.md`、`HANDOFF.md` |
+| R-CB12 | 用户 2026-09-27 决定 RG-02 不限定性别比例（`2男2女`、`1男3女`、`1女3男` 等任意 4 名成年真人均可），覆盖此前「固定 `1男3女/1女3男`」口径。RG-03 保持现有 5 人 Gate，不新增性别比例硬门槛；`1男5女` 本轮只要求自动化。【用户 2026-09-27 最新决定，覆盖用户 V1.2 第十二节的 RG-02 桌型限制】 | RG-01～RG-07 仍须 7/7；RG-02 按原 V2.0 契约完成真人弱光现场、至少 20 个 `sessionCompletedRounds`，记录组局、性别录入、单手操作、读字、点击、节奏、跳过、提前结束的可理解性，证据完整方可判 `PASS`。自动化已覆盖 `1男3女/1女3男/1男4女/1男5女` 各 ×20 opportunity 与 `2男2女/2男3女/3男2女` 各 ×20 回归；Single-Anchor 真人验证不作为 RG-02 门槛，实际局型碰到 1:N 桌时顺带记录曝光节奏、非定向占比，未碰到记「未做」且不阻断 Release；自动化不冒充真人证据。RG-03 仍按原契约，不新增 Gate。 | `PRODUCT_PLAN_V2.0.md`、`HANDOFF.md` |
 
 **R-CB3 blocking P1 七条原文**【用户 V1.2 第三节】：
 
@@ -102,7 +102,7 @@ Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、
 
 ## 五、后续文档同步清单与责任
 
-1. **Planner → `docs/pm/`**：本增量先锁 Requirement/DoD；开发闭环时将 Coverage 实际接线、Single-Anchor、D7 两层、Mutual 单候选、RG-02 fixture 同步进 `PRODUCT_PLAN_V2.0.md`，保持 `DEV_BASELINE` 与 Plan Version 不变。【用户 V1.2 §十第 1 项】
+1. **Planner → `docs/pm/`**：本增量先锁 Requirement/DoD；开发闭环时将 Coverage 实际接线、Single-Anchor、D7 两层、Mutual 单候选、RG-02 验收口径同步进 `PRODUCT_PLAN_V2.0.md`，保持 `DEV_BASELINE` 与 Plan Version 不变。【用户 V1.2 §十第 1 项；RG-02 桌型按用户 2026-09-27 决定】
 2. **QA → `docs/qa/AI-MATRIX-PLAN.md`**：将 `PLAN/未执行` 标成 `EXECUTED/历史方案`，链接 RESULT，3.3 写为 `NEGATIVE_BOUNDARY_PROBE` 及合法分母例外。【用户 V1.2 §十第 2 项】
 3. **QA → `docs/qa/AI-MATRIX-RESULT.md`**：以 176 份最终 JSON 和 14 份旧 FAIL 逐格对账，写 pre-fix→fix→final 时间线及新 3.3 分类后的精确数字；不能把旧报告 98.3% 原样当新分母结论。【用户 V1.2 §十第 3 项】
 4. **Task Manager → `docs/handoff/HANDOFF.md`**：更新 RC blocker，过期“重冻条件已具备”标旧快照，终审和重冻后才写 `NEW_RC_COMMIT` 与 RG-01 通知状态。【用户 V1.2 §十第 4 项】
@@ -115,7 +115,7 @@ Change B 仅补现有 Player Coverage 的消费、1:N Single-Anchor 薄调度、
 - **D7 时序风险**：`v2-guarantee.ts` 的纯函数 `qualify` 达上限会转 `offered`，而冻结 D7 要求合法 5 档 `CARD_PRESENTED` 才 `offered`。Builder 必须证明主链“第二次合格机会先选出并展示合法 5 档，再提交终态”的顺序；若无法在既有契约内保证，不得靠改 D7 定义掩盖，应上报 Change C。
 - **可选字段边界**：若消费 Player Coverage 看似必须改 `v2-state` schema，先尝试在 ranking 层传入现有 `relationship.playerCoverage` 四字段，并在既有事件/投影处解决展示时机及幂等；不新增第二套 Fairness State。若仍需修改**核心 Relationship State schema**才能实现，暂停 B2，列出最小 schema diff、迁移/恢复影响与测试证据，交 TM 按 Change C 请求 Human Gate。
 - **其他 Change C 触发点**：需变更 D1～D8、D3 Heat/双计数器/9-14-19 节奏、D4 pair 资格、D5 MATCH 双向或上限、Consent 私密生命周期、D7 qualifying/offered/终态、D8 耗尽，或重写 V2 Router 主语义时，停止 Change B，不先改代码。独立 1:N 游戏、重复题库、额外 Gate 也超出本轮授权。
-- **RG 阻塞**：RG-02 若缺 `1男3女/1女3男` 真人局就保持 `PENDING`；自动化七组全绿不能代替真人。RG-03 不增性别比例硬门槛。Release 前仍须 `RG-01～RG-07` 全部 `7/7 PASS`，不能由本轮单测宣称完成。
+- **RG 阻塞**：RG-02 若缺任意性别比例的 4 人成年真人弱光完整局及原契约证据，就保持 `PENDING`；自动化七组全绿不能代替真人。Single-Anchor 真人观察仅在实际碰到 1:N 桌时顺带记录，未碰到记「未做」且不阻断 Release。RG-03 不增性别比例硬门槛。Release 前仍须 `RG-01～RG-07` 全部 `7/7 PASS`，不能由本轮单测宣称完成。
 
 ## 七、事实回填（neat-freak 2026-09-27 收口，只记事实、不改需求与 DoD）
 
