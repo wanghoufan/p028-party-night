@@ -1,0 +1,1533 @@
+{
+  "generator": "scripts/audit-a1-router-montecarlo.ts",
+  "engine": {
+    "router": "createV2MainlineRouter (lib/v2-relationship/v2-router.ts) — 生产 D2 唯一 Router",
+    "orchestrator": "drawV2SessionCard (lib/v2-relationship/v2-session.ts) — 真实 pair 路由/Single-Anchor Guard/D7/去重/耗尽",
+    "hostDecision": "applyV2HostDecision (lib/v2-relationship/v2-session.ts) — 真实 reshuffle 分支（幂等键 + 清 usedCardIds + cycle+1）",
+    "roundTerminal": "eventForRoundTerminal (lib/engine/v2-deal.ts) — 真实 R3 事件映射",
+    "matchInjection": "mutualCheckFinalEvents (lib/v2-relationship/v2-mutual-check.ts) → SYSTEM_MUTUAL_CHECK_COMPLETE，经生产 reducer mayCreateMatch 原子校验（仅 MATCH-enabled 扫描使用）",
+    "note": "本 harness 只提供局外输入（桌型/玩法选择/完成-跳过决策/互选成立），不复制任何过滤排序调度逻辑。"
+  },
+  "config": {
+    "sessionsPerTable": 1000,
+    "matchSessionsPerTable": 1000,
+    "tracePerTable": 2,
+    "targetCompletedRounds": 20,
+    "guardLimit": 1000,
+    "tables": [
+      {
+        "key": "2m2f",
+        "label": "2男2女",
+        "players": 4
+      },
+      {
+        "key": "1m3f",
+        "label": "1男3女",
+        "players": 4
+      },
+      {
+        "key": "2m3f",
+        "label": "2男3女",
+        "players": 5
+      },
+      {
+        "key": "1m4f",
+        "label": "1男4女",
+        "players": 5
+      }
+    ],
+    "packs": [
+      {
+        "id": "truth-dare",
+        "label": "真心话大冒险",
+        "weight": 0.2045
+      },
+      {
+        "id": "never-have",
+        "label": "我从来没有",
+        "weight": 0.1818
+      },
+      {
+        "id": "would-you-rather",
+        "label": "二选一",
+        "weight": 0.1818
+      },
+      {
+        "id": "compatibility-test",
+        "label": "默契测试",
+        "weight": 0.1591
+      },
+      {
+        "id": "most-likely",
+        "label": "谁最可能",
+        "weight": 0.1364
+      },
+      {
+        "id": "pointing-game",
+        "label": "指人游戏",
+        "weight": 0.1364
+      }
+    ],
+    "packsExcluded": {
+      "ids": [
+        "spin-bottle"
+      ],
+      "reason": "转瓶子为 cardless 玩法，不在 V2_MAINLINE_PACK_IDS，createV2MainlineRouter 对它恒返回空集，即 Phase A bug 1"
+    },
+    "completedProbability": 0.85,
+    "seedFormula": "20260927 + i*7919 + (tableIndex+1)*104729（每桌型独立 salt；原 Phase A 用 tableKey.length，四个桌型长度都是 4 → 种子撞车导致结果逐字相同）",
+    "totalSessions": 4000
+  },
+  "overall": {
+    "sessions": 4000,
+    "sessionsCompleted20": 2340,
+    "completedRoundsMean": 16.03,
+    "highPerSession": 2.34,
+    "midPlusPerSession": 7.49,
+    "personTopicsPerSession": 2.85,
+    "longestLowZeroRunMean": 9.12,
+    "judgeShareMean": 0.3703,
+    "socialHighPerSession": 8.96,
+    "progHighPerSession": 9.89,
+    "switchesMean": 5.688,
+    "reshufflesMean": 0,
+    "exhaustedMean": 5.688,
+    "packExhaustedMean": 5.184,
+    "globalExhaustedMean": 0.504,
+    "awaitingHostMean": 0,
+    "guardUsedMax": 38,
+    "truncatedSessions": 0,
+    "deadEndSessions": 1660,
+    "deadEndRate": 0.415,
+    "termination": {
+      "round_limit": 2340,
+      "pack_exhausted": 1554,
+      "global_exhausted": 106,
+      "awaiting_host": 0,
+      "guard_limit": 0
+    },
+    "totalExposure": 75506,
+    "distinctCardsExposed": 312
+  },
+  "overallCompleted20": {
+    "sessions": 2340,
+    "sessionsCompleted20": 2340,
+    "completedRoundsMean": 20,
+    "highPerSession": 2.34,
+    "midPlusPerSession": 7.49,
+    "personTopicsPerSession": 2.85,
+    "longestLowZeroRunMean": 9.12,
+    "judgeShareMean": 0.3703,
+    "socialHighPerSession": 8.96,
+    "progHighPerSession": 9.89,
+    "switchesMean": 0.152,
+    "reshufflesMean": 0,
+    "exhaustedMean": 0.152,
+    "packExhaustedMean": 0.152,
+    "globalExhaustedMean": 0,
+    "awaitingHostMean": 0,
+    "guardUsedMax": 35,
+    "truncatedSessions": 0,
+    "deadEndSessions": 0,
+    "deadEndRate": 0,
+    "sessionRate": 0.585
+  },
+  "cohortByIntensityLimit": [
+    {
+      "intensityLimit": 1,
+      "sessions": 850,
+      "deadEndSessions": 850,
+      "deadEndRate": 1,
+      "completedRoundsMean": 8,
+      "highPerSession": 0.18,
+      "finishedSessionHighPerSession": null
+    },
+    {
+      "intensityLimit": 2,
+      "sessions": 810,
+      "deadEndSessions": 810,
+      "deadEndRate": 1,
+      "completedRoundsMean": 13,
+      "highPerSession": 1.17,
+      "finishedSessionHighPerSession": null
+    },
+    {
+      "intensityLimit": 3,
+      "sessions": 761,
+      "deadEndSessions": 0,
+      "deadEndRate": 0,
+      "completedRoundsMean": 20,
+      "highPerSession": 3.19,
+      "finishedSessionHighPerSession": 3.19
+    },
+    {
+      "intensityLimit": 4,
+      "sessions": 797,
+      "deadEndSessions": 0,
+      "deadEndRate": 0,
+      "completedRoundsMean": 20,
+      "highPerSession": 1.89,
+      "finishedSessionHighPerSession": 1.89
+    },
+    {
+      "intensityLimit": 5,
+      "sessions": 782,
+      "deadEndSessions": 0,
+      "deadEndRate": 0,
+      "completedRoundsMean": 20,
+      "highPerSession": 1.96,
+      "finishedSessionHighPerSession": 1.96
+    }
+  ],
+  "readingGuide": "perTable 与 overallCompleted20 只统计「真跑满 20 轮」的局（开放度上限 >=3），与「每局 20 completed rounds」原始设定对齐。 overall 统计全部 4000 局；低开放度（上限 1/2）的局在 Heat 升到 H3/H4 后整池零合法卡，必然 dead-end——见 cohortByIntensityLimit，这不是 Router 抖动。 Heat 双口径：heatExposure 为 heatAtDraw（抽卡时，与 Router Heat 门控同口径，也是体验统计主口径）；heatExposureAfterTerminal 为终态归约后（副口径，仅供对照）。 耗尽按生产 outcome.kind 分列：packExhausted / globalExhausted 走「切换玩法」（生产不提供洗牌）；awaitingHost 走「洗牌再玩」。 全部数字由本脚本机械产出，报告侧不得手写任何统计值。",
+  "perTable": [
+    {
+      "table": "2m2f",
+      "label": "2男2女",
+      "players": 4,
+      "sessionsAll": 1000,
+      "sessionsCompleted20": 602,
+      "deadEndSessions": 398,
+      "completedRoundsMeanAll": 16.18,
+      "highPerSession": 2.36,
+      "midPlusPerSession": 7.46,
+      "personTopicsPerSession": 2.86,
+      "personTopicsP50": 3,
+      "personTopicsMax": 5,
+      "longestLowZeroRunMean": 9.27,
+      "longestLowZeroRunP90": 20,
+      "longestLowZeroRunMax": 20,
+      "judgeShareMean": 0.3825,
+      "socialHighPerSession": 9.14,
+      "progHighPerSession": 10.05,
+      "relRoundsMean": 20,
+      "switchesMean": 0.15,
+      "reshufflesMean": 0,
+      "exhaustedMean": 0.15,
+      "packExhaustedMean": 0.15,
+      "globalExhaustedMean": 0,
+      "awaitingHostMean": 0,
+      "guardUsedMax": 35,
+      "truncatedSessions": 0,
+      "distinctCardsExposed": 312
+    },
+    {
+      "table": "1m3f",
+      "label": "1男3女",
+      "players": 4,
+      "sessionsAll": 1000,
+      "sessionsCompleted20": 588,
+      "deadEndSessions": 412,
+      "completedRoundsMeanAll": 16.08,
+      "highPerSession": 2.34,
+      "midPlusPerSession": 7.54,
+      "personTopicsPerSession": 2.87,
+      "personTopicsP50": 3,
+      "personTopicsMax": 6,
+      "longestLowZeroRunMean": 8.74,
+      "longestLowZeroRunP90": 20,
+      "longestLowZeroRunMax": 20,
+      "judgeShareMean": 0.3423,
+      "socialHighPerSession": 8.51,
+      "progHighPerSession": 9.6,
+      "relRoundsMean": 20,
+      "switchesMean": 0.136,
+      "reshufflesMean": 0,
+      "exhaustedMean": 0.136,
+      "packExhaustedMean": 0.136,
+      "globalExhaustedMean": 0,
+      "awaitingHostMean": 0,
+      "guardUsedMax": 35,
+      "truncatedSessions": 0,
+      "distinctCardsExposed": 312
+    },
+    {
+      "table": "2m3f",
+      "label": "2男3女",
+      "players": 5,
+      "sessionsAll": 1000,
+      "sessionsCompleted20": 565,
+      "deadEndSessions": 435,
+      "completedRoundsMeanAll": 15.82,
+      "highPerSession": 2.31,
+      "midPlusPerSession": 7.32,
+      "personTopicsPerSession": 2.79,
+      "personTopicsP50": 3,
+      "personTopicsMax": 6,
+      "longestLowZeroRunMean": 9.54,
+      "longestLowZeroRunP90": 20,
+      "longestLowZeroRunMax": 20,
+      "judgeShareMean": 0.3963,
+      "socialHighPerSession": 9.29,
+      "progHighPerSession": 10.05,
+      "relRoundsMean": 20,
+      "switchesMean": 0.156,
+      "reshufflesMean": 0,
+      "exhaustedMean": 0.156,
+      "packExhaustedMean": 0.156,
+      "globalExhaustedMean": 0,
+      "awaitingHostMean": 0,
+      "guardUsedMax": 38,
+      "truncatedSessions": 0,
+      "distinctCardsExposed": 312
+    },
+    {
+      "table": "1m4f",
+      "label": "1男4女",
+      "players": 5,
+      "sessionsAll": 1000,
+      "sessionsCompleted20": 585,
+      "deadEndSessions": 415,
+      "completedRoundsMeanAll": 16.05,
+      "highPerSession": 2.35,
+      "midPlusPerSession": 7.64,
+      "personTopicsPerSession": 2.9,
+      "personTopicsP50": 3,
+      "personTopicsMax": 6,
+      "longestLowZeroRunMean": 8.92,
+      "longestLowZeroRunP90": 20,
+      "longestLowZeroRunMax": 20,
+      "judgeShareMean": 0.3609,
+      "socialHighPerSession": 8.91,
+      "progHighPerSession": 9.88,
+      "relRoundsMean": 20,
+      "switchesMean": 0.166,
+      "reshufflesMean": 0,
+      "exhaustedMean": 0.166,
+      "packExhaustedMean": 0.166,
+      "globalExhaustedMean": 0,
+      "awaitingHostMean": 0,
+      "guardUsedMax": 36,
+      "truncatedSessions": 0,
+      "distinctCardsExposed": 312
+    }
+  ],
+  "exposureByGameType": {
+    "either_or": 13893,
+    "never_have_i": 13114,
+    "chemistry": 11208,
+    "most_likely": 10563,
+    "pointing": 10665,
+    "truth": 8078,
+    "dare": 7985
+  },
+  "gainByGameType": {
+    "either_or": {
+      "0": 0,
+      "高": 4297,
+      "中": 8421,
+      "低": 1175,
+      "曝光": 13893
+    },
+    "never_have_i": {
+      "0": 0,
+      "高": 365,
+      "中": 3301,
+      "低": 9448,
+      "曝光": 13114
+    },
+    "chemistry": {
+      "0": 0,
+      "高": 2652,
+      "中": 6352,
+      "低": 2204,
+      "曝光": 11208
+    },
+    "most_likely": {
+      "0": 0,
+      "高": 0,
+      "中": 0,
+      "低": 10563,
+      "曝光": 10563
+    },
+    "pointing": {
+      "0": 0,
+      "高": 0,
+      "中": 0,
+      "低": 10665,
+      "曝光": 10665
+    },
+    "truth": {
+      "0": 0,
+      "高": 401,
+      "中": 1481,
+      "低": 6196,
+      "曝光": 8078
+    },
+    "dare": {
+      "0": 2870,
+      "高": 0,
+      "中": 1782,
+      "低": 3333,
+      "曝光": 7985
+    }
+  },
+  "heatExposure": {
+    "H1": 18909,
+    "H2": 18851,
+    "H3": 18518,
+    "H4": 19228
+  },
+  "heatExposureAfterTerminal": {
+    "H1": 14909,
+    "H2": 18851,
+    "H3": 19368,
+    "H4": 22378
+  },
+  "heatExposureNote": "主口径 heatAtDraw = 抽卡时 state.relationship.heat（与 Router 的 Heat 门控条件同一取值，体验统计用它）；副口径 heatExposureAfterTerminal = 回合终态归约后的 heat。两者差异即「触发升档的那张卡记在新档」的量级。与 staticHeatAvailability「静态可用范围」是另一套口径；跨 Heat 卡不塞进单一 Heat。",
+  "staticHeatAvailability": [
+    {
+      "heat": "H1",
+      "legalCount": 58,
+      "legalRatio": 0.1657,
+      "high": 1,
+      "midPlus": 16
+    },
+    {
+      "heat": "H2",
+      "legalCount": 128,
+      "legalRatio": 0.3657,
+      "high": 7,
+      "midPlus": 47
+    },
+    {
+      "heat": "H3",
+      "legalCount": 160,
+      "legalRatio": 0.4571,
+      "high": 24,
+      "midPlus": 67
+    },
+    {
+      "heat": "H4",
+      "legalCount": 222,
+      "legalRatio": 0.6343,
+      "high": 33,
+      "midPlus": 75
+    }
+  ],
+  "staticHeatNote": "按 SSOT heatMin/heatMax 区间统计；跨 Heat 卡 218 张、单档卡 132 张，故四档 legalCount 之和大于 350。",
+  "crossHeatCards": 218,
+  "exactHeatCards": 132,
+  "matchRequiredCoverage": {
+    "total": 38,
+    "note": "matchRequired=true 的卡为 targetMode=match-pair，只有目标 pair 已建立 MATCH 才可出；MATCH 关闭的扫描里曝光恒为 0（结构性不可见）。",
+    "withoutMatch": {
+      "covered": 0,
+      "totalExposure": 0,
+      "matchesCreated": 0,
+      "cards": []
+    },
+    "withMatch": {
+      "covered": 38,
+      "totalExposure": 3018,
+      "cards": [
+        {
+          "cardId": "PN-EITHER-049",
+          "gameType": "either_or",
+          "count": 143
+        },
+        {
+          "cardId": "PN-EITHER-048",
+          "gameType": "either_or",
+          "count": 141
+        },
+        {
+          "cardId": "PN-EITHER-047",
+          "gameType": "either_or",
+          "count": 140
+        },
+        {
+          "cardId": "PN-EITHER-043",
+          "gameType": "either_or",
+          "count": 136
+        },
+        {
+          "cardId": "PN-EITHER-045",
+          "gameType": "either_or",
+          "count": 135
+        },
+        {
+          "cardId": "PN-EITHER-046",
+          "gameType": "either_or",
+          "count": 134
+        },
+        {
+          "cardId": "PN-EITHER-044",
+          "gameType": "either_or",
+          "count": 132
+        },
+        {
+          "cardId": "PN-EITHER-050",
+          "gameType": "either_or",
+          "count": 129
+        },
+        {
+          "cardId": "PN-CHEM-050",
+          "gameType": "chemistry",
+          "count": 85
+        },
+        {
+          "cardId": "PN-CHEM-049",
+          "gameType": "chemistry",
+          "count": 84
+        },
+        {
+          "cardId": "PN-CHEM-046",
+          "gameType": "chemistry",
+          "count": 82
+        },
+        {
+          "cardId": "PN-CHEM-044",
+          "gameType": "chemistry",
+          "count": 82
+        },
+        {
+          "cardId": "PN-CHEM-048",
+          "gameType": "chemistry",
+          "count": 81
+        },
+        {
+          "cardId": "PN-CHEM-041",
+          "gameType": "chemistry",
+          "count": 80
+        },
+        {
+          "cardId": "PN-CHEM-042",
+          "gameType": "chemistry",
+          "count": 79
+        },
+        {
+          "cardId": "PN-CHEM-043",
+          "gameType": "chemistry",
+          "count": 78
+        },
+        {
+          "cardId": "PN-CHEM-045",
+          "gameType": "chemistry",
+          "count": 74
+        },
+        {
+          "cardId": "PN-DARE-043",
+          "gameType": "dare",
+          "count": 73
+        },
+        {
+          "cardId": "PN-CHEM-047",
+          "gameType": "chemistry",
+          "count": 71
+        },
+        {
+          "cardId": "PN-DARE-049",
+          "gameType": "dare",
+          "count": 67
+        },
+        {
+          "cardId": "PN-DARE-045",
+          "gameType": "dare",
+          "count": 64
+        },
+        {
+          "cardId": "PN-DARE-046",
+          "gameType": "dare",
+          "count": 62
+        },
+        {
+          "cardId": "PN-TRUTH-049",
+          "gameType": "truth",
+          "count": 62
+        },
+        {
+          "cardId": "PN-DARE-047",
+          "gameType": "dare",
+          "count": 61
+        },
+        {
+          "cardId": "PN-TRUTH-042",
+          "gameType": "truth",
+          "count": 59
+        },
+        {
+          "cardId": "PN-DARE-041",
+          "gameType": "dare",
+          "count": 57
+        },
+        {
+          "cardId": "PN-TRUTH-044",
+          "gameType": "truth",
+          "count": 57
+        },
+        {
+          "cardId": "PN-DARE-044",
+          "gameType": "dare",
+          "count": 55
+        },
+        {
+          "cardId": "PN-TRUTH-045",
+          "gameType": "truth",
+          "count": 55
+        },
+        {
+          "cardId": "PN-DARE-050",
+          "gameType": "dare",
+          "count": 55
+        },
+        {
+          "cardId": "PN-DARE-042",
+          "gameType": "dare",
+          "count": 55
+        },
+        {
+          "cardId": "PN-TRUTH-050",
+          "gameType": "truth",
+          "count": 54
+        },
+        {
+          "cardId": "PN-TRUTH-043",
+          "gameType": "truth",
+          "count": 51
+        },
+        {
+          "cardId": "PN-TRUTH-048",
+          "gameType": "truth",
+          "count": 50
+        },
+        {
+          "cardId": "PN-TRUTH-046",
+          "gameType": "truth",
+          "count": 50
+        },
+        {
+          "cardId": "PN-TRUTH-047",
+          "gameType": "truth",
+          "count": 49
+        },
+        {
+          "cardId": "PN-DARE-048",
+          "gameType": "dare",
+          "count": 48
+        },
+        {
+          "cardId": "PN-TRUTH-041",
+          "gameType": "truth",
+          "count": 48
+        }
+      ]
+    },
+    "assumption": "上界口径：假设每个互选检查点（9/14/19）本桌全部合法 pair 都互选成立（受生产 D5 cap≤2/人 约束）",
+    "run": {
+      "sessionsPerTable": 1000,
+      "totalSessions": 4000,
+      "matchesCreated": 9434,
+      "totalExposure": 75506,
+      "distinctCardsExposed": 350,
+      "deadEndRate": 0.415,
+      "highPerSession": 2.63
+    }
+  },
+  "traceFile": "docs/qa/content-audit/MC-TRACE.json",
+  "traceNote": "每桌型前 2 局（MATCH 关闭）完整逐轮 trace，含 seed；所有 dead-end 局记录终止原因（round_limit / pack_exhausted / global_exhausted / awaiting_host / guard_limit）。",
+  "topExposed": [
+    {
+      "cardId": "PN-EITHER-001",
+      "count": 541,
+      "gameType": "either_or",
+      "text": "刚认识一群人时：主动先开口 VS 先观察一会儿再加入。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人刚认识一群人时会主动先开口还是先观察再加入",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-social-style",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-003",
+      "count": 539,
+      "gameType": "either_or",
+      "text": "出去玩更喜欢：提前计划好 VS 到时候看心情。",
+      "semanticType": "自我披露",
+      "topic": "生活方式",
+      "infoGain": "高",
+      "learned": "知道了这个人出去玩是提前计划型还是看心情随性型",
+      "promotesUnderstanding": "是",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-social-style",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-004",
+      "count": 538,
+      "gameType": "either_or",
+      "text": "和刚认识的人沟通更喜欢：文字慢慢聊 VS 当面直接聊。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人和刚认识的人沟通更喜欢文字慢慢聊还是当面直接聊",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-social-style",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-002",
+      "count": 534,
+      "gameType": "either_or",
+      "text": "聚会里更舒服的是：大家一起聊 VS 两三个人小范围聊。",
+      "semanticType": "自我披露",
+      "topic": "生活方式",
+      "infoGain": "中",
+      "learned": "知道了这个人聚会里更适应大群聊还是两三人小范围聊",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-social-style",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-007",
+      "count": 532,
+      "gameType": "either_or",
+      "text": "第一次见人更容易记住：名字 VS 一个小细节。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人第一次见人更容易记住名字还是记住一个小细节",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "either-social-style",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-EITHER-005",
+      "count": 531,
+      "gameType": "either_or",
+      "text": "在一桌人里更喜欢坐：热闹中心 VS 相对安静的位置。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人在一桌人里更喜欢坐热闹中心还是安静位置",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "either-social-style",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-001",
+      "count": 527,
+      "gameType": "never_have_i",
+      "text": "我从来没有第一次认识一个人，就意外聊了很久。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾经和刚认识的人意外聊了很久",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "chat-chemistry",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-EITHER-008",
+      "count": 525,
+      "gameType": "either_or",
+      "text": "和新认识的人打开话题更喜欢：先聊共同兴趣 VS 先听对方讲自己的事。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人和新认识的人打开话题是先聊共同兴趣还是先听对方讲自己的事",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-social-style",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-006",
+      "count": 515,
+      "gameType": "either_or",
+      "text": "更像你的方式：把别人逗笑 VS 被别人逗笑。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了这个人更习惯把别人逗笑还是被别人逗笑",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "either-social-style",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-002",
+      "count": 514,
+      "gameType": "never_have_i",
+      "text": "我从来没有因为发现一个共同爱好，很快就和刚认识的人熟起来。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾经因共同爱好很快和刚认识的人熟起来",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "chat-chemistry",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-008",
+      "count": 506,
+      "gameType": "never_have_i",
+      "text": "我从来没有本来觉得自己会很拘谨，结果碰到某个人以后很快放松下来。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾本来拘谨、但碰到某人后很快放松下来",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "social-ease",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-007",
+      "count": 505,
+      "gameType": "never_have_i",
+      "text": "我从来没有聚会结束后想过：“刚才那个人其实挺有意思。”",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人聚会后曾觉得刚才那个人其实挺有意思",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "want-more",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-005",
+      "count": 502,
+      "gameType": "never_have_i",
+      "text": "我从来没有和刚认识的人因为一个很小的共同点突然聊开。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾和刚认识的人因一个小共同点突然聊开",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "chat-chemistry",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-004",
+      "count": 494,
+      "gameType": "never_have_i",
+      "text": "我从来没有第一次见一个人时觉得 TA 很安静，后来发现完全不是。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾觉得某人初见安静、后来发现完全不是",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "impression-shift",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-006",
+      "count": 487,
+      "gameType": "never_have_i",
+      "text": "我从来没有第一次见面就记住了一个人的某个小习惯。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾在第一次见面就记住某人的某个小习惯",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "impression-shift",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-003",
+      "count": 472,
+      "gameType": "never_have_i",
+      "text": "我从来没有聚会结束以后才发现，自己其实还想继续聊。",
+      "semanticType": "自我披露",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "低",
+      "learned": "知道了说话的人聚会结束后曾觉得自己还想继续聊",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "低",
+      "duplicateCluster": "want-more",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-CHEM-008",
+      "count": 457,
+      "gameType": "chemistry",
+      "text": "双方先互猜：今晚结束前，对方更可能主动拍一张合照 VS 不特别想拍；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方今晚结束前更偏主动拍合照还是不特别想拍",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-001",
+      "count": 451,
+      "gameType": "chemistry",
+      "text": "双方先互猜：对方现在的状态更像“还很有电” VS “已经开始放松”；再同时揭晓。每猜中一次记1个默契点。",
+      "semanticType": "相互了解",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了对方此刻更偏还很有电还是已经开始放松，但只是今晚的临时状态",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-CHEM-003",
+      "count": 447,
+      "gameType": "chemistry",
+      "text": "双方先互猜：下一轮自由发言时，对方更可能先抛问题 VS 先讲自己的故事；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方自由发言时更偏先抛问题还是先讲自己的故事",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-006",
+      "count": 447,
+      "gameType": "chemistry",
+      "text": "双方先互猜：遇到一个很好笑的场面，对方更可能先笑出来 VS 先忍住看别人反应；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方遇到好笑场面更偏先笑出来还是先忍住看别人反应",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-002",
+      "count": 430,
+      "gameType": "chemistry",
+      "text": "双方先互猜：如果现在加一份小吃，对方更可能选甜口 VS 咸口；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "生活方式",
+      "infoGain": "中",
+      "learned": "知道了对方加小吃时更偏甜口还是咸口",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-007",
+      "count": 424,
+      "gameType": "chemistry",
+      "text": "双方先互猜：如果大家开始讨论下一摊，对方更可能马上参与决定 VS 先听大家意见；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方讨论下一摊时更偏马上参与决定还是先听大家意见",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-005",
+      "count": 416,
+      "gameType": "chemistry",
+      "text": "双方先互猜：如果现场突然放到熟悉的歌，对方更可能跟着哼两句 VS 安静听；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方听到熟悉的歌更偏跟着哼两句还是安静听",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-CHEM-004",
+      "count": 414,
+      "gameType": "chemistry",
+      "text": "双方先互猜：对方更容易记住一个新朋友的名字 VS 对方讲过的小细节；再同时揭晓。",
+      "semanticType": "相互了解",
+      "topic": "性格/习惯/小癖好",
+      "infoGain": "中",
+      "learned": "知道了对方更容易记住新朋友名字还是对方讲过的小细节",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-guess-reveal",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-008",
+      "count": 413,
+      "gameType": "most_likely",
+      "text": "谁是今晚“刚认识不久，却感觉已经挺熟”的那个人？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为今晚谁刚认识不久却感觉已经挺熟",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "easy-to-talk-to",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-007",
+      "count": 410,
+      "gameType": "most_likely",
+      "text": "谁最容易成为一桌陌生人之间的连接点？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为谁最容易成为一桌陌生人之间的连接点",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "social-connector",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-011",
+      "count": 410,
+      "gameType": "either_or",
+      "text": "更容易让你加分的是：幽默感 VS 温柔感。",
+      "semanticType": "自我披露",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "中",
+      "learned": "知道了这个人更容易给幽默感加分还是给温柔感加分",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-attraction-cue",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-006",
+      "count": 410,
+      "gameType": "pointing",
+      "text": "指一个你觉得笑起来最有感染力的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者觉得哪位异性笑起来最有感染力",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "中",
+      "duplicateCluster": "first-impression-vibe",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-007",
+      "count": 409,
+      "gameType": "pointing",
+      "text": "指一个你最想听 TA 讲一个故事的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者最想听哪位异性讲一个故事",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "中",
+      "duplicateCluster": "curiosity-pick",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-003",
+      "count": 401,
+      "gameType": "most_likely",
+      "text": "谁最可能在第一次见面时最快记住别人的名字？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为谁最快记住别人的名字",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "-",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-POINT-004",
+      "count": 401,
+      "gameType": "pointing",
+      "text": "指一个你最想问“你平时最喜欢做什么”的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者最想问哪位异性平时喜欢做什么，但还没问出答案",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "curiosity-pick",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-MOST-001",
+      "count": 399,
+      "gameType": "most_likely",
+      "text": "今晚谁最容易让第一次见面的人觉得“很好聊”？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为今晚谁最容易让初见的人觉得好聊",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "easy-to-talk-to",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-006",
+      "count": 394,
+      "gameType": "most_likely",
+      "text": "谁今晚给人的第一印象和真实聊天后的感觉反差最大？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为谁的第一印象和聊开后反差最大",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "-",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-POINT-008",
+      "count": 391,
+      "gameType": "pointing",
+      "text": "指一个到目前为止你最想再多认识一点的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者到目前为止最想多认识哪位异性",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "中",
+      "duplicateCluster": "easy-talk-pick",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-005",
+      "count": 389,
+      "gameType": "pointing",
+      "text": "指一个如果下一轮要临时组队，你觉得最容易配合的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者觉得哪位异性临时组队最容易配合",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "partner-for-next-round",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-POINT-003",
+      "count": 388,
+      "gameType": "pointing",
+      "text": "指一个第一印象让你觉得最友好的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了指人者觉得哪位异性的第一印象最友好",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "中",
+      "duplicateCluster": "first-impression-vibe",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-002",
+      "count": 387,
+      "gameType": "most_likely",
+      "text": "谁最可能主动发现有人还没融入，然后把 TA 拉进话题？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了大家投票认为谁最会主动把没融入的人拉进话题",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "social-connector",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-015",
+      "count": 387,
+      "gameType": "either_or",
+      "text": "更吃哪一套：直接夸你 VS 记住你的细节。",
+      "semanticType": "自我披露",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "中",
+      "learned": "知道了这个人更吃直接夸还是更吃被记住细节这一套",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-attraction-cue",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-016",
+      "count": 386,
+      "gameType": "either_or",
+      "text": "约出去更喜欢：提前安排 VS 临时起意。",
+      "semanticType": "自我披露",
+      "topic": "生活方式",
+      "infoGain": "高",
+      "learned": "知道了这个人约出去玩是喜欢提前安排还是喜欢临时起意",
+      "promotesUnderstanding": "是",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "either-attraction-cue",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-EITHER-017",
+      "count": 381,
+      "gameType": "either_or",
+      "text": "一段关系里更看重：安全感 VS 新鲜感。",
+      "semanticType": "自我披露",
+      "topic": "恋爱观",
+      "infoGain": "高",
+      "learned": "知道了这个人在一段关系里更看重安全感还是新鲜感",
+      "promotesUnderstanding": "是",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "either-attraction-cue",
+      "verdict": "保留"
+    }
+  ],
+  "leastExposed": [
+    {
+      "cardId": "PN-NHIE-035",
+      "count": 100,
+      "gameType": "never_have_i",
+      "text": "我从来没有感觉过某个人可能也在注意我，但没有去确认。",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话的人此刻觉得某人可能也在注意自己但没去确认",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "mutual-noticing",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-NHIE-041",
+      "count": 103,
+      "gameType": "never_have_i",
+      "text": "今晚限定（私密）：我从来没有在今晚出现过一个“还想继续了解”的人。",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话的人今晚出现了还想继续了解的人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "高",
+      "duplicateCluster": "reunion-interest",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-NHIE-046",
+      "count": 103,
+      "gameType": "never_have_i",
+      "text": "今晚限定（私密）：我从来没有在今晚出现过“如果 TA 坐我旁边，我会挺开心”的想法。",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话的人今晚出现过如果某人坐旁边会挺开心的想法",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "proximity-seat",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-MOST-050",
+      "count": 104,
+      "gameType": "most_likely",
+      "text": "终局 Pair Vote：今晚哪一对最让大家觉得“如果他们还想继续认识彼此，好像挺自然”？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得如果还想继续认识彼此最自然的是哪一对",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-emergent-spark",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-039",
+      "count": 106,
+      "gameType": "most_likely",
+      "text": "Pair Vote：哪两个人今晚最像已经不止一次主动找过或注意过彼此？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得今晚哪两个人最像已不止一次主动找过或注意过彼此",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "fixated-on-someone",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-045",
+      "count": 107,
+      "gameType": "pointing",
+      "text": "指一个你觉得值得花一次单独见面的时间继续了解的异性。",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了指人者觉得哪位异性值得花一次单独见面继续了解",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-NHIE-034",
+      "count": 108,
+      "gameType": "never_have_i",
+      "text": "我从来没有和一个人对视以后，明明没发生什么却记了很久。",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾和某人对视后没发生什么却记了很久",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "eye-contact",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-POINT-050",
+      "count": 108,
+      "gameType": "pointing",
+      "text": "终局私密指人：如果对方也选你，你愿意继续认识哪位异性？",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了终局时指人者愿意继续认识哪位异性",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-037",
+      "count": 108,
+      "gameType": "most_likely",
+      "text": "Pair Vote：散场提醒已经来了，哪两个人最像还会说“等一下，我还有一句没讲完”？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得散场提醒来了还最像会说等一下还有一句没讲完的是哪两个人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-audience-wants-more",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-045",
+      "count": 108,
+      "gameType": "most_likely",
+      "text": "Pair Vote：如果大家决定换下一家，哪两个人最像会不知不觉走在一起继续聊？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得换下一家时会不知不觉走在一起继续聊的是哪两个人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-meet-again",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-042",
+      "count": 109,
+      "gameType": "most_likely",
+      "text": "Pair Vote：如果明天临时约一杯咖啡，哪两个人最不会让大家觉得意外？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得明天临时约咖啡最不会让人意外的是哪两个人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-meet-again",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-040",
+      "count": 110,
+      "gameType": "pointing",
+      "text": "如果今晚只能给一个人一次“改天再见”的机会，你指谁？",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了指人者只给一个人改天再见的机会会给哪位异性",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-TRUTH-036",
+      "count": 111,
+      "gameType": "truth",
+      "text": "如果有一位异性今晚对你说“下次还想跟你一起玩”，你最希望这句话是谁说？为什么是 TA？",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话人最希望哪位异性约自己下次一起玩，以及为什么是TA。",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "date-intent-pick",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-NHIE-036",
+      "count": 111,
+      "gameType": "never_have_i",
+      "text": "我从来没有明明想坐到某个人旁边，却故意装作随便找位置。",
+      "semanticType": "暧昧推进",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了说话的人曾想坐某人旁边却故意装作随便找位置",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "proximity-seat",
+      "verdict": "改写候选"
+    },
+    {
+      "cardId": "PN-POINT-042",
+      "count": 111,
+      "gameType": "pointing",
+      "text": "明天手机亮起一条来自今晚的新消息，你最希望发件人是哪位异性？",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了指人者最希望明早的新消息来自哪位异性",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-044",
+      "count": 111,
+      "gameType": "most_likely",
+      "text": "Pair Vote：如果现场突然安静半分钟，哪两个人最像还能自然继续聊天？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票觉得现场突然安静半分钟还能自然继续聊天的是哪两个人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-chat-flow",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-NHIE-047",
+      "count": 112,
+      "gameType": "never_have_i",
+      "text": "今晚限定（私密）：我从来没有在今晚觉得某个人越聊越有吸引力。",
+      "semanticType": "暧昧推进",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "中",
+      "learned": "知道了说话的人是今晚会觉得某人越聊越有吸引力的慢热投入型",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "中",
+      "relationshipProgression": "中",
+      "duplicateCluster": "attraction-cue",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-049",
+      "count": 112,
+      "gameType": "pointing",
+      "text": "如果今晚有一个人最可能让你回家路上还会想起，你指谁？",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了指人者觉得今晚谁最可能让自己回家路上还会想起",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-POINT-043",
+      "count": 113,
+      "gameType": "pointing",
+      "text": "如果对方只约你30分钟咖啡，你最愿意答应哪位异性？",
+      "semanticType": "现场评价/猜测",
+      "topic": "择偶偏好/吸引力",
+      "infoGain": "低",
+      "learned": "知道了哪位异性约30分钟咖啡指人者最愿意答应",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "want-to-stay-close",
+      "verdict": "保留"
+    },
+    {
+      "cardId": "PN-MOST-040",
+      "count": 113,
+      "gameType": "most_likely",
+      "text": "Pair Vote：如果下一轮只允许固定一对搭档，全桌最想继续观察哪两个人？",
+      "semanticType": "现场评价/猜测",
+      "topic": "现场化学反应",
+      "infoGain": "低",
+      "learned": "知道了全桌投票最想继续观察固定搭档的是哪两个人",
+      "promotesUnderstanding": "弱",
+      "socialEnergy": "高",
+      "relationshipProgression": "高",
+      "duplicateCluster": "pair-audience-wants-more",
+      "verdict": "保留"
+    }
+  ]
+}

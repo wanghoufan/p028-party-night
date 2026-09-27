@@ -36,20 +36,36 @@ const female = (playerId: string): SessionParticipant => ({ playerId, active: tr
 
 const genders = (): SessionParticipant[] => [male("a"), female("b"), { playerId: "c", active: true, pairGender: null }];
 
+/**
+ * 固定 draw seed（B8 夹具专用常量）。
+ *
+ * 背景：P1#2 修复后，出卡 tie-break 的 seed 由 `relationship` 状态 + **session salt**（生产 = sessionId）
+ * 共同派生。本文件的 session 由 `createSession` 生成随机 UUID，因此「两张同强度卡先出哪张」会随
+ * sessionId 抖动 —— 旧断言之所以曾长期为绿，只是因为「初始状态派生的 seed 在 2 张同强度组上偏移恰好为 0」
+ * 这一确定性巧合（见 CODE_REVIEW-CONTENT-A2 P2-2）。
+ *
+ * 这里显式钉死 seed，去掉该巧合：`rotationOffset(20260927, intensity=1, len=2) = 1`，故固定先出 `local-2`。
+ * 三条断言的本意（出卡写回 / 多轮不重复 / 耗尽）保持不变，只把「先出哪张」变成受控常量。
+ */
+const FIXED_DRAW_SEED = 20260927;
+
 /** 连抽 n 轮（每轮完成后再抽），返回每轮抽到的卡 id 与最后一轮之后的 Session。 */
 function dealRounds(session: GameSession, rounds: number): { ids: string[]; session: GameSession } {
   let current = session;
   const ids: string[] = [];
   for (let index = 0; index < rounds; index += 1) {
-    current = startRound(current, () => 0);
+    current = startRound(current, () => 0, { drawSeed: FIXED_DRAW_SEED });
     if (current.currentRound) ids.push(current.currentRound.cardId);
     current = completeRound(current);
   }
   return { ids, session: current };
 }
 
+/** 固定 seed 出下一题（B8 主链断言统一走这条，避免随机 sessionId 引起的顺序抖动）。 */
+const startFixed = (session: GameSession): GameSession => startRound(session, () => 0, { drawSeed: FIXED_DRAW_SEED });
+
 /** 把两张牌的牌堆打空，再抽一次即进入 AWAITING_HOST_EXHAUSTION_DECISION。 */
-const exhaust = (session: GameSession): GameSession => startRound(dealRounds(session, 2).session, () => 0);
+const exhaust = (session: GameSession): GameSession => startFixed(dealRounds(session, 2).session);
 
 /* ------------------------------------------------------------------ */
 /* 1. 主链出卡：唯一入口是 V2 编排器                                        */
@@ -57,12 +73,12 @@ const exhaust = (session: GameSession): GameSession => startRound(dealRounds(ses
 
 describe("B8 /game 主链出卡（V2 编排器）", () => {
   it("出卡写回 relationshipState/recentCardIds 与 v2Orchestration（BUCKET_OK）", () => {
-    const session = startRound(createSession(config(), [...localCards], genders()), () => 0);
+    const session = startFixed(createSession(config(), [...localCards], genders()));
 
-    expect(session.currentRound?.cardId).toBe("local-1");
-    expect(session.usedCardIds).toEqual(["local-1"]);
-    expect(session.relationshipState?.recentCardIds).toEqual(["local-1"]);
-    expect(session.relationshipState?.usedCardIds).toEqual(["local-1"]);
+    expect(session.currentRound?.cardId).toBe("local-2");
+    expect(session.usedCardIds).toEqual(["local-2"]);
+    expect(session.relationshipState?.recentCardIds).toEqual(["local-2"]);
+    expect(session.relationshipState?.usedCardIds).toEqual(["local-2"]);
     expect(session.v2Orchestration?.lastExhaustionLevel).toBe("BUCKET_OK");
     expect(session.v2Orchestration?.awaitingHostDecision).toBe(false);
   });
@@ -78,7 +94,7 @@ describe("B8 /game 主链出卡（V2 编排器）", () => {
   });
 
   it("主链出的卡一定是本局牌堆里的卡（离线可渲染）", () => {
-    const session = startRound(createSession(config(), [...localCards], genders()), () => 0);
+    const session = startFixed(createSession(config(), [...localCards], genders()));
     const id = session.currentRound?.cardId;
     expect(session.deckSnapshot.some((card) => card.id === id)).toBe(true);
   });
@@ -88,11 +104,11 @@ describe("B8 /game 主链出卡（V2 编排器）", () => {
   /* ---------------------------------------------------------------- */
 
   it("三层皆空 → AWAITING_HOST_EXHAUSTION_DECISION，不自动洗牌、不自动结束", () => {
-    const first = startRound(createSession(config(), [...localCards], genders()), () => 0);
-    const second = startRound(completeRound(first), () => 0);
-    const third = startRound(completeRound(second), () => 0);
+    const first = startFixed(createSession(config(), [...localCards], genders()));
+    const second = startFixed(completeRound(first));
+    const third = startFixed(completeRound(second));
 
-    expect(second.currentRound?.cardId).toBe("local-2");
+    expect(second.currentRound?.cardId).toBe("local-1");
     expect(third.currentRound).toBeUndefined();
     expect(third.status).toBe("active");
     expect(third.v2Orchestration?.awaitingHostDecision).toBe(true);
@@ -107,7 +123,7 @@ describe("B8 /game 主链出卡（V2 编排器）", () => {
 
     expect(finished.v2Orchestration?.finished).toBe(true);
     expect(finished.v2Orchestration?.awaitingHostDecision).toBe(false);
-    expect(finished.usedCardIds).toEqual(["local-1", "local-2"]);
+    expect(finished.usedCardIds).toEqual(["local-2", "local-1"]);
     expect(finished.relationshipState?.exhaustionCycle).toBe(0);
   });
 
@@ -137,7 +153,7 @@ describe("B8 /game 主链出卡（V2 编排器）", () => {
     expect(shuffled.relationshipState?.matches["a::b"]).toBeDefined();
     expect(shuffled.relationshipState?.fiveGuarantees["a::b"]?.tracker?.status).toBe("offered");
     // 洗牌后回统一 Router 再抽：软去重窗口放宽到 0 仍能从 recent 里救回一张
-    const dealt = startRound(shuffled, () => 0);
+    const dealt = startFixed(shuffled);
     expect(dealt.currentRound).toBeDefined();
     expect(["local-1", "local-2"]).toContain(dealt.currentRound?.cardId);
   });
@@ -269,7 +285,7 @@ describe("B8 /game 主链出卡（V2 编排器）", () => {
     const session = createSession(config(), [...localCards], genders());
     expect(orchestrationOf(session).awaitingHostDecision).toBe(false);
     expect(orchestrationOf(session).softDedupWindow).toBe(5);
-    const { card } = drawDeckCard({ session, preferredPackIds: ["truth-dare"], enabledPackIds: ["truth-dare"] });
-    expect(card?.id).toBe("local-1");
+    const { card } = drawDeckCard({ session, preferredPackIds: ["truth-dare"], enabledPackIds: ["truth-dare"], drawSeed: FIXED_DRAW_SEED });
+    expect(card?.id).toBe("local-2");
   });
 });

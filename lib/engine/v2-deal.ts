@@ -17,6 +17,7 @@ import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { EXPANSION_PACK_ID, isV2MainlinePack } from "@/lib/v2-content/v2-card-bridge";
 import { isRecentlyRejected } from "./card-eligibility";
 import { diffPlayerRoster, normalizeParticipants } from "@/lib/v2-relationship/v2-participants";
+import { drawSeedFor, orderByTieBreakRotation } from "@/lib/v2-relationship/v2-draw-order";
 import { singleAnchorPlayerId } from "@/lib/v2-relationship/v2-routing";
 import { applyPlayerExit, applyPlayerTemporarilyAway, type RelationshipEvent } from "@/lib/v2-relationship/v2-reducer";
 import {
@@ -52,6 +53,12 @@ export interface DeckRouterOptions {
   cardTypes?: readonly string[];
   /** 最近「换一个」拒绝的题面指纹：软去重之外再避开近似题面。 */
   rejectedFingerprints?: readonly string[];
+  /**
+   * 复算 / 单测专用：显式钉死 draw seed（**可选覆写**，不是新随机源）。
+   * 缺省 `undefined` = 由 relationship 状态 + 轮次 + session salt 派生（见 `v2-draw-order.ts`）；
+   * 只决定「同强度组内先出哪一张」，不参与任何过滤与优先级判定。
+   */
+  drawSeed?: number;
 }
 
 const heatRank = (heat: RelationshipState["heat"]): number => HEAT_ORDER.indexOf(heat) + 1;
@@ -113,11 +120,23 @@ function hardEligible(card: GameCard, input: V2RouterInput, options: DeckRouterO
   return targetEligible(card, input);
 }
 
-/** 确定性排序：强度降序、cardId 升序（Router 不掷随机数，出哪张由编排器与窗口决定）。 */
+/**
+ * 确定性排序：强度降序、cardId 升序。只排定**组间优先级**（强度降序），
+ * 同强度组内的先后由 `orderForDraw` 的 seed 派生轮换决定（P1#2）。
+ */
 function sortCards(cards: GameCard[]): GameCard[] {
   return [...cards].sort(
     (a, b) => b.intensity - a.intensity || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
+}
+
+/**
+ * 出卡顺序 = 确定性排序 + **同强度组内** seed 派生轮换（与 `v2-router` 同一套规则，
+ * 见 `lib/v2-relationship/v2-draw-order.ts`）。App 主线与 SSOT 主线行为一致，
+ * 不再出现「同强度下 cardId 字典序最小者长期垄断」。
+ */
+function orderForDraw(cards: GameCard[], seed: number): GameCard[] {
+  return orderByTieBreakRotation(sortCards(cards), (card) => card.intensity, seed);
 }
 
 const toRouterCard = (card: GameCard): V2RouterCard => ({
@@ -154,6 +173,10 @@ export function createDeckRouter(options: DeckRouterOptions): V2RouterPort {
     return new Set(input.relationship.recentCardIds.slice(-input.softDedupWindow));
   };
 
+  /** 出卡 seed：显式注入优先（测试/复算），否则由 relationship 状态 + 轮次 + session salt 派生。 */
+  const drawSeed = (input: V2RouterInput): number =>
+    options.drawSeed ?? input.drawSeed ?? drawSeedFor(input.relationship, input.drawSessionSalt);
+
   return {
     bucket(input) {
       const scope = scopeOf(input);
@@ -165,16 +188,20 @@ export function createDeckRouter(options: DeckRouterOptions): V2RouterPort {
           heatEligible(card, input) &&
           !excluded.has(card.id),
       );
-      return sortCards(deferred(cards)).map(toRouterCard);
+      return orderForDraw(deferred(cards), drawSeed(input)).map(toRouterCard);
     },
     pack(input) {
       const scope = scopeOf(input);
-      return sortCards(
+      return orderForDraw(
         options.deck.filter((card) => scope.includes(card.packId) && hardEligible(card, input, options)),
+        drawSeed(input),
       ).map(toRouterCard);
     },
     global(input) {
-      return sortCards(options.deck.filter((card) => hardEligible(card, input, options))).map(toRouterCard);
+      return orderForDraw(
+        options.deck.filter((card) => hardEligible(card, input, options)),
+        drawSeed(input),
+      ).map(toRouterCard);
     },
   };
 }
@@ -219,6 +246,8 @@ export interface DrawDeckInput {
   preferredPackIds: readonly string[];
   enabledPackIds: readonly string[];
   cardTypes?: readonly string[];
+  /** 复算 / 单测专用：显式钉死出卡 tie-break seed（可选覆写；缺省按 session salt 派生）。 */
+  drawSeed?: number;
 }
 
 export interface DrawDeckResult {
@@ -243,6 +272,7 @@ export function drawDeckCard(input: DrawDeckInput): DrawDeckResult {
     enabledPackIds: input.enabledPackIds,
     cardTypes: input.cardTypes,
     rejectedFingerprints: session.recentRejectedFingerprints ?? [],
+    ...(input.drawSeed === undefined ? {} : { drawSeed: input.drawSeed }),
   });
   const outcome = drawV2SessionCard(state, router, {
     intensityLimit: session.config.intensity,

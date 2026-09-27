@@ -75,6 +75,8 @@ export interface StartRoundOptions {
   participantIds?: string[];
   /** 「换一个」后的替换轮沿用原轮次的逻辑 id，便于审计把两题归到同一个逻辑轮次（V1.5）。 */
   reuseLogicalRoundId?: string;
+  /** 复算 / 单测专用：显式钉死本轮出卡 tie-break seed（可选覆写；缺省按 session salt 派生）。 */
+  drawSeed?: number;
 }
 
 /** 一对目标参与者（V2 Pair Routing 选中的 pairKey）→ 本轮 participantIds。 */
@@ -119,6 +121,7 @@ export function startRound(session: GameSession, random: RandomSource = Math.ran
     preferredPackIds,
     enabledPackIds,
     cardTypes: options.preferCardTypes,
+    ...(options.drawSeed === undefined ? {} : { drawSeed: options.drawSeed }),
   });
   if (outcome.kind !== "CARD" || !card) return withV2State(session, outcome.state);
 

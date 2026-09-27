@@ -29,6 +29,7 @@ import {
   type Heat,
   type RelationshipState,
 } from "./v2-state";
+import { drawSeedFor, orderByTieBreakRotation } from "./v2-draw-order";
 import { getGamePack } from "@/lib/game-packs/registry";
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { V2_MAINLINE_PACK_BY_GAME_TYPE } from "@/lib/v2-content/v2-card-bridge";
@@ -86,9 +87,25 @@ function isTargetEligible(card: V13MainlineCard, input: V2RouterInput): boolean 
   return true;
 }
 
-/** 确定性排序：强度降序、cardId 升序（Router 不用随机数；出哪张由编排器与窗口决定）。 */
+/**
+ * 确定性排序：强度降序、cardId 升序。
+ *
+ * 只作为**组间优先级**的排定手段（强度降序 = drawBand 之前既有口径）；
+ * 同强度组内的「谁先出」不再交给 cardId 字典序，见 `orderForDraw`。
+ */
 function sortCards(cards: V13MainlineCard[]): V13MainlineCard[] {
   return [...cards].sort((a, b) => b.intensity - a.intensity || (a.cardId < b.cardId ? -1 : 1));
+}
+
+/**
+ * 出卡顺序 = 确定性排序（强度降序，优先级不动）+ **同强度组内**的 seed 派生轮换。
+ *
+ * 这是冻结管线 `… → drawBand → 随机选卡` 的最后一步：编排器仍取首张，但首张不再恒等于
+ * 同强度组里 cardId 字典序最小者（P1#2：`PN-DARE-*` 恒小于 `PN-TRUTH-*` 导致大冒险饥饿）。
+ * seed 缺省由 relationship 状态派生（`drawSeedFor`），同一局面重放逐字一致。
+ */
+function orderForDraw(cards: V13MainlineCard[], seed: number): V13MainlineCard[] {
+  return orderByTieBreakRotation(sortCards(cards), (card) => card.intensity, seed);
 }
 
 const toRouterCard = (card: V13MainlineCard): V2RouterCard => ({
@@ -118,12 +135,16 @@ export function createV2MainlineRouter(options: V2MainlineRouterOptions): V2Main
   const hardEligible = (input: V2RouterInput): V13MainlineCard[] =>
     mainline.filter((card) => isHardEligible(card, input));
 
+  /** 出卡 seed：显式注入优先（测试/复算），否则由 relationship 状态 + 轮次 + session salt 派生。 */
+  const drawSeed = (input: V2RouterInput): number =>
+    input.drawSeed ?? drawSeedFor(input.relationship, input.drawSessionSalt);
+
   return {
     packId,
     bucket(input) {
       const currentHeat = heatRank(input.relationship.heat);
       const excluded = recentWindow(input.relationship, input.softDedupWindow);
-      return sortCards(
+      return orderForDraw(
         hardEligible(input).filter(
           (card) =>
             packIdForMainlineCard(card) === packId &&
@@ -131,15 +152,17 @@ export function createV2MainlineRouter(options: V2MainlineRouterOptions): V2Main
             currentHeat <= card.heatMax &&
             !excluded.has(card.cardId),
         ),
+        drawSeed(input),
       ).map(toRouterCard);
     },
     pack(input) {
-      return sortCards(hardEligible(input).filter((card) => packIdForMainlineCard(card) === packId)).map(
-        toRouterCard,
-      );
+      return orderForDraw(
+        hardEligible(input).filter((card) => packIdForMainlineCard(card) === packId),
+        drawSeed(input),
+      ).map(toRouterCard);
     },
     global(input) {
-      return sortCards(hardEligible(input)).map(toRouterCard);
+      return orderForDraw(hardEligible(input), drawSeed(input)).map(toRouterCard);
     },
   };
 }

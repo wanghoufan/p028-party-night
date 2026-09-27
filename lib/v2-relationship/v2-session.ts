@@ -85,6 +85,28 @@ export interface V2RouterInput {
    * 仅由 Guard 强制非定向轮置 true，普通桌 / 普通 pair opportunity 一律不带。
    */
   requireNonTargetedOpportunity?: boolean;
+  /**
+   * P1#2｜出卡 tie-break 的显式 seed（**可选覆写**，不是新随机源）。
+   *
+   * 缺省 `undefined` = Router 自行由 `relationship` 状态 + 轮次派生（见
+   * `lib/v2-relationship/v2-draw-order.ts` 的 `drawSeedFor`），生产主链走这条缺省路径；
+   * 只有复算 / 单测需要钉死某个 seed 时才显式传入。它不参与任何过滤与优先级判定，
+   * 只决定「同强度组内先出哪一张」。
+   */
+  drawSeed?: number;
+  /**
+   * P1#2（盐）｜draw tie-break 的**稳定 session salt**（可选；生产由编排器注入 `sessionId`）。
+   *
+   * 语义：`drawSeedFor(relationship, salt)` 把 salt 拼进 seed key ⇒
+   * - 同一 sessionId + 同一关系状态 → 同一 seed（崩溃/刷新恢复不破坏重放）；
+   * - 不同 sessionId + 同配置 → 不同 seed 序列（不再「同配置重开一局整局序列逐字重复」）。
+   *
+   * 只影响「同强度组内先出哪一张」，**不参与任何过滤与优先级判定**（硬过滤 / Coverage /
+   * Cooldown / D7 / Signal / Heat / Intensity ceiling 一律不动）。
+   * 缺省 `undefined` = 与加盐前逐字节一致（旧调用方 / 旧测试行为不变）。
+   * 显式 `drawSeed` 优先于本字段。
+   */
+  drawSessionSalt?: string;
 }
 
 /**
@@ -403,6 +425,9 @@ function sessionRouterInput(
     intensityLimit: request.intensityLimit,
     softDedupWindow: startWindow,
     requireFiveTierForPair: null,
+    /* P1#2（盐）：本轮所在 Session 的 id 作为稳定 draw salt——同一 Session 重放复现、
+       不同 Session 同配置顺序不同。只影响同强度组内起点，不改任何过滤与优先级。 */
+    drawSessionSalt: state.sessionId,
     ...(target.requireNonTargetedOpportunity ? { requireNonTargetedOpportunity: true } : {}),
   };
 }
