@@ -196,3 +196,20 @@ Mutual 1TAP 的 review、builder、QA、supervisor 任务均有记录。A.2 存�
 剩 P0：QA FAIL（稳定版术语残留、HANDOFF 过期信息、A.2 QA/supervisor 账本缺行、工作区归属未清）。
 下一步：清除遗留并复审后，再判断是否进入 PLAN_REOPEN_REQUIRED；不重冻 RC。
 
+
+## 收口结论（2026-09-27）
+
+本节是追加的收口回执，前文 FAIL 判定为当时事实、予以保留；未改写或删除前文任何判定。
+
+### 四项遗留复验
+
+1. **全库「稳定版 / STABLE_MAJORITY」旧称残留**：原判为全库有非豁免残留；复验结果为**按要求的严格 grep 条件仍有一处残留，未完全闭环**。命令 `rg -n '稳定版|STABLE_MAJORITY' --glob '!node_modules/**' --glob '!docs/review/CODE_REVIEW*' --glob '!docs/qa/BUGS-CONTENT-A2.md' --glob '!docs/model/TASK-MODEL-LOG.jsonl' --glob '!docs/model/DISPATCH-LOG.jsonl' .` 实测命中 4 行：`scripts/audit-a1-report.ts` 第 218、1681、1682 行（降级锁探针及注释），以及 `docs/handoff/HANDOFF.md:35`（历史描述“稳定版术语残留”）。因此不满足“豁免文件之外只剩 audit 脚本”的字面验收条件；该 HANDOFF 命中是在记录旧 FAIL 的历史事实，但本次按限制未改 HANDOFF。
+2. **HANDOFF Phase A.1 过期内容**：原判为旧问法与曝光数字残留；`rg -n '7,041:315' docs/handoff/HANDOFF.md` 实测无命中；`rg -n '是否自动提开放度|自动提开放度' docs/handoff/HANDOFF.md` 实测仅命中第 59 行一处，原文明确标记该旧问法“作废”，并写明自动提高开放度是本轮明令禁止项。按历史问法已作废处理，旧数字已清除。
+3. **账本缺 A.2 QA / supervisor 收口记录**：原判为两行缺失；`rg -n 'A2.*(QA|验收)|QA.*A2|A\.2.*(QA|验收)|supervisor.*A\.2|A\.2.*supervisor' docs/model/TASK-MODEL-LOG.jsonl` 实测 A.2 QA 最终验收 `FAIL` 行在第 112 行，A.2 supervisor 终检 `PASS` 行在第 114 行；`node scripts/model/check-ledger.mjs` 输出 `LEDGER-OK`。缺行问题已闭环，历史 QA FAIL 行保留。
+4. **工作区归属不明**：原判 `next-env.d.ts` 有修改且 A.1 命名文件归属不明；`git status --short -- next-env.d.ts` 实测无输出，即该文件当前无工作区改动。Git HEAD 为 `92943e7`（A.2）且其上一提交为 `987da2d`（Mutual）。此前对 A.1 命名 QA/review 与 `scripts/*v2-350.ts` 的归属判断，当前工作区文件名仍显示其为 A.1 命名；本 QA 本轮未改动这些文件，也未重新核定其归属。因此不能把原来关于这批文件的“归属不明”描述写成已由本次复验消除。
+
+### 最终判定
+
+`npx tsx scripts/audit-a1-report.ts --verify-only` 实测 exit 0，输出 `一致性自检：共 1,105 项`、`PASS：磁盘报告中的数字……逐项一致`；`node scripts/model/check-ledger.mjs` 输出 `LEDGER-OK`；`npx tsc --noEmit` exit 0、无输出。账本记录的 supervisor 终检为 `PASS，P0=0、blocking P1=0`，且明确放行 A.2 并进入 `PLAN_REOPEN_REQUIRED`、不重冻 RC。
+
+综合既有 supervisor 放行与本轮复验，**Phase A.2 可以按 supervisor 结论收口并进入 `PLAN_REOPEN_REQUIRED`**。QA 复验同时保留两项证据边界：严格旧称 grep 仍命中 HANDOFF 的历史记录；A.1 命名文件的归属未由本轮独立核定。进入下一阶段前，不能将这两点描述成已由本轮复验彻底消除。
