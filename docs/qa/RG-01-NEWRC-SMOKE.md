@@ -101,3 +101,6 @@
 | 动画放慢 10 倍后录屏（325 帧） | — | 白亮帧 **0** |
 
 **残留（如实记录）**：APK 内 `windowSplashScreenAnimatedIcon=@mipmap/ic_launcher` 已核实存在（aapt2 dump），但本机启动段中心区逐帧扫描**没有任何图标像素**——MIUI 的启动动画覆盖了系统启动屏，图标太快看不到。code-reviewer 与 qa 均判定不为此引入 `@capacitor/splash-screen` 挂起启动屏（会人为延长启动、伤手感），记 P2：若日后要让图标可见，再单独立项。
+
+**最终候选 RC 复录（2026-09-27 11:33，commit `eeaebf3`）**：supervisor 要求重冻后对最终候选再录一次。
+装机包应用代码与 `eeaebf3` 逐文件一致（`git diff --name-only eeaebf3 -- app lib android capacitor.config*.ts` 输出为空），重新 `install -r` Success 后录屏 128 帧：**白亮帧 0**，亮度范围 27~74，全程无白屏/白闪。结论 PASS。

@@ -2,7 +2,7 @@
 
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
-- Captured at（YYYY-MM-DD HH:MM）：2026-09-27 04:30（**NEW RC 再次重冻：commit `82cec01`（main，已 push）**；上一 RC `49d6c75` 作废。Change A「返回键退出确认」落地并真机 PASS；QA 打回的 P1 冷启动空窗已闭环（哨兵提前到 head 内联脚本）；新增 @capacitor/app 7.1.2 用于 App.exitApp() 真退出；门禁 lint0/tsc0/unit927/E2E105+4skip/build/build:export 全绿；reviewer 两轮 + qa 两轮 + supervisor 终检 P0=0 blocking P1=0；版本号未 bump 仍 1.5.0；RG-01~RG-07 仍 NOT_STARTED）
+- Captured at（YYYY-MM-DD HH:MM）：2026-09-27 11:35（**NEW RC 再次重冻：commit `eeaebf3`（main，已 push）**；上一 RC `82cec01` 作废。本轮新增：启动画面白屏修复——根因两个（Capacitor 模板纯白 splash.png + WebView 默认白底），均已定位并修掉，配色/图标全取项目现有 theme（#080B1A + @mipmap/ic_launcher），未另造；真机逐帧验证改前 48/97 帧纯白 → 改后 0/128 白亮帧，最终候选 RC 复录同样 0 白帧；门禁 lint0/tsc0/unit927/E2E105+4skip/build/build:export 全绿；reviewer+qa+supervisor P0=0 blocking P1=0；版本未 bump 仍 1.5.0；RG-01~RG-07 仍 NOT_STARTED）
 - PROJECT_PHASE：（DEVELOP：RELEASE_GATE_VALIDATION；RELEASE_GATE NOT_STARTED）
 - PLAN_VERSION：（PRODUCT_PLAN_V2.0）
 - PLAN_READINESS_SCORE：（83＋Human例外有条件批准）
@@ -13,8 +13,8 @@
  - 剩 P0（没完的才列，多一条都不行）：
   - **收口清单已清零**：Change B 16 节全部落地；两处物理依赖（JDK21、11T Pro+ 无线）已解决——`brew install openjdk@21`（用户批准）→ 新自包含 web 资产 + debug 签名包装机；11T Pro+ USB 装机 → 新构建 machine smoke PASS（详见 docs/qa/RG-01-NEWRC-SMOKE.md）。
   - **仅剩真人 Gate（不是代码任务）**：
-- RC状态：**NEW RC = `82cec01`（2026-09-27 04:30 重冻，main 已 push）**；`49d6c75`、`cce4306`、`741e2e9` 均已作废。新构建真机验证：Change B 段 7/10 项实机确认（⑥–⑧ 按 RG 红线留待用户上手连带验证）＋ Change A 段 5/5 项 PASS（详见 docs/qa/RG-01-NEWRC-SMOKE.md）。7/7 前禁版本号升级、禁正式部署。
-- 当前 Task：Change A 已闭环并重冻。当前待办只剩真人 Gate：RG-01（用户手点，含开局抽卡～mutual/MATCH/隐私）与 RG-02~07（真人局，用户排期，现在不排）。Change A 证据链：docs/review/CODE_REVIEW-EXIT-GUARD.md（两轮：初评过 → 返工后复评过，P0=0/P1=0，P3×4 backlog）、docs/qa/BUGS-EXIT-GUARD.md（初验 FAIL P1=1 EXIT-GUARD-001 → 返工 → CLOSED、QA_RESULT PASS 仅覆盖 Web/静态导出）、docs/qa/RG-01-NEWRC-SMOKE.md 末节（真机 5 项 PASS）。
+- RC状态：**NEW RC = `eeaebf3`（2026-09-27 11:35 重冻，main 已 push）**；`5f0745d`、`82cec01`、`49d6c75` 均已作废。真机证据：新构建 machine smoke（Change B 10 项 + Change A 返回键 5 项）＋ 启动画面逐帧复录 0 白帧，全部 PASS（见 docs/qa/RG-01-NEWRC-SMOKE.md）。7/7 前禁版本号升级、禁正式部署。
+- 当前 Task：本轮 Change A「启动白屏」已闭环并重冻（证据：docs/review/CODE_REVIEW-SPLASH.md 过、docs/qa/BUGS-SPLASH.md PASS、docs/qa/RG-01-NEWRC-SMOKE.md 末两节录屏逐帧数据）。剩余待办仍只有真人 Gate：RG-01（用户手点：开局抽卡～mutual/MATCH/隐私）与 RG-02~07（真人局，用户排期）。已知 P2 两条：①启动图标已配置且在 APK 内，但 MIUI 启动动画覆盖系统启动屏，本机看不到（不为此挂起启动屏，reviewer/qa 一致）；②启动色值散在 5 处，建议补静态同值断言防漂移。
 - 未闭环评审意见：CODE_REVIEW-CHANGE-B-ROUTING.md 过（P0=0/blocking P1=0，P2×3 P3×2）；CODE_REVIEW-CHANGE-B-UI-SAFETY.md 过（P0=0/blocking P1=0，P2×2 P3×3）；CODE_REVIEW-MATRIX-3L.md 的 P1×2 已由复评关闭（新增 P2-5 backlog）；CODE_REVIEW-DEADLOCK-P1.md 过；CODE_REVIEW-AI-GEN-STABILITY.md 过。
 - docs 落盘清单：
   - 基线：`docs/2026-09-21 - MAC - ChatGPT - Party Night玩法扩展与主局整合-计划 - V1.1/`（4 份，用户提供）
