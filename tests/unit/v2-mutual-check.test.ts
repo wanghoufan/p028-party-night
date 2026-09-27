@@ -11,6 +11,7 @@ import {
   mutualCheckFinalEvents,
   mutualCheckTrigger,
   mutualPartnerIds,
+  mutualPairRunExists,
   submitMutualChoice,
 } from "@/lib/v2-relationship/v2-mutual-check";
 import { mutualResult } from "@/lib/v2-relationship/v2-private";
@@ -182,6 +183,17 @@ describe("B9 单向秘密：只选一人或跳过、非法目标按跳过", () =
       if (key === "a::b") continue;
       expect(Object.values(pairRun.selections).every((value) => value === null)).toBe(true);
     }
+  });
+
+  it("R-CB10 mutualPairRunExists：只认建 run 快照里已有的 pair，新 pair 不在其中", () => {
+    // 1男1女建 run：只有 f::m 一条边
+    const run = beginMutualCheckRun([participant("f", "female"), participant("m", "male")]);
+    expect(mutualPairRunExists(run, "f", "m")).toBe(true);
+    expect(mutualPairRunExists(run, "m", "f")).toBe(true);
+    // roster 中途变化新增的合法边（如补录性别后出现 f::m2）不在 run 快照里
+    expect(mutualPairRunExists(run, "f", "m2")).toBe(false);
+    expect(mutualPairRunExists(run, "m", "f2")).toBe(false);
+    expect(mutualPairRunExists(run, "f", "f")).toBe(false);
   });
 });
 

@@ -35,39 +35,33 @@ function mutualSession(): GameSession {
 
 const completeBtn = (page: Page) => page.locator(".round-action--complete");
 
-/** 一人走完：HANDOFF按h2认人（顺序点名，无需选人）→身份→准备→选人/跳过→提交→继续。 */
+/**
+ * RG-01 新流程：每人只点一次。SELECT 屏凭小字交接提示认人（请把手机交给 X，其他人别看屏幕），
+ * 点对方昵称（多候选）/「愿意」（单候选）即提交，或「暂时没有」「跳过」跳过；
+ * 点完立刻返回，交接遮罩（已收起）零按钮、定时自动进入下一位。
+ */
 async function playOnePerson(page: Page, name: string, chooseName: string | null) {
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible({ timeout: 10000 });
-  for (let step = 0; step < 14; step += 1) {
-    if (await dialog.getByRole("button", { name: /继续游戏|结束本轮私密互动/ }).isVisible().catch(() => false)) return;
-    const handed = dialog.getByRole("button", { name: "已交给 TA" });
-    if (await handed.isVisible().catch(() => false)) {
-      // 点名页：h2“请把手机交给 X”；是该人就交，不是就停（轮到下一个人）
-      const h2 = await dialog.locator("h2").textContent().catch(() => "");
-      if (!h2 || !h2.includes(name)) return;
-      await handed.click();
+  for (let step = 0; step < 40; step += 1) {
+    if (await dialog.getByRole("button", { name: "继续游戏" }).isVisible().catch(() => false)) return;
+    // 只认 SELECT 屏的小字交接提示，避免误匹配交接遮罩的「请把手机交给 X」
+    const hint = await dialog.getByText(/请把手机交给 .+，其他人别看屏幕/).textContent().catch(() => null);
+    if (!hint || !hint.includes(name)) {
+      await page.waitForTimeout(400);
       continue;
     }
-    const yesBtn = dialog.getByRole("button", { name: "是，继续" });
-    if (await yesBtn.isVisible().catch(() => false)) { await yesBtn.click(); continue; }
-    const readyBtn = dialog.getByRole("button", { name: "我准备好了" });
-    if (await readyBtn.isVisible().catch(() => false)) { await readyBtn.click(); continue; }
     if (chooseName) {
       const opt = dialog.getByRole("button", { name: chooseName, exact: true });
-      if (await opt.isVisible().catch(() => false)) {
-        await opt.click();
-        await dialog.getByRole("button", { name: "提交", exact: true }).click();
-        continue;
-      }
+      if (await opt.isVisible().catch(() => false)) { await opt.click(); return; }
+      const yes = dialog.getByRole("button", { name: "愿意", exact: true });
+      if (await yes.isVisible().catch(() => false)) { await yes.click(); return; }
     } else {
-      const skip = dialog.getByRole("button", { name: "跳过" }).first();
-      if (await skip.isVisible().catch(() => false)) { await skip.click(); continue; }
+      const no = dialog.getByRole("button", { name: "暂时没有", exact: true });
+      if (await no.isVisible().catch(() => false)) { await no.click(); return; }
+      const skip = dialog.getByRole("button", { name: "跳过", exact: true });
+      if (await skip.isVisible().catch(() => false)) { await skip.click(); return; }
     }
-    const nextBtn = dialog.getByRole("button", { name: "继续", exact: true });
-    if (await nextBtn.isVisible().catch(() => false)) { await nextBtn.click(); continue; }
-    const maskedBtn = dialog.getByRole("button", { name: "已遮好" });
-    if (await maskedBtn.isVisible().catch(() => false)) { await maskedBtn.click(); continue; }
     await page.waitForTimeout(500);
   }
 }

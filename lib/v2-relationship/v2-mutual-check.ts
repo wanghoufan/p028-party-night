@@ -113,8 +113,20 @@ export function mutualCandidateIds(
 /* R-CB9｜Mutual UI 按「当前合法异性候选数」分支（与 Guard 阈值解耦）          */
 /* ------------------------------------------------------------------ */
 
-/** 仅剩一个合法候选时的固定问句（用户 V1.2 §七原文，不许改写、不许拼接姓名）。 */
-export const MUTUAL_SINGLE_CANDIDATE_PROMPT = "今晚到现在，你愿意继续了解 TA 吗？";
+/**
+ * 仅剩一个合法候选时的固定问句模板（UI 用对方昵称替换 {name} 占位符）。
+ * 用户 2026-09-27 真人实测（RG-01）后要求点名对方昵称：原「TA」无指向，看不出是在问谁。
+ * 判定/编排逻辑与该文案完全无关，改文案不改行为。
+ */
+export const MUTUAL_SINGLE_CANDIDATE_PROMPT = "今晚到现在，你愿意继续了解 {name} 吗？";
+
+/** 把模板渲染成实际问句：只替换 {name} 占位符，不做其他拼接。 */
+export function mutualSingleCandidatePrompt(name: string): string {
+  return MUTUAL_SINGLE_CANDIDATE_PROMPT.replace("{name}", name);
+}
+
+/** 多候选分支问句：候选人昵称直接列成按钮，点谁即选谁并立即提交。 */
+export const MUTUAL_MULTI_CANDIDATE_PROMPT = "今晚到现在，你最想继续了解谁？";
 /** 唯一候选分支的两个选项：「愿意」→ 该唯一候选；「暂时没有」→ null。 */
 export const MUTUAL_SINGLE_CANDIDATE_YES = "愿意";
 export const MUTUAL_SINGLE_CANDIDATE_NO = "暂时没有";
@@ -157,6 +169,27 @@ export function beginMutualCheckRun(participants: readonly SessionParticipant[])
     playerIds: mutualCandidateIds(participants, pairKeys),
     pairRuns,
   };
+}
+
+/**
+ * 提交前校验：目标 pair 必须在建 run 时已存在。
+ *
+ * R-CB10：run 中途 roster 变化可能产生新的合法边（如补录性别后新增 pair），
+ * 但 run.pairRuns 是 beginMutualCheckRun 时的快照——新 pair 不在其中，
+ * `submitMutualChoice` 会把它静默降级为跳过。调用方（UI）必须在提交前用本函数
+ * 拦下这种情况：不存在则按可读提示拒绝提交、留在原屏，绝不静默丢弃。
+ */
+export function mutualPairRunExists(
+  run: MutualCheckRun,
+  playerId: string,
+  targetPlayerId: string,
+): boolean {
+  if (playerId === targetPlayerId) return false;
+  return Object.keys(run.pairRuns).some((key) => {
+    const [first, second] = key.split("::") as [string, string];
+    return (first === playerId && second === targetPlayerId)
+      || (first === targetPlayerId && second === playerId);
+  });
 }
 
 /**

@@ -345,94 +345,91 @@ async function assertWebViewAlive(page: Page, steps: StepLog[]) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 互选：单人走完一轮（照搬 E2E 状态机语义，选择器按真机 DOM 走）          */
+/* 互选：单人走完一轮（RG-01「每人只点一次」版本 UI）                      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * 本 harness 对应「每人一次点击」版本 UI（RG-01，2026-09-27 收敛）：
+ * 状态机只有 SELECT → HANDOFF_MASK（零按钮、约 1.35s 自动进下一位）→ … → RESULTS。
+ * SELECT 一屏三变体，点一下即提交、没有「高亮未提交」中间态：
+ *   - 多候选：候选人昵称即按钮，点昵称即提交；
+ *   - 单候选：标题点名对方昵称，「愿意 / 暂时没有」；
+ *   - 零候选：标题「暂时没有可选的人」+「跳过」。
+ * 旧版「已交给 TA / 是，继续 / 我准备好了 / 提交 / 继续 / 已遮好」等中间确认页
+ * 在生产 UI 已全部移除，这里不再保留任何兼容分支。
+ */
+
+/** SELECT 屏的交接提示行（只出现在 SELECT；遮罩的「请把手机交给 X」无后半句）。 */
+function handoffNote(name: string): string {
+  return `请把手机交给 ${name}，其他人别看屏幕。`;
+}
+
+/** 轮询等待任一剩余参与者的 SELECT 屏就位，返回该人名（超时返回 null）。 */
+async function waitForSelectTurn(
+  page: Page,
+  remaining: readonly string[],
+  timeoutMs = 20000,
+): Promise<string | null> {
+  const dialog = page.locator(".mutual-mask");
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    for (const name of remaining) {
+      if (await dialog.getByText(handoffNote(name)).isVisible().catch(() => false)) return name;
+    }
+    await sleep(300);
+  }
+  return null;
+}
+
+/** 走完一位参与者的唯一一次点击（chooseName=null 表示跳过）。 */
 async function playOnePerson(
   page: Page,
   name: string,
   chooseName: string | null,
   onSelect?: () => Promise<void>,
   onAfterPick?: () => Promise<void>,
-): Promise<boolean> {
+): Promise<void> {
   const dialog = page.locator(".mutual-mask");
-  await dialog.waitFor({ state: "visible", timeout: 15000 });
-  let selectShotDone = false;
-  for (let step = 0; step < 16; step += 1) {
-    // 选择页（候选人列表）出现时留一张互选现场图。
-    if (onSelect && !selectShotDone && (await dialog.locator(".mutual-choice-list").isVisible().catch(() => false))) {
-      selectShotDone = true;
-      await onSelect();
-    }
-    const finishBtn = dialog.getByRole("button", { name: /继续游戏|结束本轮私密互动/ });
-    if (await finishBtn.isVisible().catch(() => false)) return true;
+  // 本人 SELECT 屏（交接提示行点名本人）就位后再操作。
+  await dialog.getByText(handoffNote(name)).waitFor({ state: "visible", timeout: 20000 });
 
-    const handed = dialog.getByRole("button", { name: "已交给 TA" });
-    if (await handed.isVisible().catch(() => false)) {
-      const h2 = (await dialog.locator("h2").textContent().catch(() => "")) ?? "";
-      // 点名单向：不是叫这位就说明已走完（轮到下一位）。
-      if (!h2 || !h2.includes(name)) return false;
-      await handed.click();
-      continue;
-    }
-    const yes = dialog.getByRole("button", { name: "是，继续" });
-    if (await yes.isVisible().catch(() => false)) { await yes.click(); continue; }
+  // 互选现场图：候选人列表（多候选）或单候选问句出现时截。
+  const hasChoices = (await dialog.locator(".mutual-choice-list").isVisible().catch(() => false))
+    || (await dialog.getByRole("button", { name: "愿意" }).isVisible().catch(() => false));
+  if (onSelect && hasChoices) await onSelect();
 
-    const ready = dialog.getByRole("button", { name: "我准备好了" });
-    if (await ready.isVisible().catch(() => false)) { await ready.click(); continue; }
-
-    if (chooseName) {
-      const opt = dialog.getByRole("button", { name: chooseName, exact: true });
-      if (await opt.isVisible().catch(() => false)) {
-        await opt.click();
-        // 选项已高亮、尚未提交：留一张「本人确实选了 TA」的现场图（提交后不回显）。
-        if (onAfterPick) await onAfterPick();
-        await dialog.getByRole("button", { name: "提交", exact: true }).click();
-        continue;
-      }
+  if (chooseName) {
+    // 单候选分支：唯一候选的按钮是「愿意」，标题点名对方昵称——先核对再点，防止剧本与 UI 脱节。
+    const yes = dialog.getByRole("button", { name: "愿意", exact: true });
+    if (await yes.isVisible().catch(() => false)) {
+      const h2 = ((await dialog.locator("h2").textContent().catch(() => "")) ?? "");
+      if (!h2.includes(chooseName)) throw new Error(`${name} 的单候选屏标题不含 ${chooseName}：「${h2}」`);
+      await yes.click();
     } else {
-      const skip = dialog.getByRole("button", { name: "跳过" }).first();
-      if (await skip.isVisible().catch(() => false)) { await skip.click(); continue; }
+      // 多候选分支：点昵称即提交。
+      await dialog.getByRole("button", { name: chooseName, exact: true }).click();
     }
-
-    const next = dialog.getByRole("button", { name: "继续", exact: true });
-    if (await next.isVisible().catch(() => false)) { await next.click(); continue; }
-
-    const masked = dialog.getByRole("button", { name: "已遮好" });
-    if (await masked.isVisible().catch(() => false)) { await masked.click(); continue; }
-
-    await sleep(400);
+    // 新流程点完即提交且不回显答案：提交后立即留证（拍到的是零按钮交接遮罩）。
+    if (onAfterPick) await onAfterPick();
+    return;
   }
-  return false;
-}
 
-/** 当前点名页点的是谁（只认「请把手机交给 X」整句，避免把「交给下一位」当成人名）。 */
-async function currentHandoffName(page: Page, names: readonly string[]): Promise<string | null> {
-  const dialog = page.locator(".mutual-mask");
-  if (!(await dialog.isVisible().catch(() => false))) return null;
-  const h2 = ((await dialog.locator("h2").textContent().catch(() => "")) ?? "").trim();
-  return names.find((name) => h2 === `请把手机交给 ${name}`) ?? null;
-}
-
-/** 面板停在「交给下一位 / 交还主持人」时先推进到点名页。 */
-async function advanceHandoffPanel(page: Page): Promise<boolean> {
-  const dialog = page.locator(".mutual-mask");
-  const h2 = ((await dialog.locator("h2").textContent().catch(() => "")) ?? "").trim();
-  if (!/交给下一位|交还主持人/.test(h2)) return false;
-  const next = dialog.getByRole("button", { name: "继续", exact: true });
-  if (await next.isVisible().catch(() => false)) { await next.click(); return true; }
-  return false;
+  // 跳过：有候选点「暂时没有」，零候选点「跳过」。
+  const no = dialog.getByRole("button", { name: "暂时没有", exact: true });
+  if (await no.isVisible().catch(() => false)) { await no.click(); return; }
+  await dialog.getByRole("button", { name: "跳过", exact: true }).click();
 }
 
 /**
- * 按剧本走完一次完整互选：不依赖点名顺序，每次从点名页 h2 解析当前玩家再按其剧本选择。
+ * 按剧本走完一次完整互选：每位参与者只点一次，交接遮罩零按钮自动推进，
+ * 不依赖点名顺序——每次轮询认出当前 SELECT 屏是谁，再按其剧本选择。
  * 返回实际走完的玩家顺序。
  */
 async function playMutualRound(
   page: Page,
   scenario: Scenario,
   onSelectShot: () => Promise<void>,
-  /** 某人点中目标（提交前）留证：用于证明被拦 pair 的双方确实互相选中过。 */
+  /** 某人点中目标（提交后）留证：新流程不回显答案，拍到的是提交后的交接遮罩。 */
   onAfterPick?: (name: string) => Promise<void>,
 ): Promise<string[]> {
   const dialog = page.locator(".mutual-mask");
@@ -441,14 +438,15 @@ async function playMutualRound(
   const remaining = new Set<string>(scenario.names);
   let shotDone = false;
 
-  for (let guard = 0; guard < scenario.names.length + 4 && remaining.size > 0; guard += 1) {
-    if (await advanceHandoffPanel(page)) continue;
-    const name = await currentHandoffName(page, scenario.names);
-    if (!name || !remaining.has(name)) break;
+  while (remaining.size > 0) {
+    // 结果页提前出现（不应发生）就停，避免误点结果页按钮。
+    if (await dialog.getByRole("button", { name: "继续游戏" }).isVisible().catch(() => false)) break;
+    const name = await waitForSelectTurn(page, [...remaining]);
+    if (!name) break;
     remaining.delete(name);
     played.push(name);
     const target = scenario.plan[name] ?? null;
-    // 第一位真正进入选择页的玩家留一张互选现场图（结果页出图前证明「私密选择题」确实存在）。
+    // 第一位真正进入选择屏的玩家留一张互选现场图（结果页出图前证明「私密选择题」确实存在）。
     const wantShot = !shotDone && target !== null;
     await playOnePerson(
       page,
@@ -984,7 +982,7 @@ async function runD5CapDevice(dev: DeviceSpec, scenario: Scenario): Promise<RunR
           files.push(p); stageShots.push(p);
           console.log(`    📸 ${p}`);
         }, async (name) => {
-          // 选中高亮、尚未提交（提交后不回显）：证明该人确实选了 TA。
+          // 点完即提交、不回显答案：提交后立即留证（拍到的是零按钮交接遮罩），证明该人刚完成选择。
           const p = join(OUT_DIR, `${sid}-c${stage.checkpoint}-2b-pick-${name}.png`);
           await page.screenshot({ path: p, timeout: 40000 });
           files.push(p); stageShots.push(p);
