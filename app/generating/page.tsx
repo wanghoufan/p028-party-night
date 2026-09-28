@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { activateSession } from "@/lib/engine/session-engine";
 import { localSeedDeck, requestDeckWithFallbackResult, requestGeneratedDeck } from "@/lib/ai/generate-deck";
+import { AI_MAINLINE_LOCAL_NOTICE, isAiMainlineEnabled } from "@/lib/ai/mainline-flag";
 import type { DeckBatchProgress } from "@/lib/ai/direct-provider";
 import { aiProviderRepository } from "@/lib/storage/ai-provider-repository";
 import { preferencesRepository } from "@/lib/storage/preferences-repository";
@@ -29,7 +30,7 @@ function GeneratingPageContent() {
   const started = useRef(false);
   const [session, setSession] = useState<GameSession>();
   const [step, setStep] = useState(0);
-  const [state, setState] = useState<"loading" | "unconfigured" | "error">("loading");
+  const [state, setState] = useState<"loading" | "unconfigured" | "error" | "ai-disabled">("loading");
   const [message, setMessage] = useState("");
   // 自包含直连的分块进度（Change C）：AI 每出一批卡回调一次，用于显示「x 张 · 第 x/y 批」。
   const [batchProgress, setBatchProgress] = useState<DeckBatchProgress>();
@@ -80,6 +81,10 @@ function GeneratingPageContent() {
 
   async function generate(current: GameSession) {
     setState("loading"); setStep(0); setMessage("");
+    // 正式主线 AI 隔离（Plan §13）：开关缺省即关闭，进入 generating 前先守卫，
+    // 不读 Provider/Key、不发起服务端或直连生成；给中性提示并保留「使用本地题库开始」出口，绝不卡在加载态。
+    // 组局页的 resume / 重开（summary replay）与「重试一次」都经本函数，故旧缓存与恢复路径同样被这一处覆盖。
+    if (!isAiMainlineEnabled()) return setState("ai-disabled");
     if (selfContained) return generateSelfContained(current);
     const [profiles, customPacks] = await Promise.all([aiProviderRepository.ensurePresets(), gamePackRepository.list()]);
     const customCards = customPacks.filter((pack) => pack.enabled).flatMap((pack) => pack.cards);
@@ -98,7 +103,8 @@ function GeneratingPageContent() {
   }
 
   if (!session) return <NeonBackground><main className="screen generating-screen"><p>正在读取本局…</p></main></NeonBackground>;
-  return <NeonBackground><main className="screen generating-screen"><div className="generating-orb" aria-hidden="true"><span>AI</span></div>{state === "loading" ? <><h1>AI 正在为你准备<br />今晚的专属游戏</h1><p>好游戏，值得多一点等待</p><ol>{steps.map((label, index) => <li className={index < step ? "done" : index === step ? "active" : ""} key={label}><span>{index < step ? "✓" : index === step ? "◌" : "○"}</span>{label}</li>)}</ol><div className="generating-progress"><i style={{ width: `${(step + 1) * 25}%` }} /></div>{batchProgress && <p role="status">AI 出题进度 {batchProgress.cardsSoFar} 张 · 第 {batchProgress.doneBatches}/{batchProgress.totalBatches} 批</p>}</> : <section className="generation-recovery"><div className="recovery-icon"><Icon name="settings" /></div><h1>{state === "unconfigured" ? "请先配置 AI 接口" : "这次生成没有完成"}</h1><p>{message || "配置 AI 后可生成个性化整局内容；也可以直接使用本地题库开始。"}</p><Link className="button button--primary" href="/settings/ai">去配置 AI 接口</Link>{state === "error" && <Button variant="secondary" type="button" onClick={() => void generate(session)}>重试一次</Button>}<Button variant="ghost" type="button" onClick={() => void gamePackRepository.list().then((packs) => finishWithDeck(session, localSeedDeck(session.config, packs.filter((pack) => pack.enabled).flatMap((pack) => pack.cards))))}>使用本地题库开始</Button></section>}</main></NeonBackground>;
+  const startWithLocalDeck = () => void gamePackRepository.list().then((packs) => finishWithDeck(session, localSeedDeck(session.config, packs.filter((pack) => pack.enabled).flatMap((pack) => pack.cards))));
+  return <NeonBackground><main className="screen generating-screen"><div className="generating-orb" aria-hidden="true"><span>AI</span></div>{state === "loading" ? <><h1>AI 正在为你准备<br />今晚的专属游戏</h1><p>好游戏，值得多一点等待</p><ol>{steps.map((label, index) => <li className={index < step ? "done" : index === step ? "active" : ""} key={label}><span>{index < step ? "✓" : index === step ? "◌" : "○"}</span>{label}</li>)}</ol><div className="generating-progress"><i style={{ width: `${(step + 1) * 25}%` }} /></div>{batchProgress && <p role="status">AI 出题进度 {batchProgress.cardsSoFar} 张 · 第 {batchProgress.doneBatches}/{batchProgress.totalBatches} 批</p>}</> : <section className="generation-recovery"><div className="recovery-icon"><Icon name="settings" /></div><h1>{state === "unconfigured" ? "请先配置 AI 接口" : state === "ai-disabled" ? "本次使用本地固定题库" : "这次生成没有完成"}</h1><p>{state === "ai-disabled" ? AI_MAINLINE_LOCAL_NOTICE : message || "配置 AI 后可生成个性化整局内容；也可以直接使用本地题库开始。"}</p>{state === "unconfigured" && <Link className="button button--primary" href="/settings/ai">去配置 AI 接口</Link>}{state === "error" && <Button variant="secondary" type="button" onClick={() => void generate(session)}>重试一次</Button>}<Button variant="ghost" type="button" onClick={startWithLocalDeck}>使用本地题库开始</Button></section>}</main></NeonBackground>;
 }
 
 export default function GeneratingPage() {

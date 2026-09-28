@@ -19,12 +19,20 @@
 
 import type { BoundaryTag, GameCard, Intensity } from "@/lib/domain/schemas";
 import { getGamePack } from "@/lib/game-packs/registry";
+import { CONSENT_INSTRUCTION } from "./bar-fit-input";
 import { getV2ContentAdapter } from "./v2-content-adapter";
 import {
   V2_GAME_TYPES,
   type V13ExpansionCard,
   type V13MainlineCard,
 } from "./v2-types";
+
+/**
+ * SSOT `consentMode` → 卡面说明的唯一归属已迁到 `lib/v2-content/bar-fit-input.ts`
+ * （BAR-FIT canonical input 同源取用，保证「玩家实际必须听到的 instruction」两处逐字一致）。
+ * 这里原样再导出，保持本模块既有公开面不变。
+ */
+export { CONSENT_INSTRUCTION };
 
 /** 扩圈（10b）玩法 id：保留自身 deck，不参与 Pair Score / MATCH，也不接管 relationship-aware 路由。 */
 export const EXPANSION_PACK_ID = "expansion" as const;
@@ -77,13 +85,6 @@ export const SSOT_BOUNDARY_TAG_MAP: Record<string, BoundaryTag> = {
   "relationship-sensitive": "ex-partner",
   "photo-optional": "photo-video",
   "external-participant": "stranger-contact",
-};
-
-/** SSOT consentMode → 卡面说明（同意口径的确定渲染；不含任何新题面内容）。 */
-export const CONSENT_INSTRUCTION: Record<V13MainlineCard["consentMode"], string> = {
-  "skip-anytime": "不愿意可无惩罚跳过",
-  "mutual-current-consent": "先问出口，双方当场都同意才做；不愿意可无惩罚跳过",
-  "private-mutual-only": "仅两人私密互选成功后展示结果，单向不成局、无任何后续；不愿意可无惩罚跳过",
 };
 
 /** SSOT 边界标签 → App 雷区标签数组（未登记标签抛错，不去重不猜）。 */

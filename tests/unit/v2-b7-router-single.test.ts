@@ -63,7 +63,7 @@ const stripComments = (source: string): string =>
 /* ------------------------------------------------------------------ */
 
 describe("V2-B7 D2｜relationship-aware 主线单 Router（SSOT 出卡）", () => {
-  it("bucket：只出「当前玩法 ∩ 当前 Heat 档 ∩ 强度上限内 ∩ 软去重窗口外」的硬合法卡", () => {
+  it("bucket：只出「当前玩法 ∩ 强度上限内 ∩ 软去重窗口外」的硬合法卡（Heat 档只对 Formal 卡生效）", () => {
     const router = createV2MainlineRouter({ packId: "truth-dare" });
     const narrow = router.bucket(input({ intensityLimit: 1 }));
     const bucket = router.bucket(input({ intensityLimit: 3 }));
@@ -77,10 +77,11 @@ describe("V2-B7 D2｜relationship-aware 主线单 Router（SSOT 出卡）", () =
       expect(meta.intensity, card.cardId).toBeLessThanOrEqual(3);
       // bucket 只出当前玩法（currentPackId 之外的卡不许进桶）
       expect(packIdForMainlineCard(meta), card.cardId).toBe("truth-dare");
-      // bucket 只出当前 Heat 档：H1 = relationshipEffectiveCardCount 0–3
-      expect(meta.heatMin, card.cardId).toBeLessThanOrEqual(1);
-      expect(meta.heatMax, card.cardId).toBeGreaterThanOrEqual(1);
     }
+
+    // B3-4｜Heat 档硬过滤只对 Formal Fixed 轨生效：当前快照 350 张全为 legacy，
+    // 故 H1 的 bucket 不再按 Heat 档收窄 —— 桶里会出现 heatMin > 1 的卡（旧口径只出 H1 档）。
+    expect(bucket.some((card) => mainlineMeta(card.cardId).heatMin > 1)).toBe(true);
 
     // 强度上限真的在算（用不套 Heat 档的 global 对照，避免 H1 档本身没有高档卡）
     const openest = router.global(input({ intensityLimit: 1 }));

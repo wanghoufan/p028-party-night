@@ -62,7 +62,7 @@ describe("v2 relationship state thresholds", () => {
   });
 
   it("互选节奏与 final 抑制常量", () => {
-    expect(MUTUAL_CHECK_COUNTS).toEqual([9, 14, 19]);
+    expect(MUTUAL_CHECK_COUNTS).toEqual([12, 13, 14]);
     expect(MINIMUM_EFFECTIVE_CARDS_BETWEEN_RUNS).toBe(5);
     expect(MINIMUM_REMAINING_SESSION_ROUNDS_FOR_REGULAR_MUTUAL).toBe(2);
   });

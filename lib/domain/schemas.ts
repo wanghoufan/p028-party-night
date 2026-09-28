@@ -145,6 +145,31 @@ export const roundHistorySchema = z.object({
 });
 export type RoundHistory = z.infer<typeof roundHistorySchema>;
 
+/**
+ * 逐轮「本人实际揭晓/披露」信号（§7.2「有效信息轮」判定的第三项输入）。
+ *
+ * 渠道＝轮次历史自带的死字段 `roundHistorySchema.result`（此前无人写、无人读），
+ * 因此**不新增 UI 控件、不改卡面、不加主持人确认步骤**：只要有人（未来的问答流程、
+ * 主持人手动记录、测试里的正式轮次结算 API）在本轮 resolved 时提供这份可选信号，
+ * §7.2 判定即可用上；无人提供就是「未判定」，由判定侧 fail-closed。
+ *
+ * 纪律（Human 冻结的禁令）：**不得**按 `interactionType` 猜「这一轮算不算本人揭晓」。
+ * 猜测未获本人确认的轮次必须 `selfDisclosed=false`（默认值），不许用题型当代理信号。
+ */
+export const roundDisclosureSignalSchema = z.object({
+  /**
+   * 本轮是否发生**本人实际揭晓/披露**。
+   * 缺省 `false` = 未判定/纯猜测未揭晓 → 不计有效信息轮（§7.2）。
+   */
+  selfDisclosed: z.boolean().default(false),
+  /** 本轮实际披露者；缺省空数组。与 `selfDisclosed=true` 且只记本人时互为等价表达。 */
+  disclosedPlayerIds: z.array(z.string()).default([]),
+});
+export type RoundDisclosureSignal = z.infer<typeof roundDisclosureSignalSchema>;
+
+/** `roundHistorySchema.result` 里本批约定的键；其余键由其他功能自行占用，本模块不碰。 */
+export const ROUND_DISCLOSURE_RESULT_KEY = "disclosure" as const;
+
 export const activeRoundSchema = z.object({
   id: z.string(),
   cardId: z.string(),

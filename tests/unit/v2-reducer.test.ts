@@ -16,11 +16,36 @@ const ev = (partial: Omit<RelationshipEvent, "eventId"> & { eventId?: string }, 
   ...partial,
 });
 
+/**
+ * P0 fail-closed 后的「有效信息轮」最小事件：REL completed **且**带齐三样 §7.2 输入
+ * （`informationGain` 非 zero/low、`topic` 非空、`selfDisclosed=true` + `disclosedPlayerIds`）。
+ * 缺任何一项都会被 `isEffectiveInformationRound` 判为「非有效轮」（下面的专项用例逐条锁死）。
+ */
+const effEv = (
+  ref: string,
+  cardId: string,
+  n: number,
+  overrides: Partial<RelationshipEvent> = {},
+): RelationshipEvent =>
+  ev(
+    {
+      ref,
+      cardId,
+      type: "REL_CARD_COMPLETED",
+      informationGain: "medium",
+      topic: "恋爱观",
+      selfDisclosed: true,
+      disclosedPlayerIds: ["a"],
+      ...overrides,
+    },
+    n,
+  );
+
 describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM / 重放", () => {
-  it("REL_CARD_COMPLETED：推进 effective 计数＋轮次＋Heat＋终态", () => {
+  it("REL_CARD_COMPLETED（带齐 §7.2 三样输入）：推进 effective 计数＋轮次＋Heat＋终态", () => {
     let s = init();
     const four: RelationshipEvent[] = [1, 2, 3, 4].map((n) =>
-      ev({ ref: `rel-${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, n),
+      effEv(`rel-${n}`, `c${n}`, n),
     );
     for (const e of four) ({ state: s } = reduceRelationshipEvent(s, e));
     expect(s.relationshipEffectiveCardCount).toBe(4);
@@ -29,6 +54,29 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
     expect(s.usedCardIds).toEqual(["c1", "c2", "c3", "c4"]);
     expect(s.terminalExclusivity["rel-1"]).toBe("completed");
     expect(s.terminalExclusivity["rel-4"]).toBe("completed");
+  });
+
+  it("P0 fail-closed：REL completed 但 §7.2 元数据缺失/未采集 → 不推进有效计数、Heat 不动、无认识证据", () => {
+    // 逐条只缺一项，证明「每一项都是必要条件」——不是「整体缺才算」。
+    const missingCases: { label: string; patch: Partial<RelationshipEvent> }[] = [
+      { label: "informationGain 缺省", patch: { informationGain: undefined } },
+      { label: "topic 缺省", patch: { topic: undefined } },
+      { label: "selfDisclosed 缺省", patch: { selfDisclosed: undefined } },
+      { label: "selfDisclosed=false（纯猜测未揭晓）", patch: { selfDisclosed: false } },
+      { label: "disclosedPlayerIds 未采集", patch: { disclosedPlayerIds: undefined } },
+      { label: "informationGain=zero", patch: { informationGain: "zero" } },
+      { label: "informationGain=low（纯 buffer）", patch: { informationGain: "low" } },
+    ];
+    for (const { label, patch } of missingCases) {
+      const e = effEv("r1", "c1", 1, patch);
+      const { state: s, delta } = reduceRelationshipEvent(init(), e);
+      expect(s.relationshipEffectiveCardCount, label).toBe(0);
+      expect(s.heat, label).toBe("H1");
+      expect(s.recognitionEvidence, label).toEqual([]);
+      expect(delta.reasons, label).not.toContain("relationship_effective_advanced");
+      // 但轮次仍照常消耗（completed 计进度，与「有效信息轮」是两件事）
+      expect(s.sessionCompletedRounds, label).toBe(1);
+    }
   });
 
   it("REL_CARD_SKIPPED：只记终态，不计数，cardId 进 used", () => {
@@ -123,11 +171,11 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
   it("未加玩：completed 封顶 20，第 21 轮被拒", () => {
     let s = init();
     for (let n = 1; n <= 20; n++)
-      s = reduceRelationshipEvent(s, ev({ ref: `r${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, 1000 + n)).state;
+      s = reduceRelationshipEvent(s, effEv(`r${n}`, `c${n}`, 1000 + n)).state;
     const before = s.sessionCompletedRounds;
     const { state: out, delta } = reduceRelationshipEvent(
       s,
-      ev({ ref: "r21", cardId: "c21", type: "REL_CARD_COMPLETED" }, 2000),
+      effEv("r21", "c21", 2000),
     );
     expect(before).toBe(20);
     expect(out.sessionCompletedRounds).toBe(20);
@@ -137,15 +185,15 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
   it("Host 加玩后：放行至 25，第 26 轮被拒", () => {
     let s = init();
     for (let n = 1; n <= 20; n++)
-      s = reduceRelationshipEvent(s, ev({ ref: `r${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, 1000 + n)).state;
+      s = reduceRelationshipEvent(s, effEv(`r${n}`, `c${n}`, 1000 + n)).state;
     ({ state: s } = reduceRelationshipEvent(s, ev({ type: "EXTENSION_ACTIVATED_BY_HOST" }, 3000)));
     expect(s.extensionActivated).toBe(true);
     for (let n = 21; n <= 25; n++)
-      s = reduceRelationshipEvent(s, ev({ ref: `r${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, 1000 + n)).state;
+      s = reduceRelationshipEvent(s, effEv(`r${n}`, `c${n}`, 1000 + n)).state;
     expect(s.sessionCompletedRounds).toBe(25);
     const { state: out, delta } = reduceRelationshipEvent(
       s,
-      ev({ ref: "r26", cardId: "c26", type: "REL_CARD_COMPLETED" }, 4000),
+      effEv("r26", "c26", 4000),
     );
     expect(out.sessionCompletedRounds).toBe(25);
     expect(delta.reasons).toContain("session_limit_reached");
@@ -153,7 +201,7 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
 
   it("eventId 幂等：重放不重复计数", () => {
     let s = init();
-    const e = ev({ ref: "r1", cardId: "c1", type: "REL_CARD_COMPLETED" }, 1);
+    const e = effEv("r1", "c1", 1);
     const { state: nextState, delta: d } = reduceRelationshipEvent(s, e);
     s = nextState;
     const snapshot = s;
@@ -165,10 +213,10 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
 
   it("eventId 幂等：原样返回并标 replayed", () => {
     let s = init();
-    ({ state: s } = reduceRelationshipEvent(s, ev({ ref: "r1", cardId: "c1", type: "REL_CARD_COMPLETED" }, 5)));
+    ({ state: s } = reduceRelationshipEvent(s, effEv("r1", "c1", 5)));
     const { state: out, delta } = reduceRelationshipEvent(
       s,
-      ev({ ref: "r1", cardId: "c1", type: "REL_CARD_COMPLETED" }, 5),
+      effEv("r1", "c1", 5),
     );
     expect(delta.replayed).toBe(true);
     expect(delta.reasons).toEqual(["replay_ignored"]);
@@ -177,76 +225,86 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
 
   it("终态互斥：同 ref 二写视为重复，不计数", () => {
     let s = init();
-    ({ state: s } = reduceRelationshipEvent(s, ev({ ref: "r9", cardId: "c9", type: "REL_CARD_COMPLETED" }, 1)));
+    ({ state: s } = reduceRelationshipEvent(s, effEv("r9", "c9", 1)));
     const { state: out, delta } = reduceRelationshipEvent(
       s,
-      ev({ ref: "r9", cardId: "c9", type: "REL_CARD_COMPLETED" }, 2),
+      effEv("r9", "c9", 2),
     );
     expect(out.relationshipEffectiveCardCount).toBe(1);
     expect(delta.reasons).toContain("terminal_conflict");
   });
 
-  it("SYSTEM_MUTUAL_CHECK_DUE：9/14/19 各标记一轮（19 档须加玩把 target 提到 25）", () => {
+  it("SYSTEM_MUTUAL_CHECK_DUE：窗口 12–14 内只标记一次（一局中途最多一次）", () => {
     let s = init();
-    // 19 档在未加玩（target=20）时剩余仅 1 轮 <2 会被忽略；先加玩使 target=25。
-    ({ state: s } = reduceRelationshipEvent(s, ev({ type: "EXTENSION_ACTIVATED_BY_HOST" }, 1)));
-    const set: [number, number][] = [
-      [9, 1],
-      [14, 2],
-      [19, 3],
-    ];
-    for (let n = 1; n <= 19; n++) {
-      ({ state: s } = reduceRelationshipEvent(s, ev({ ref: `r${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, 1000 + n)));
-    }
-    for (const [count, run] of set) {
-      const { state: out, delta } = reduceRelationshipEvent(
+    // P1-1：认识阈值要求「中及以上≥5、高≥1、人物维度≥3、两名候选各有本人披露」，
+    // 故这 14 个有效信息轮都带 metadata 档位/主题/本人披露，才能真正到达 due 检查点。
+    const topics = ["择偶偏好", "恋爱观", "相处规则"] as const;
+    for (let n = 1; n <= 14; n++) {
+      ({ state: s } = reduceRelationshipEvent(
         s,
+        effEv(`r${n}`, `c${n}`, 1000 + n, {
+          informationGain: n === 1 ? "high" : "medium",
+          topic: topics[(n - 1) % topics.length],
+          disclosedPlayerIds: [n % 2 === 0 ? "a" : "b"],
+        }),
+      ));
+    }
+    const first = reduceRelationshipEvent(s, ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 12 }, 2000));
+    expect(first.delta.reasons).toContain("mutual_due");
+    expect(first.state.regularMutualCheckRuns).toBe(1);
+    expect(first.state.lastMutualCheckAtEffectiveCount).toBe(12);
+
+    // 已问过一次：13/14 即使仍在窗口内也不再标记（上限 1 把闸，非只换数字）
+    for (const count of [13, 14]) {
+      const { state: out, delta } = reduceRelationshipEvent(
+        first.state,
         ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: count }, 2000 + count),
       );
-      expect(out.lastMutualCheckAtEffectiveCount).toBe(count);
-      expect(out.regularMutualCheckRuns).toBe(run);
-      expect(delta.reasons).toContain("mutual_due");
-      s = out;
+      expect(delta.reasons).not.toContain("mutual_due");
+      expect(out.regularMutualCheckRuns).toBe(1);
+      expect(out.lastMutualCheckAtEffectiveCount).toBe(12);
     }
   });
 
-  it("SYSTEM_MUTUAL_CHECK_DUE 门①：dueCount 不在 9/14/19 → 忽略", () => {
-    const { state: out, delta } = reduceRelationshipEvent(
-      stateWith({ sessionCompletedRounds: 10 }),
-      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 10 }, 1),
-    );
-    expect(out.lastMutualCheckAtEffectiveCount).toBeNull();
-    expect(out.regularMutualCheckRuns).toBe(0);
-    expect(delta.reasons).not.toContain("mutual_due");
+  it("SYSTEM_MUTUAL_CHECK_DUE 门①：dueCount 不在窗口 12–14（旧 9/19、窗口外的 11/15）→ 忽略", () => {
+    for (const count of [9, 11, 15, 19]) {
+      const { state: out, delta } = reduceRelationshipEvent(
+        stateWith({ sessionCompletedRounds: 8 }),
+        ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: count }, 1),
+      );
+      expect(out.lastMutualCheckAtEffectiveCount).toBeNull();
+      expect(out.regularMutualCheckRuns).toBe(0);
+      expect(delta.reasons).not.toContain("mutual_due");
+    }
   });
 
   it("SYSTEM_MUTUAL_CHECK_DUE 门②：剩余轮次 <2（未加玩 sessionCompletedRounds=19）→ 忽略", () => {
     const { state: out, delta } = reduceRelationshipEvent(
       stateWith({ sessionCompletedRounds: 19 }),
-      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 9 }, 1),
+      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 12 }, 1),
     );
     expect(out.lastMutualCheckAtEffectiveCount).toBeNull();
     expect(out.regularMutualCheckRuns).toBe(0);
     expect(delta.reasons).not.toContain("mutual_due");
   });
 
-  it("SYSTEM_MUTUAL_CHECK_DUE 门③：第 4 次 due（runs 已 3）→ 忽略", () => {
+  it("SYSTEM_MUTUAL_CHECK_DUE 门③：已问过一次（runs 已 1）→ 再 due 也忽略", () => {
     const { state: out, delta } = reduceRelationshipEvent(
-      stateWith({ sessionCompletedRounds: 5, regularMutualCheckRuns: 3 }),
-      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 9 }, 1),
+      stateWith({ sessionCompletedRounds: 5, regularMutualCheckRuns: 1 }),
+      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 12 }, 1),
     );
-    expect(out.regularMutualCheckRuns).toBe(3);
+    expect(out.regularMutualCheckRuns).toBe(1);
     expect(out.lastMutualCheckAtEffectiveCount).toBeNull();
     expect(delta.reasons).not.toContain("mutual_due");
   });
 
-  it("SYSTEM_MUTUAL_CHECK_DUE 门④：间隔不足 5（last=7, due=9）→ 忽略", () => {
+  it("SYSTEM_MUTUAL_CHECK_DUE 门④：间隔不足 5（last=8, due=12）→ 忽略", () => {
     const { state: out, delta } = reduceRelationshipEvent(
-      stateWith({ sessionCompletedRounds: 9, regularMutualCheckRuns: 1, lastMutualCheckAtEffectiveCount: 7 }),
-      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 9 }, 1),
+      stateWith({ sessionCompletedRounds: 9, regularMutualCheckRuns: 0, lastMutualCheckAtEffectiveCount: 8 }),
+      ev({ type: "SYSTEM_MUTUAL_CHECK_DUE", dueCount: 12 }, 1),
     );
-    expect(out.lastMutualCheckAtEffectiveCount).toBe(7);
-    expect(out.regularMutualCheckRuns).toBe(1);
+    expect(out.lastMutualCheckAtEffectiveCount).toBe(8);
+    expect(out.regularMutualCheckRuns).toBe(0);
     expect(delta.reasons).not.toContain("mutual_due");
   });
 
@@ -442,7 +500,7 @@ describe("reduceRelationshipEvent｜REL / NEUTRAL / EXPANSION / LEGACY / SYSTEM 
     for (let n = 1; n <= 6; n++) {
       ({ state: s } = reduceRelationshipEvent(
         s,
-        ev({ ref: `r${n}`, cardId: `c${n}`, type: "REL_CARD_COMPLETED" }, 100 + n),
+        effEv(`r${n}`, `c${n}`, 100 + n),
       ));
     }
     expect("a::b" in s.cooldowns).toBe(true);

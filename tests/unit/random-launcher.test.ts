@@ -3,7 +3,7 @@ import { BUILTIN_PACK_IDS, DEFAULT_BOUNDARIES } from "@/lib/domain/constants";
 import type { CustomGamePack, Player, SessionConfig } from "@/lib/domain/schemas";
 import { createSession } from "@/lib/engine/session-engine";
 import { listLauncherTargets, listManualPlayablePacks, mixedCandidatePackIds, pickLauncherTarget, switchPackAndDeal } from "@/lib/engine/pack-switcher";
-import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
+import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 import { RANDOM_LAUNCHER_PACK_ID } from "@/lib/game-packs/random-launcher";
 
 /**
@@ -82,7 +82,8 @@ describe("random launcher candidates", () => {
 });
 
 describe("switchPackAndDeal resolves the launcher (R-052)", () => {
-  const singleNeverHave = () => createSession(config({ enabledPackIds: ["never-have"], mode: "single" }), BUILTIN_SEED_CARDS.filter((card) => card.packId === "never-have"));
+  // 牌堆用快照内旧题（PN-*）：当前新局的真实轨。纯旧 seed 局的同轨闸见 content-track-gate.test.ts。
+  const singleNeverHave = () => createSession(config({ enabledPackIds: ["never-have"], mode: "single" }), [...mainlineSsotCardsByPack("never-have")]);
 
   it("换成随机挑中的真实玩法，同一 Session、config 与历史都不变", () => {
     const session = singleNeverHave();

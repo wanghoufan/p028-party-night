@@ -12,9 +12,12 @@
  * - 这里不 import、也不调用 `lib/engine/card-selector`（旧加权 selector）——V1.6 出卡路径生产不可达。
  */
 
-import type { GameCard, GameSession, Player } from "@/lib/domain/schemas";
+import type { GameCard, GameSession, Player, RoundDisclosureSignal, RoundHistory } from "@/lib/domain/schemas";
+import { ROUND_DISCLOSURE_RESULT_KEY, roundDisclosureSignalSchema } from "@/lib/domain/schemas";
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
+import { isFormalFixedCard } from "@/lib/v2-content/fixed-content-manifest";
 import { EXPANSION_PACK_ID, isV2MainlinePack } from "@/lib/v2-content/v2-card-bridge";
+import { metadataForCard } from "@/lib/v2-content/v2-card-quality-index";
 import { isRecentlyRejected } from "./card-eligibility";
 import { diffPlayerRoster, normalizeParticipants } from "@/lib/v2-relationship/v2-participants";
 import { drawSeedFor, orderByTieBreakRotation } from "@/lib/v2-relationship/v2-draw-order";
@@ -72,6 +75,12 @@ function ssotMeta(cardId: string) {
 }
 
 function heatEligible(card: GameCard, input: V2RouterInput): boolean {
+  // Heat 档硬过滤是 **Formal Fixed 轨**的规则：只有能进入 Formal 轨的卡才受它约束（B3-1 §2.1）。
+  // 非 Formal 卡（当前快照内 390 张 `PN-*` 全为 legacy / 旧 `seed-*` / custom / ai）直接放行：
+  // 它们既不推进 Heat 与有效计数（`v2-reducer.ts` fail-closed），就不该被 Heat 档卡死可玩库存。
+  // 判定必须走 `isFormalFixedCard`（读 manifest 的 audited/reviewed/humanBarFit），
+  // 不得用 `classifyMainlineCard === "fixed"` 代替——那只是「在冻结快照内」，不是 Formal。
+  if (!isFormalFixedCard(card)) return true;
   const meta = ssotMeta(card.id);
   if (!meta || !("heatMin" in meta)) return true;
   const rank = heatRank(input.relationship.heat);
@@ -383,11 +392,22 @@ const ROUND_EVENT_TYPE: Record<V2CardEventFamily, Record<V2RoundTerminal, Relati
  * - `playerId` 只在单点名单轮（`participantIds` 恰 1 人）记定向归属；pair 回合没有单一
  *   「定向归属玩家」，不猜、也不按两人各记一遍；
  * - NEUTRAL / EXPANSION 的跳过/换题必须显式带 `terminal`，否则终态无法落盘。
+ *
+ * §7.2 生产链（P0）：本函数是「有效信息轮」两路元数据的**唯一生产写入口**——
+ * - **卡侧**（`informationGain` / `topic`）：由 `metadataForCard(cardId)` 从 SSOT 侧车索引读；
+ *   未补标一律写 `null`（fail-closed），**绝不给默认档**；
+ * - **轮侧**（`selfDisclosed` / `disclosedPlayerIds`）：由调用方经正式轮次结算 API
+ *   （`session-engine.resolveRoundAndReduce(session, "complete", roundDisclosureSignal({...}))`
+ *   → `roundHistory.result`）提供；未提供即按「不是本人揭晓」写 `false` / `[]`。
+ *
+ * 两路都**只在这里**进事件，reducer 侧不再二次推断；`isEffectiveInformationRound` 只做判定，
+ * 不回头补数据。**禁止**按 `interactionType` 猜「本人揭晓」——这是 Human 明令封死的捷径。
  */
 export function eventForRoundTerminal(
   round: NonNullable<GameSession["currentRound"]>,
   terminal: V2RoundTerminal,
   timestamp: string,
+  disclosure?: RoundDisclosureSignal,
 ): RelationshipEvent {
   const family = cardEventFamilyForPack(round.packId);
   const event: RelationshipEvent = {
@@ -403,18 +423,98 @@ export function eventForRoundTerminal(
   if (family !== "REL" && terminal !== "completed") {
     event.terminal = terminal;
   }
+  // §7.2 卡侧元数据：只对可能成为「有效信息轮」的 REL completed 附档；未补标 = null。
+  if (family === "REL" && terminal === "completed") {
+    const meta = metadataForCard(round.cardId);
+    event.informationGain = meta.informationGain ?? undefined;
+    event.topic = meta.topic ?? undefined;
+  }
+  // §7.2 轮侧信号：显式提供才写；缺省即「未判定」（selfDisclosed=false / 空数组）。
+  if (disclosure) {
+    event.selfDisclosed = disclosure.selfDisclosed;
+    event.disclosedPlayerIds = disclosure.disclosedPlayerIds;
+  }
   return event;
 }
 
 /**
- * 每轮 completed / skipped / swapped 后按 R3 事件表归约（唯一计数入口）：
- * - `REL_CARD_COMPLETED` 推进 `relationshipEffectiveCardCount`，Heat 由此重算，9/14/19 mutual 才可达；
+ * 从**已 resolved 的轮次记录**里读回本轮的可选揭晓信号（`roundHistory.result.disclosure`）。
+ *
+ * 口径与 `roundDisclosureSignal()` 写入端对称：读不到 / 解析失败 / 缺 `selfDisclosed`
+ * 一律返回 `undefined`（= 未判定，不是 `selfDisclosed=false` 的显式事实），
+ * 由 `eventForRoundTerminal` 决定怎么表达。解析用同一份 zod schema，杜绝两边字段漂移。
+ */
+export function roundDisclosureFromResult(
+  result: Record<string, unknown> | undefined,
+): RoundDisclosureSignal | undefined {
+  if (!result) return undefined;
+  const parsed = roundDisclosureSignalSchema.safeParse(result[ROUND_DISCLOSURE_RESULT_KEY]);
+  return parsed.success ? parsed.data : undefined;
+}
+
+/**
+ * 归约内核接受的「本轮 round record」形状：
+ * - 出题中的 `currentRound`（`ActiveRound`，无 `result`）；
+ * - 已落盘的 `rounds[i]`（`RoundHistory`，带 `status` / `result`）。
+ * 两者都是**同一轮的自有数据**；归约只认传入的这一条，不去别处猜。
+ */
+export type RoundRecordForReduction = NonNullable<GameSession["currentRound"]> & {
+  status?: RoundHistory["status"];
+  endedAt?: string;
+  result?: Record<string, unknown>;
+};
+
+/**
+ * 归约内核（唯一计数入口）：吃**一条明确的 round record**，按 R3 事件表归约出 GameSession。
+ *
+ * - `REL_CARD_COMPLETED` 且为「有效信息轮」→ 推进 `relationshipEffectiveCardCount`，Heat 由此重算，
+ *   落进 12–14 窗口 mutual 才可达；
  * - skipped / swapped / NEUTRAL / EXPANSION 一律 +0：不消耗 20/25 限额、不推进 Heat 或 mutual 间隔。
  *
- * 只动 `relationshipState`（+ `v2Orchestration`）与 used 账；`currentRound` 原样保留，
- * 供随后的 `completeRound` / `swapRound` / `skipRound` 与 `startRound` 继续使用。
+ * 与旧实现的关键差别：披露信号只从**传入的这条 round record 自己的 `result`** 读
+ * （`disclosure` 参数优先，其次 `round.result`）。
+ * 旧实现在这里回查**轮次历史列表的最后一条**的 `result` —— 而调用方当时是
+ * 「先归约 → 再 completeRound 落盘」，那最后一条其实是**上一轮**，于是上一轮的披露被静默挂到
+ * 本轮事件上（串轮），本轮披露永远进不来。该回查已删除：本轮披露只有在**本轮 record 自己**身上才认。
+ *
+ * 只动 `relationshipState`（+ `v2Orchestration`）与 used 账；`currentRound` / `rounds` 由调用方
+ * （`session-engine.resolveRound`）负责，本函数不落盘、不 resolve。
  * 出牌时（`startRound`）本轮 `cardId` 已进 used 账，本函数归约后按首现去重，
  * 保证同一张卡不因「出牌 + 终态」两条路径记两次。
+ *
+ * §7.2 的两路输入都在 `eventForRoundTerminal` 里进事件：
+ * - 卡侧 metadata 由正式 sidecar（`metadataForCard`）读，未补标写 `null` → fail-closed；
+ * - 轮侧披露由本函数从该轮 `result` 解出后传入。
+ */
+export function reduceRoundRecord(
+  session: GameSession,
+  round: RoundRecordForReduction,
+  terminal: V2RoundTerminal,
+  timestamp: string,
+  disclosure?: RoundDisclosureSignal,
+): GameSession {
+  const roundDisclosure = disclosure ?? roundDisclosureFromResult(round.result);
+  const state: V2SessionState = {
+    sessionId: session.id,
+    relationship: relationshipOf(session),
+    participants: normalizeParticipants(session.participants, session.config.players),
+    orchestration: orchestrationOf(session),
+  };
+  const reduced = reduceV2SessionEvents(state, [eventForRoundTerminal(round, terminal, timestamp, roundDisclosure)]).state;
+  const relationship: RelationshipState = {
+    ...reduced.relationship,
+    usedCardIds: [...new Set(reduced.relationship.usedCardIds)],
+  };
+  return withV2State(session, { ...reduced, relationship });
+}
+
+/**
+ * 兼容既有 `currentRound` 调用点（转瓶子链内终态归约）的薄封装：
+ * 内部取 `session.currentRound` 当作本轮 round record，转交 `reduceRoundRecord`。
+ *
+ * **不读轮次历史列表的最后一条**：`currentRound` 本身没有 `result` 时披露即「未判定」，
+ * 由 `isEffectiveInformationRound` fail-closed（不计有效轮）。
+ * 「先 resolve 再归约」的旧用法已由 `session-engine.resolveRoundAndReduce` 取代。
  */
 export function reduceResolvedRound(
   session: GameSession,
@@ -423,19 +523,7 @@ export function reduceResolvedRound(
 ): GameSession {
   const round = session.currentRound;
   if (!round) return session;
-
-  const state: V2SessionState = {
-    sessionId: session.id,
-    relationship: relationshipOf(session),
-    participants: normalizeParticipants(session.participants, session.config.players),
-    orchestration: orchestrationOf(session),
-  };
-  const reduced = reduceV2SessionEvents(state, [eventForRoundTerminal(round, terminal, timestamp)]).state;
-  const relationship: RelationshipState = {
-    ...reduced.relationship,
-    usedCardIds: [...new Set(reduced.relationship.usedCardIds)],
-  };
-  return withV2State(session, { ...reduced, relationship });
+  return reduceRoundRecord(session, round, terminal, timestamp);
 }
 
 /* ------------------------------------------------------------------ */
@@ -486,8 +574,11 @@ export function applyHostDecisionToSession(
   return withV2State(session, result.state);
 }
 
-/** 洗牌也救不回（牌堆真空 / 本玩法在当前人数·尺度·雷区下无硬合法卡）时的兜底指引。 */
-export const NO_RECOVERABLE_CARDS_GUIDANCE = "本局这个玩法已经没有可出的题卡，洗牌也补不出新题。可以换个玩法，或者就此收工。";
+/**
+ * D8 严格方案 A：`AWAITING_HOST_EXHAUSTION_DECISION` 下洗牌实测也救不回时的唯一说明。
+ * 此时不得引导切换玩法（awaiting 禁止切包），只如实告知无合法题并允许结束本局。
+ */
+export const AWAITING_NO_RECOVERABLE_GUIDANCE = "当前条件下没有可继续的合法题，本局到此为止。";
 
 /**
  * 「洗牌再玩」是否会真的补出题卡（纯函数，不改入参）。

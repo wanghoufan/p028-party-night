@@ -6,6 +6,14 @@
 - 冻结基线：`PRODUCT_PLAN_V2.0`（`DEV_BASELINE=PRODUCT_PLAN_V2.0`，`PLAN_GATE=APPROVED`）
 - 数据出处：`docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（`scripts/audit-a1-router-montecarlo.ts` 机械产出，4,000 局 × 20 轮；本文件所有统计值均由脚本产出，不手写）
 
+> ## ⚠️ 作废标注（2026-09-28，neat-freak 新增，未改写原结论）
+>
+> - **本文的「运行时 Router Monte Carlo」结论已作废**，范围：§1.2 的死局分档表（lim1 850/850、lim2 810/810、合计 1,660/4,000＝41.5%）、§1.2 的「lim1 止于 8 / lim2 止于 13」归因、§4.2 决策点 1/2/7 中所有引用这些运行时数字的表述。
+> - **作废原因**：这些数字基于「Heat 硬过滤对全部卡生效」的**旧生产语义**；Phase B B2.2 引入 `isFormalFixedCard` / `formalFixedIdSet` 后，Heat 硬过滤改为**只对 Formal Fixed 卡生效**（当前 formal=0），旧运行时断粮已消失。
+> - **新真源**：`docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（2026-09-28 重跑）—— 4,000/4,000 跑满 20 轮、dead-end **0**、`heatAtDraw` **100% H1**、`matchesCreated` **0**。
+> - **作废范围仅限运行时数字**：§1.1 的**静态** SSOT intensity×Heat 对角分区与真空表（H1 58 / H2 128 / H3 160 / H4 222、H4×I1＝0）**不经 Router，仍有效**；方案 E（重做内容覆盖矩阵）的产品判断不受本次作废影响。
+> - 本节为**标注**，不重算、不重写原文结论；重算/改写属 builder/QA，需另行派工。
+
 ## 0. 为什么写在 `docs/qa/` 而不是 `docs/pm/`
 
 任务书给的默认路径是 `docs/pm/CHANGE-C-DEADEND-IMPACT.md`，但 `AGENTS.md`「谁写哪（写错地方打回）」把 `docs/pm/` 明确划给 planner（Phase1 写 PRODUCT_PLAN、Phase2 写 PLAN）。本轮的角色是 builder，本文也不是计划变更（`Change C` 一旦批准必须由 Sol Planner 出**新 Plan 版本**）。按任务书给出的备选路径写在 `docs/qa/`，理由是避免用 builder 身份污染 planner 的文档位；内容与格式仍按任务书要求给全。

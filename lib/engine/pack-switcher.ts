@@ -131,6 +131,9 @@ export function switchPackAndDeal(session: GameSession, packId: string, customPa
   if (!target) return session;
   const switched = switchPack(session, target, { cause });
   if (switched === session) return session;
+  // Human Step 5 同轨不变量：切包后的本地补位走 `ensurePackPlayable` 的同一条跨轨补卡闸
+  // （`switchPack` 不改 deckSnapshot，闸门读的仍是切包前那副牌堆的轨）——legacy 切过去仍 legacy，
+  // formal 切过去仍 formal；纯旧 seed 局不会因为切玩法被补进 PN-*。
   const { deck } = ensurePackPlayable(switched.deckSnapshot, switched.config, target, switched.usedCardIds);
   return startRound({ ...switched, deckSnapshot: deck }, random, { preferPackIds: [target], ...options });
 }

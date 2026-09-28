@@ -4,6 +4,7 @@
 > 引擎：生产 D2 唯一 Router（createV2MainlineRouter）+ 生产编排器（drawV2SessionCard）+ 生产 Host 决策（applyV2HostDecision）+ 生产回合终态归约（eventForRoundTerminal）。本 harness 只提供局外输入（桌型 / 玩法选择 / 完成-跳过 / 互选成立），不复制任何过滤、排序、调度逻辑。
 > 规模：4,000 局（4 桌型 × 1,000 局），每局目标 20 轮完成；再跑一遍 1,000 局/桌型的 MATCH-enabled 扫描。抽卡池为 6 个出主线卡的玩法。
 > 已排除玩法：spin-bottle（转瓶子为 cardless 玩法，不在 V2_MAINLINE_PACK_IDS，createV2MainlineRouter 对它恒返回空集，即 Phase A bug 1）
+> ⚠️（2026-09-28 neat-freak 加注，未改写生成内容）本报告全部运行时数字已由 2026-09-28 重跑取代，真源见 `docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（4,000/4,000 跑满、dead-end 0、heatAtDraw 100% H1、matchesCreated 0）。
 
 ## 0. 读这份报告前必须知道的四件事
 

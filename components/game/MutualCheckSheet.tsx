@@ -44,8 +44,8 @@ type Step =
   | "HANDOFF_MASK"
   | "RESULTS";
 
-/** 交接遮罩自动进入下一位的等待时长（毫秒）：零点击交接。 */
-const HANDOFF_MASK_MS = 1350;
+/** 交接遮罩自动进入下一位的等待时长（毫秒）：零点击交接，约 1 秒准备下一位。 */
+const HANDOFF_MASK_MS = 1000;
 
 export interface MutualCheckPlayer {
   id: string;
@@ -58,7 +58,10 @@ export interface MutualCheckSheetProps {
   players: readonly MutualCheckPlayer[];
   /** 当局参与者投影（用于按 eligiblePair 建 run）。 */
   participants: readonly SessionParticipant[];
-  /** 命中的常规互选检查点（9/14/19）。 */
+  /**
+   * 命中的中途互选检查点（`relationshipEffectiveCardCount ∈ [12, 14]`，见 v2-state 的
+   * `MUTUAL_CHECK_COUNTS`）。只作为 dueCount 落进 `SYSTEM_MUTUAL_CHECK_DUE`，不驱动任何 UI 分支。
+   */
   checkpoint: number;
   /** 现有关系态：finalize 时做 D5 上限 2 校验。 */
   relationship: RelationshipState;

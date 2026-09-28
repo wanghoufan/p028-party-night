@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "export:questions": "vite-node -c vitest.config.ts scripts/export-builtin-question-bank.ts",
+    "build:fixed-manifest": "vite-node -c vitest.config.ts scripts/build-fixed-content-manifest.ts",
     "build:v2-ssot": "vite-node --script scripts/build-v2-ssot.ts"
   },
   "dependencies": {

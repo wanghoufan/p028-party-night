@@ -126,3 +126,25 @@ export function eligiblePairKeys(participants: readonly SessionParticipant[]): s
 export function pairModeFor(participants: readonly SessionParticipant[]): PairMode {
   return eligiblePairKeys(participants).length > 0 ? "ACTIVE" : "NO_ELIGIBLE_PAIR";
 }
+
+/* ------------------------------------------------------------------ */
+/* R4 §7.1｜互选候选人投影（唯一真源）                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 互选候选人 = 至少属于一条合法 eligible 边的**在场**参与者（R4 §7.1 mutualCandidateCount 口径）。
+ *
+ * 这是「此刻合法候选」的**唯一实现**：`v2-mutual-check` 的触发判定（mid / final）与本文件的
+ * 上层归约入口（`v2-session.reduceV2SessionEvents` → `v2-reducer`）都从这里取，
+ * 杜绝「一个传 candidateIds、另一个不传」造成两侧口径不一致。
+ * `pairKeys` 缺省 = 当前全部合法边；显式传入时只在该边集内取人（如 `beginMutualCheckRun` 的快照）。
+ */
+export function mutualCandidateIds(
+  participants: readonly SessionParticipant[],
+  pairKeys: readonly string[] = eligiblePairKeys(participants),
+): string[] {
+  const inPair = new Set(pairKeys.flatMap((key) => key.split("::")));
+  return participants
+    .filter((participant) => participant.active && inPair.has(participant.playerId))
+    .map((participant) => participant.playerId);
+}

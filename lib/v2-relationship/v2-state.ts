@@ -39,9 +39,80 @@ export const HEAT_THRESHOLDS: readonly HeatThresholdBand[] = [
 export const HEAT_ORDER = ["H1", "H2", "H3", "H4"] as const;
 export type Heat = (typeof HEAT_ORDER)[number];
 
-/** 常规互选节奏：relationshipEffectiveCardCount 首次达到 9/14/19 后标记 due。 */
-export const MUTUAL_CHECK_COUNTS = [9, 14, 19] as const;
-export const MAX_REGULAR_MUTUAL_RUNS = 3 as const;
+/**
+ * 中途（常规）互选窗口 `[12, 14]`：先产生了解、再询问兴趣。
+ * 只有已完成且真正产生可复述人物信息的关系主线卡才推进 `relationshipEffectiveCardCount`，
+ * 所以计数落在窗口内即代表「本局已经聊出足够内容」——首次达到 12 后可在 13、14 重查，
+ * 到 14 仍不满足（无合法 pair / 剩余轮次不足 / 已问过一次）就跳过本局中途互选，
+ * 不在后续 completed round 补问，也不为了凑次数强制出现。
+ *
+ * 注意：这是**第一版实现 / MC 校准基线**的窗口，不是可随手调的旋钮；
+ * 若要改 12–14（或引入更细的「人物认识阈值」），必须先报 Human，不得自行调整或恢复旧高频互选。
+ */
+export const MUTUAL_CHECK_COUNTS = [12, 13, 14] as const;
+
+/* ------------------------------------------------------------------ */
+/* P1-1｜§7.2「先了解，再询问兴趣」认识证据与阈值（待 MC 校准）              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 中途互选窗口上界（= `MUTUAL_CHECK_COUNTS` 最大值 14）。
+ * 有效卡计数**越过**它仍未问过常规互选 → 本局中途互选永久跳过（`midMutualCheckAbandoned`），
+ * 不在后续 completed round 补问；不得靠「count<12」顺手判掉。
+ */
+export const MUTUAL_CHECK_WINDOW_MAX = MUTUAL_CHECK_COUNTS[MUTUAL_CHECK_COUNTS.length - 1];
+
+/**
+ * 候选中途互选「认识阈值」（Plan §7.2 原文：首次互选前累计**中及以上信息轮≥5、其中高≥1、
+ * 人物维度≥3、至少两名实际候选各有本人披露**）。
+ *
+ * ⚠️ 这四个数**全部是待校准目标，不宣称已实现**：先按 Plan 逐字落地，
+ * 待 Monte Carlo 用真实出牌与揭晓/跳过记录复算后，再由 Human Gate 冻结/调整。
+ * 调整只改本组常量，不得散落到判定逻辑里。
+ */
+export const RECOGNITION_MEDIUM_PLUS_MIN_ROUNDS = 5 as const;
+export const RECOGNITION_HIGH_MIN_ROUNDS = 1 as const;
+export const RECOGNITION_MIN_PERSON_TOPICS = 3 as const;
+export const RECOGNITION_MIN_DISCLOSED_CANDIDATES = 2 as const;
+
+/**
+ * 中途/最终互选的最低 Heat（Plan §7.2「Heat≥H3」）。
+ * 窗口 12–14 天然落在 H3/H4，仍显式校验，避免换成别的窗口时漏门。
+ */
+export const MUTUAL_MIN_HEAT: Heat = "H3" as const;
+
+/** 信息增量档（与 §3 metadata `informationGain` 同值域；`null` 表示尚未补标）。 */
+export const INFORMATION_GAIN_BANDS = ["zero", "low", "medium", "high"] as const;
+export type InformationGainBand = (typeof INFORMATION_GAIN_BANDS)[number];
+
+/** 现场化学反应缓冲主题（§4 第 14 行，非人物维度，不计入人物维度覆盖）。 */
+export const LIVE_CHEMISTRY_BUFFER_TOPIC = "live_chemistry" as const;
+
+/**
+ * 一次有效信息轮（`relationshipEffectiveCardCount +1`）的复算依据：**卡 ID + 实际披露结果**。
+ * 供 MC 逐局复算 `informationRounds` / `topics` / `selfDisclosureByCandidate`。
+ *
+ * ⚠️ P0 fail-closed：`informationGain === null` / `topic === null` 的条目**不应出现在证据表里**——
+ * 判定侧（`isEffectiveInformationRound`）已把「未补标」判为非有效轮。
+ * 本字段保留 `null` 只是为了兼容**旧存档**里可能存在的历史证据条目（不补算、不改写），
+ * 新写入的证据条目一律两项非空。
+ */
+export interface RecognitionEvidenceEntry {
+  cardId: string;
+  /** 卡 metadata 信息增量档；`null` = 旧存档未补标的历史留痕（新写入不再产生）。 */
+  informationGain: InformationGainBand | null;
+  /** 卡主主题（§4 人物维度之一，或缓冲主题）；`null` = 旧存档未补标的历史留痕。 */
+  topic: string | null;
+  /** 本轮**本人**实际揭晓/披露过的人；空数组 = 未记录到本人披露。 */
+  disclosedPlayerIds: readonly string[];
+}
+
+/**
+ * 一局最多一次中途（常规）互选；`regularMutualCheckRuns` 达到本值即封顶。
+ * 「结束时的最终互选」是独立机制（`SYSTEM_MUTUAL_CHECK_FINAL`，不受本上限约束），
+ * 与本上限不叠加：中途至多 1 次 + 结束至多 1 次。
+ */
+export const MAX_REGULAR_MUTUAL_RUNS = 1 as const;
 /** final vs 最近一次 regular mutual 的最小关系有效卡间隔。 */
 export const MINIMUM_EFFECTIVE_CARDS_BETWEEN_RUNS = 5 as const;
 /** regular mutual 触发时，目标 Session 剩余轮数下限，保证新 MATCH 能获保障窗口。 */
@@ -215,6 +286,17 @@ export interface RelationshipState {
   lastMutualCheckAtEffectiveCount: number | null;
   regularMutualCheckRuns: number;
 
+  /**
+   * P1-1｜认识证据：每次「有效信息轮」+1 的卡 ID + 实际披露结果。
+   * 可选（旧 Session 缺该字段按空数组处理，不补算、不推定）。
+   */
+  recognitionEvidence?: readonly RecognitionEvidenceEntry[];
+  /**
+   * P1-1｜本局中途互选是否已永久跳过：有效卡计数越过窗口上界 14 且从未问过常规互选即为 true。
+   * 可选（旧 Session 缺该字段按 false 处理）。
+   */
+  midMutualCheckAbandoned?: boolean;
+
   /* Coverage */
   playerCoverage: Record<string, PlayerCoverage>;
 
@@ -249,6 +331,8 @@ export const createInitialRelationshipState = (): RelationshipState => ({
   extensionActivated: false,
   lastMutualCheckAtEffectiveCount: null,
   regularMutualCheckRuns: 0,
+  recognitionEvidence: [],
+  midMutualCheckAbandoned: false,
   playerCoverage: {},
   eligiblePairPolicyVersion: 1,
   pairState: {},
@@ -311,6 +395,14 @@ export const playerCoverageSchema = z.object({
   lowParticipation: z.boolean(),
 });
 
+/** P1-1｜认识证据条目：每次有效信息轮 +1 的卡 ID + 实际披露结果。 */
+export const recognitionEvidenceEntrySchema = z.object({
+  cardId: z.string(),
+  informationGain: z.enum(INFORMATION_GAIN_BANDS).nullable(),
+  topic: z.string().nullable(),
+  disclosedPlayerIds: z.array(z.string()),
+});
+
 export const pairStateSchema = z.object({
   pairKey: z.string(),
   sharedEvidence: z.number().int().nonnegative(),
@@ -353,6 +445,9 @@ export const relationshipStateSchema = z.object({
   extensionActivated: z.boolean(),
   lastMutualCheckAtEffectiveCount: z.number().int().nonnegative().nullable(),
   regularMutualCheckRuns: z.number().int().nonnegative(),
+  // P1-1：可选，旧 Session 缺省即按空数组 / 未放弃处理（不补算、不推定）。
+  recognitionEvidence: z.array(recognitionEvidenceEntrySchema).optional(),
+  midMutualCheckAbandoned: z.boolean().optional(),
   playerCoverage: z.record(z.string(), playerCoverageSchema),
   eligiblePairPolicyVersion: z.number().int().positive(),
   pairState: z.record(z.string(), pairStateSchema),

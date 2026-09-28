@@ -9,6 +9,7 @@ import { callProvider, extractMessageContent } from "@/lib/ai/upstream";
 import { filterCards } from "@/lib/ai/safety-filter";
 import { sessionConfigSchema } from "@/lib/domain/schemas";
 import { deckGenerationSource } from "@/lib/domain/generation-source";
+import { AI_MAINLINE_DISABLED, isAiMainlineEnabled } from "@/lib/ai/mainline-flag";
 import { BUILTIN_GAME_PACKS } from "@/lib/game-packs/registry";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,9 @@ type DeckData = z.infer<typeof aiDeckResponseSchema>;
 
 export async function POST(request: Request) {
   try {
+    // 正式主线 AI 隔离（Plan §13）：开关缺省即关闭，服务端在任何鉴权/读体/上游调用之前直接拒绝生成请求。
+    // 返回中性契约码（不是用户可见报错）：客户端在入口已被同一开关拦下，此处的拒绝只是防直调的兜底。
+    if (!isAiMainlineEnabled()) return NextResponse.json({ ok: false, code: AI_MAINLINE_DISABLED }, { status: 403, headers: noStore });
     const auth = request.headers.get("authorization");
     const requestKey = auth?.startsWith("Bearer ") ? auth.slice(7).trim() : undefined;
     const envFallbackEnabled = process.env.NODE_ENV !== "production" && process.env.PARTY_NIGHT_ENABLE_ENV_AI_FALLBACK === "true";

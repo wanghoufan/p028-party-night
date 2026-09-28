@@ -10,8 +10,9 @@
  * 三层计数口径（与 v2-session.ts 顶部注释、PRODUCT_PLAN_V2.0 §H 一致）：
  * - 硬合法（hardEligible）：强度上限、合法 5 档强制、参与者人数下限、pair 目标 gating、
  *   `usedCardIds` 全部通过。
- * - `bucket`：**当前玩法内** ∩ 硬合法 ∩ 当前 Heat 档 ∩ 不在最近 `softDedupWindow` 张软去重窗口内。
- *   （桶必须限定在当前玩法：跨玩法填桶会让 pack 耗尽永不可见，主链也会抽到 currentPackId 之外的卡。）
+ * - `bucket`：**当前玩法内** ∩ 硬合法 ∩ **Formal 卡**的当前 Heat 档 ∩ 不在最近 `softDedupWindow` 张软去重窗口内。
+ *   （桶必须限定在当前玩法：跨玩法填桶会让 pack 耗尽永不可见，主链也会抽到 currentPackId 之外的卡。
+ *   Heat 档硬过滤只对 Formal Fixed 轨的卡生效，非 Formal 卡不受约束，见 `heatEligibleForCard`。）
  * - `pack`：当前玩法的硬合法集（不套软去重、不套 Heat 档：本玩法还有材料，只是当前桶出不了）。
  * - `global`：全部 relationship-aware 玩法的硬合法集（同上，不套软去重与 Heat 档）。
  *
@@ -30,6 +31,7 @@ import {
   type RelationshipState,
 } from "./v2-state";
 import { drawSeedFor, orderByTieBreakRotation } from "./v2-draw-order";
+import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
 import { getGamePack } from "@/lib/game-packs/registry";
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { V2_MAINLINE_PACK_BY_GAME_TYPE } from "@/lib/v2-content/v2-card-bridge";
@@ -42,6 +44,27 @@ const ALL_PLAYERS_TARGET_MODE = "all-players";
 const MATCH_TARGET_MODE = "match-pair";
 
 const heatRank = (heat: Heat): number => HEAT_ORDER.indexOf(heat) + 1;
+
+/** 正式 Formal Fixed 轨的卡 ID 集合（B3-2 谓词真源；当前冻结快照全 legacy ⇒ 空集）。 */
+const formalFixedIds = formalFixedIdSet();
+
+/**
+ * Heat 档硬过滤是否适用于该卡 —— 与生产 Router `lib/engine/v2-deal.ts` 的 `heatEligible`
+ * **同一口径**（B3-1 §2.1）。
+ *
+ * Heat 档是 **Formal Fixed 轨**的规则：只有能进入 Formal 轨的卡才受它约束。非 Formal 卡
+ * （当前快照内 350 张 `PN-*` 全为 `legacy` / 扩圈 40 张）既不推进 Heat 与有效计数
+ * （`v2-reducer.ts` fail-closed），就不该被 Heat 档卡死可玩库存，故直接放行。
+ *
+ * 判定复用 `fixed-content-manifest` 的 `formalFixedIdSet`（**不在此复制实现**）：SSOT 主线卡
+ * 在数据上恒为 `source === "builtin"`，故 `formalFixedIds.has(cardId)` 与
+ * `isFormalFixedCard(card)` 等价。**禁止**改用 `classifyMainlineCard === "fixed"`
+ * —— 那只是「在冻结快照内」（当前 390 张全部满足），不是 Formal。
+ */
+function heatEligibleForCard(card: V13MainlineCard, currentHeat: number): boolean {
+  if (!formalFixedIds.has(card.cardId)) return true;
+  return currentHeat >= card.heatMin && currentHeat <= card.heatMax;
+}
 
 /** SSOT 卡 → 它所属的主线玩法 id（不在主线映射里的卡不属于本路由）。只读视图也可传入。 */
 export function packIdForMainlineCard(card: { gameType: V13MainlineCard["gameType"] }): string | undefined {
@@ -148,8 +171,7 @@ export function createV2MainlineRouter(options: V2MainlineRouterOptions): V2Main
         hardEligible(input).filter(
           (card) =>
             packIdForMainlineCard(card) === packId &&
-            currentHeat >= card.heatMin &&
-            currentHeat <= card.heatMax &&
+            heatEligibleForCard(card, currentHeat) &&
             !excluded.has(card.cardId),
         ),
         drawSeed(input),

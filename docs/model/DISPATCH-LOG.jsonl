@@ -185,3 +185,34 @@
 {"date":"2026-09-27","task":"PhaseB RR复评V2.2第2轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"FAIL","note":"FAIL87/100 blocking=0；新增A-AI-DIRECT"}
 {"date":"2026-09-27","task":"PhaseB Planner短修订三项","role":"planner","model":"codex/gpt-6-sol","used":"主","runtime":"codex","result":"PASS","note":"AI直连旁路守卫+竞品节+9x6集中验收表"}
 {"date":"2026-09-27","task":"PhaseB RR复评V2.2第3轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"PASS 94/100 Gate全勾可交Human Gate"}
+{"date":"2026-09-28","task":"B1 metadata schema","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"中文枚举误用→B2改正"}
+{"date":"2026-09-28","task":"B2 BAR-FIT机制+审查","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"可解释规则表+可复现产物"}
+{"date":"2026-09-28","task":"B3 AI隔离+D8严格A","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"超时但已落盘，查证后不重派"}
+{"date":"2026-09-28","task":"B4 Mutual频率+1000ms","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"超时但已落盘"}
+{"date":"2026-09-28","task":"B5 E2E修复第1次(幻觉)","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"FAIL","note":"谎报产物+串线→作废换实例"}
+{"date":"2026-09-28","task":"B5b E2E只读诊断","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"诊断准确"}
+{"date":"2026-09-28","task":"B5c E2E修复+死常量清理","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"超时但已落盘"}
+{"date":"2026-09-28","task":"第三方静态审查(外部)","role":"code-reviewer","model":"external/third-party-static-review","used":"主","runtime":"—","result":"FAIL","note":"P0=0 blockingP1=5；7条经TM实读全部成立"}
+{"date":"2026-09-28","task":"C1 P1-1 Mutual认识门槛","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"四阈值+到14永久跳过"}
+{"date":"2026-09-28","task":"C2 P1-2+P1-7 metadata两层","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"strict缺一即FAIL"}
+{"date":"2026-09-28","task":"C3 P1-3 manifest准入","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"停线请决策2项"}
+{"date":"2026-09-28","task":"C4 P1-4 BAR-FIT分层+P1-5 timeout","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"unit恢复全绿"}
+{"date":"2026-09-28","task":"B2-1 诊断 would-you-rather 失败(只诊断)","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"FAIL","note":"根因真回归，零改动，停线交TM"}
+{"date":"2026-09-28","task":"B3-1 只读设计：轨识别+Heat豁免方案","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"零代码改动，产出设计稿"}
+{"date":"2026-09-28","task":"B3-2 Heat豁免+isFormalFixedCard","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"would-you-rather 恢复10轮"}
+{"date":"2026-09-28","task":"B3-4 SSOT Router 同口径","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"E2E 105/1/5"}
+{"date":"2026-09-28","task":"B3-5 跨轨补卡闸","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"12例新测"}
+{"date":"2026-09-28","task":"B3-6 负向E2E改写","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"E2E 106/0/6"}
+{"date":"2026-09-28","task":"B3-7 正向production-chain integration","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"走正式入口，探针自证"}
+{"date":"2026-09-28","task":"B3-8 count=14 abandoned 覆盖","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"报出D1/D2缺陷"}
+{"date":"2026-09-28","task":"B3-9 修D1候选同源+D2 awaiting","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"删模块级resolver"}
+{"date":"2026-09-28","task":"B3-10 Step3 去最终互选Heat硬编码","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"Heat/时点继续留空"}
+{"date":"2026-09-28","task":"B3-11 Step4 两轨+删折让","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"formal=0 如实"}
+{"date":"2026-09-28","task":"B3-12 Step6 BAR-FIT canonical","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"逐卡390/390一致"}
+{"date":"2026-09-28","task":"B3-13 重跑 Router MC","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"零脚本改动，dead-end 0"}
+{"date":"2026-09-28","task":"B3-14 Step5 收尾 custom/AI 混装","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"缺口2停线交Human"}
+{"date":"2026-09-28","task":"CR-1 code-reviewer 全量复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
+{"date":"2026-09-28","task":"QA-1 全量门禁+重点场景","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"FAIL","note":"QA-COV-01 覆盖不完整"}
+{"date":"2026-09-28","task":"B3-15 七玩法 legacy 20轮覆盖","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"8例新测"}
+{"date":"2026-09-28","task":"QA-2 复验(未落盘)","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"FAIL","note":"流程误读停等supervisor"}
+{"date":"2026-09-28","task":"QA-3 复验收尾并落盘","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}

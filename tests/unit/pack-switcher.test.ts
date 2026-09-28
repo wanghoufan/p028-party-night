@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARIES } from "@/lib/domain/constants";
 import type { CustomGamePack, Player, SessionConfig } from "@/lib/domain/schemas";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
+import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 import { BUILTIN_GAME_PACKS } from "@/lib/game-packs/registry";
 import { createSession } from "@/lib/engine/session-engine";
 import { listSwitchablePacks, mixedCandidatePackIds, packMinPlayersNotice, switchPackAndDeal } from "@/lib/engine/pack-switcher";
@@ -132,7 +133,9 @@ describe("混合候选与直选拦截按在场人数过滤", () => {
 });
 
 describe("switchPackAndDeal", () => {
-  const singleNevrHave = () => createSession(config({ enabledPackIds: ["never-have"] }), BUILTIN_SEED_CARDS.filter((card) => card.packId === "never-have"));
+  // 用快照内旧题（PN-*）当牌堆：这是当前新局的真实轨；纯旧 seed 局的同轨闸另有专项覆盖
+  // （tests/unit/content-track-gate.test.ts：旧 seed 局切玩法不得补进 PN-*）。
+  const singleNevrHave = () => createSession(config({ enabledPackIds: ["never-have"] }), [...mainlineSsotCardsByPack("never-have")]);
 
   it("refills the target pack from local seeds and deals it inside the same session", () => {
     const session = singleNevrHave();

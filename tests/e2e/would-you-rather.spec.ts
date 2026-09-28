@@ -109,13 +109,64 @@ test("二选一：连续 10 轮不重题、全部 completed，Session 尺度与�
   await expect(view(page)).toBeVisible();
 });
 
-test("二选一：AI 断网时回退本地 seed，出题与换题都不卡", async ({ page }) => {
-  // 先配置一个 Provider（假 key），再切断生成接口，模拟“有 AI 但断网”
+/**
+ * 二选一：AI 主线缺省关闭（`AI_MAINLINE_ENABLED` 未显式置 true）时，生成入口被隔离，
+ * 组局页如实告知「本次使用本地固定题库」，本地固定题库照常能开局、换题、下一题。
+ * 这是 Phase B Fixed Content First（Plan §13）的新契约：不再是「生成失败」错误页。
+ */
+test("二选一：AI 缺省关闭时如实提示「本次使用本地固定题库」，本地题库仍能开局/换题/下一题", async ({ page }) => {
+  await prepareWouldYouRather(page);
+  await expect(page.getByRole("heading", { name: "本次使用本地固定题库" })).toBeVisible();
+  await dealLocalSeeds(page);
+
+  const id = currentSessionId(page);
+  const session = await readSession(page, id);
+  expect(session.deckSnapshot.length).toBeGreaterThanOrEqual(10);
+  expect(session.deckSnapshot.every((card) => card.packId === "would-you-rather")).toBe(true);
+  expect(session.deckSnapshot.some((card) => card.source === "ai")).toBe(false);
+  await expect(page.locator(".game-card__source")).toHaveText("本地题库");
+
+  // 缺省关闭下继续玩：换一个 + 下一题都能出题
+  await swap(page).click();
+  await expect(view(page)).toBeVisible();
+  await primary(page).click();
+  try {
+    await expect(page.getByText(/第 2 \/ /)).toBeVisible({ timeout: 15000 });
+  } catch {
+    const dbg = await readSession(page, id);
+    throw new Error(`缺省关闭第2轮header未出现 rounds=${JSON.stringify(dbg.rounds.map((r) => r.status))} cur=${dbg.currentRound?.cardId} used=${dbg.usedCardIds.length} deck=${dbg.deckSnapshot.length} url=${page.url()}`);
+  }
+  const done = await readSession(page, id);
+  expect(done.rounds.map((round) => round.status)).toEqual(["swapped", "completed"]);
+  expect(done.currentPackId).toBe("would-you-rather");
+});
+
+/**
+ * 二选一：AI 已启用但断网时，回退本地 seed，出题与换题都不卡。
+ *
+ * 【单独跑法】与 `PARTY_NIGHT_PRODUCTION_SMOKE` 同理用环境变量门控，默认（AI 缺省关闭）下跳过：
+ *   AI_MAINLINE_ENABLED=true pnpm exec playwright test tests/e2e/would-you-rather.spec.ts -g "AI 启用但断网"
+ *
+ * 【为什么要额外注入 flag】`isAiMainlineEnabled()` 在**浏览器端**读 `process.env.AI_MAINLINE_ENABLED`；
+ * Next 把浏览器侧 `process` polyfill 成 `{ env: {} }`（见 next/dist/compiled/process/browser.js），
+ * 故仅靠 dev server 进程环境变量无法在客户端打开开关。本用例用 `page.addInitScript` 在页面加载前
+ * 把该键注入浏览器 `process.env`（不改任何业务代码，也不放宽上面那条「AI 缺省关闭」契约断言）。
+ * 注：若某天开关挪到服务端守卫，CLI 的 `AI_MAINLINE_ENABLED=true` 即生效，本注入成为无害冗余。
+ */
+test("二选一：AI 启用但断网时回退本地 seed，出题与换题都不卡", async ({ page }) => {
+  test.skip(process.env.AI_MAINLINE_ENABLED !== "true", "需 AI 主线启用时单独跑：AI_MAINLINE_ENABLED=true playwright test -g \"AI 启用但断网\"");
+  // 注入浏览器侧开关（见上方说明）；同时兜底拦断/阻塞 CDN，杜绝任何真实外网请求。
+  await page.addInitScript(() => {
+    (globalThis as unknown as { process: { env: Record<string, string> } }).process = { env: { AI_MAINLINE_ENABLED: "true" } };
+  });
+  await page.route("**/api/generate-session", (route) => route.abort("internetdisconnected"));
+  await page.route("https://**", (route) => route.abort("internetdisconnected"));
+
+  // 配置一个 Provider；故意留空 baseUrl → 直连在 URL 校验处即失败（不发任何网络请求）。
   await page.goto("/settings/ai");
   await page.getByRole("textbox", { name: "API Key", exact: true }).fill("sk-e2e-offline-never-log-this");
   await page.getByRole("button", { name: "保存配置" }).click();
   await expect(page.getByText(/配置已加密保存|仅本次会话使用/)).toBeVisible();
-  await page.route("**/api/generate-session", (route) => route.abort("internetdisconnected"));
 
   await prepareWouldYouRather(page);
   await expect(page.getByRole("heading", { name: "这次生成没有完成" })).toBeVisible();
@@ -136,7 +187,7 @@ test("二选一：AI 断网时回退本地 seed，出题与换题都不卡", asy
     await expect(page.getByText(/第 2 \/ /)).toBeVisible({ timeout: 15000 });
   } catch {
     const dbg = await readSession(page, id);
-    throw new Error(`113第2轮header未出现 rounds=${JSON.stringify(dbg.rounds.map((r) => r.status))} cur=${dbg.currentRound?.cardId} used=${dbg.usedCardIds.length} deck=${dbg.deckSnapshot.length} url=${page.url()}`);
+    throw new Error(`AI断网第2轮header未出现 rounds=${JSON.stringify(dbg.rounds.map((r) => r.status))} cur=${dbg.currentRound?.cardId} used=${dbg.usedCardIds.length} deck=${dbg.deckSnapshot.length} url=${page.url()}`);
   }
   const done = await readSession(page, id);
   expect(done.rounds.map((round) => round.status)).toEqual(["swapped", "completed"]);

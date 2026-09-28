@@ -36,6 +36,16 @@ import {
 /* 装置 / fixture                                                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * P1-5：Monte Carlo 用例的**显式** timeout。
+ *
+ * 两条大样本用例（60 局 × 20 轮 / 64 局 × 20 轮，各上千次抽卡 + 事件归约）实测约
+ * 6.6s / 6.2s，超过 vitest 默认 `testTimeout=5000`，在慢机上会假红。
+ * 仅给这两条用例单独放宽（第三参数），**不改**全局 `testTimeout`、
+ * **不减**样本量、**不放宽** ±18% 公平阈值。
+ */
+const MONTE_CARLO_TIMEOUT_MS = 30_000;
+
 const adapter = getV2ContentAdapter();
 
 /** 2 男 2 女（有合法男女 pair，跑真正的 pair runtime，不触发 D4 降级）。 */
@@ -61,16 +71,23 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
 /**
  * TIE_FIXTURE｜tie 场景夹具（本文件所有用例共用）。
  *
- * 选 `truth-dare` 包 + H1 + intensityLimit=5：SSOT 里该档共 18 张合法卡，**全部强度 1**
- * （10 张 `PN-TRUTH-*` + 8 张 `PN-DARE-*`，见 `heatMin/heatMax` 与强度分布），
- * 于是「组内先出哪一张」完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
- * 修复前 `bucket(...)[0]` 恒为 `PN-DARE-001`；修复后随 seed 轮换。
+ * 选 `truth-dare` 包 + H1 + intensityLimit=5：SSOT 里该包共 100 张（truth 50 + dare 50），
+ * 强度分布 1:18 / 2:20 / 3:22 / 4:20 / 5:20；强度 5 的 20 张是 `match-pair`（未建立 MATCH 时不出），
+ * 故本夹具的 bucket = 100 − 20 = **80 张**（强度 1–4 全在）。
+ *
+ * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（当前快照 350 张全为 legacy ⇒ 豁免），bucket 不再按
+ * Heat 收窄 ⇒ 出卡集中在包的 **top 强度档：强度 4 的 20 张（truth 10 : dare 10）**，「组内先出哪一张」
+ * 完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
+ * 修复前 `bucket(...)[0]` 恒为同强度组里 cardId 字典序最小者；修复后随 seed 轮换。
  */
 const TIE_FIXTURE = {
   packId: "truth-dare",
-  /** SSOT 实测：H1 档 18 张，max intensity = 1，truth 10 : dare 8。 */
-  expectedTieTierSize: 18,
-  expectedTieTierMaxIntensity: 1,
+  /** 实测：H1 + 强度上限 5 + 未 MATCH，bucket = 100 − 20（match-pair）= 80 张。 */
+  expectedBucketSize: 80,
+  /** 实测：top 强度档 = 强度 4。 */
+  expectedTieTierMaxIntensity: 4,
+  /** 实测：top 强度档 20 张（truth 10 : dare 10）。 */
+  expectedTieTierSize: 20,
   expectedGameTypes: ["truth", "dare"] as const,
 } as const;
 
@@ -107,8 +124,9 @@ function mulberry32(seed: number): () => number {
 describe("P1#2①｜truth-dare 包内 dare / truth 曝光不再由 cardId 字典序垄断", () => {
   /**
    * 阈值推导（不拍脑袋）：
-   * - 修复后每次出卡在「当前 Heat 的 top 强度档」内均匀取一张。SSOT 实测该档两种 gameType
-   *   配比 H1=10:8、H2=10:10、H3=10:12、H4=10:10 ⇒ dare 的期望占比 ≈ 0.51（≈1:1）。
+   * - 修复后每次出卡在「包的 top 强度档」内均匀取一张（B3-4 后 Heat 档只对 Formal 卡生效、
+   *   当前快照全 legacy ⇒ 不再按 Heat 收窄）。SSOT 实测该档（强度 4）truth 10 : dare 10
+   *   ⇒ dare 的期望占比 ≈ 0.50（≈1:1）。
    * - 单次抽取是伯努利试验，M 次曝光中 dare 占比的标准差 = sqrt(p(1-p)/M)。
    *   本用例 60 局 × 约 20 轮 ≈ 1,200+ 次曝光，sd ≈ sqrt(0.25/1200) ≈ 0.0144。
    *   取 |dare-truth|/(dare+truth) ≤ 0.18（约 12σ）已经非常宽松，却能毫无歧义地否掉
@@ -159,7 +177,7 @@ describe("P1#2①｜truth-dare 包内 dare / truth 曝光不再由 cardId 字典
     expect(dare).toBeGreaterThan(0);
     // 修复前该包在 4,000 局里是 15359:704；这里不允许再出现这种量级差
     expect(Math.abs(dare - truth) / total).toBeLessThanOrEqual(FAIR_SHARE_TOLERANCE);
-  });
+  }, MONTE_CARLO_TIMEOUT_MS);
 
   it("单局 20 轮内也同时见到 truth 与 dare（不是靠跨局平均掩盖）", () => {
     const rnd = mulberry32(424242);
@@ -295,19 +313,19 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     }
   });
 
-  it("TIE_FIXTURE 局面的 tie 组构成稳定：18 张、全部强度 1、truth+dare 两种 gameType", () => {
+  it("TIE_FIXTURE 局面的构成稳定：80 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const cards = router.bucket(input({ drawSeed: 0 }));
     const topTier = cards.filter((card) => intensityOf(card.cardId) === TIE_FIXTURE.expectedTieTierMaxIntensity);
 
-    expect(cards).toHaveLength(TIE_FIXTURE.expectedTieTierSize);
+    expect(cards).toHaveLength(TIE_FIXTURE.expectedBucketSize);
     expect(topTier).toHaveLength(TIE_FIXTURE.expectedTieTierSize);
     expect(new Set(cards.map((card) => gameTypeOf(card.cardId)))).toEqual(
       new Set(TIE_FIXTURE.expectedGameTypes),
     );
   });
 
-  it("硬过滤不变：换 seed 不影响包归属 / 强度上限 / Heat 档 / used / 软去重窗口", () => {
+  it("硬过滤不变：换 seed 不影响包归属 / 强度上限 / used / 软去重窗口（Heat 档只对 Formal 卡生效）", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const relationship: RelationshipState = {
       ...createInitialRelationshipState(),
@@ -320,13 +338,12 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     for (const seed of [0, 11, 777]) {
       const cards = router.bucket({ ...request, drawSeed: seed }).map((card) => card.cardId);
       expect(cards.length).toBeGreaterThan(0);
+      // B3-4｜Heat 豁免：H2 的桶里会出现 heatMin=3 的卡（旧 Heat 档口径只出 heatMin ≤ 2）
+      expect(cards.some((cardId) => mainlineMeta(cardId).heatMin > 2)).toBe(true);
       for (const cardId of cards) {
         const meta = mainlineMeta(cardId);
         expect(packIdForMainlineCard(meta)).toBe(TIE_FIXTURE.packId);
         expect(meta.intensity).toBeLessThanOrEqual(3);
-        // H2 = relationshipEffectiveCardCount 4–7
-        expect(meta.heatMin).toBeLessThanOrEqual(2);
-        expect(meta.heatMax).toBeGreaterThanOrEqual(2);
         expect(relationship.usedCardIds).not.toContain(cardId);
         expect(relationship.recentCardIds.slice(-2)).not.toContain(cardId);
       }
@@ -412,7 +429,7 @@ describe("P1#2⑤｜sessionId 盐：同 session 复现、跨 session 不同", ()
     const firsts: string[] = [];
     for (let i = 0; i < 64; i += 1) {
       const cards = router.bucket(input({ drawSessionSalt: `session-${i}` }));
-      expect(cards.length).toBe(TIE_FIXTURE.expectedTieTierSize);
+      expect(cards.length).toBe(TIE_FIXTURE.expectedBucketSize);
       firsts.push(cards[0]!.cardId);
     }
     expect(new Set(firsts).size).toBeGreaterThan(4);
@@ -435,11 +452,11 @@ describe("P1#2⑤｜sessionId 盐：同 session 复现、跨 session 不同", ()
 
     expect(drawSeedFor(relationship, "fixture")).toBe(2968762458);
     expect(cards.map((card) => card.cardId).slice(0, 5)).toEqual([
-      "PN-DARE-006",
-      "PN-DARE-007",
-      "PN-DARE-008",
-      "PN-TRUTH-001",
-      "PN-TRUTH-002",
+      "PN-DARE-032",
+      "PN-DARE-033",
+      "PN-DARE-034",
+      "PN-DARE-035",
+      "PN-DARE-036",
     ]);
   });
 
@@ -503,5 +520,5 @@ describe("P1#2⑥｜跨 session 曝光公平性（sessionId 盐生效后）", ()
     expect(truth).toBeGreaterThan(0);
     expect(dare).toBeGreaterThan(0);
     expect(Math.abs(dare - truth) / total).toBeLessThanOrEqual(FAIR_SHARE_TOLERANCE);
-  });
+  }, MONTE_CARLO_TIMEOUT_MS);
 });

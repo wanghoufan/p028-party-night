@@ -31,7 +31,7 @@ const renderSheet = (table: SessionParticipant[], list: MutualCheckPlayer[]) => 
       open
       players={l}
       participants={t}
-      checkpoint={9}
+      checkpoint={12}
       relationship={createInitialRelationshipState()}
       onFinished={onFinished}
       onCancelled={onCancelled}
@@ -166,7 +166,7 @@ describe("MutualCheckSheet（RG-01 每人只点一次）", () => {
     tap("继续游戏");
     expect(onFinished).toHaveBeenCalledTimes(1);
     const payload = onFinished.mock.calls[0]![0];
-    expect(payload.checkpoint).toBe(9);
+    expect(payload.checkpoint).toBe(12);
     expect(payload.runId).toBeTruthy();
     expect(payload.matches).toEqual([{ pairKey: "p1::p2", playerIds: ["p1", "p2"] }]);
   });
@@ -205,7 +205,7 @@ describe("MutualCheckSheet（RG-01 每人只点一次）", () => {
     renderSheet(table, names);
 
     expect(screen.getByText("暂时没有可选的人")).toBeInTheDocument();
-    expect(screen.getByText("TA 现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
+    expect(screen.getByText("对方现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "跳过" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "取消本轮" })).toBeInTheDocument();
 
@@ -295,7 +295,7 @@ describe("MutualCheckSheet｜R-CB9 单候选 Yes/No 与多人候选 UI 分支", 
     rerender([female("f1"), male("m1", false)]);
     tap("愿意");
 
-    expect(screen.getByText("TA 现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
+    expect(screen.getByText("对方现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
     // 仍停在选择页：没有提交、没有公开结果
     expect(screen.getByRole("button", { name: "愿意" })).toBeInTheDocument();
     expect(screen.queryByText("已收起。")).toBeNull();
@@ -331,7 +331,7 @@ describe("MutualCheckSheet｜R-CB9 单候选 Yes/No 与多人候选 UI 分支", 
 
     // 点新 pair 的对象（小丽）：提交前校验拦下，不给静默降级为跳过
     tap("小丽");
-    expect(screen.getByText("TA 现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
+    expect(screen.getByText("对方现在不在可选范围内，先跳过吧。")).toBeInTheDocument();
     expect(screen.queryByText("已收起。")).toBeNull();
     expect(screen.getByRole("button", { name: "小丽" })).toBeInTheDocument();
 

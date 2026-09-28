@@ -39,6 +39,7 @@ import {
   type RelationshipEvent,
 } from "./v2-reducer";
 import { isSingleAnchorExposed, rankPairs, singleAnchorPlayerId } from "./v2-routing";
+import { mutualCandidateIds } from "./v2-participants";
 import { advanceGuarantee, type FiveGuaranteeEvent } from "./v2-guarantee";
 import {
   applyHostDecision,
@@ -208,16 +209,24 @@ function createPendingFiveGuarantee(pairKey: string, effectiveCount: number): Pa
 /**
  * 唯一主链事件入口：逐条归约 R3 事件；一旦 `match_created`，即为该 pair 建立
  * D7 pending 保障（seen=0，等待后续合格机会）。
+ *
+ * `candidateIds`（可选）：**此刻合法候选**，缺省由本函数按 `state.participants` 用
+ * `v2-participants.mutualCandidateIds` 算出（与 `v2-mutual-check` 触发点**同一份实现**）。
+ * 该口径沿 `reduceRelationshipEvent` 一直传到 6a 的「窗口上界是否仍可行」与
+ * `SYSTEM_MUTUAL_CHECK_DUE` 复核，杜绝「reducer 不传候选、trigger 传候选」的口径不一致。
+ * 显式传入的 `candidateIds` 优先（例如「已按某快照边集收窄」的调用点）。
  */
 export function reduceV2SessionEvents(
   state: V2SessionState,
   events: readonly RelationshipEvent[],
+  candidateIds?: readonly string[],
 ): V2ReduceOutcome {
+  const candidates = candidateIds ?? mutualCandidateIds(state.participants);
   let relationship = state.relationship;
   const deltas: ReduceDelta[] = [];
 
   for (const event of events) {
-    const reduced = reduceRelationshipEvent(relationship, event);
+    const reduced = reduceRelationshipEvent(relationship, event, candidates);
     relationship = reduced.state;
     deltas.push(reduced.delta);
 

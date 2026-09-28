@@ -9,6 +9,7 @@ import { COMPATIBILITY_PACK_ID } from "@/lib/game-packs/compatibility-test";
 import { readSpinBottleState, readSpinChain, recordSpinResult, SPIN_BOTTLE_PACK_ID, spinBottleStateSchema } from "@/lib/game-packs/spin-bottle";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
 import { DEFAULT_BOUNDARIES } from "@/lib/domain/constants";
+import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 import { PACK_PLAYABLE_THRESHOLD, refillPackFromSeeds } from "@/lib/ai/generate-deck";
 
 const players = (spec: Array<[string, string, boolean]>): Player[] =>
@@ -182,18 +183,21 @@ describe("空牌堆单开局也能链入出题 (V1.5 热修)", () => {
       id: "ai-truth-1", packId: "truth-dare", type: "truth", content: "AI 出的真心话", instruction: "轮到的玩家回答",
       intensity: 3, tags: [], boundaryTags: [], minPlayers: 2, participantMode: "single", source: "ai",
     };
+    // B3-14：跨轨补卡闸收紧后，补位只与牌堆同轨。真实混合局里 AI 卡总是与快照卡同堆，
+    // 因此这里把 fixture 从「只有一张 AI 卡」改成「AI + 快照卡」，与被验证的语义（补位不删已有牌）一致。
+    const snapshotCard = mainlineSsotCardsByPack("truth-dare")[0]!;
     const session = activateSession(createSession(
       {
         players: roster(), relationship: "friends", vibes: ["funny"], intensity: 3, boundaries: DEFAULT_BOUNDARIES,
         enabledPackIds: ["spin-bottle", "truth-dare"], mode: "single",
       },
-      [aiCard],
-    ), [aiCard]);
+      [aiCard, snapshotCard],
+    ), [aiCard, snapshotCard]);
     expect(availableSpinChainKindsAfterRefill(session)).toContain("truth");
     const entered = enterSpinChain(session, { targetPlayerId: "p1", targetName: "Alex", kind: "truth" }, [], () => 0);
     // 已有的 AI 卡原样保留，seed 只是补在后面
     expect(entered.deckSnapshot.map((card) => card.id)).toContain("ai-truth-1");
-    expect(entered.deckSnapshot.length).toBeGreaterThan(1);
+    expect(entered.deckSnapshot.length).toBeGreaterThan(2);
   });
 
   it("换题（replacing）在空牌堆下同样能重出同类型题", () => {

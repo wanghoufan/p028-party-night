@@ -139,6 +139,8 @@ function prepareChainDeck(session: GameSession, requested: SpinChainKind): { ses
  * 补不动（真耗尽）时原样返回，交给 resolveKind 判空态。
  */
 function ensureChainDeck(session: GameSession): GameSession {
+  // Human Step 5 同轨不变量：链内补题同样走 `ensurePackPlayable` 的跨轨补卡闸——
+  // 空牌堆（转瓶子建局）按默认快照轨补 PN-*，纯旧 seed 局则一张都不补进 PN-*。
   const { deck, added } = ensurePackPlayable(session.deckSnapshot, session.config, SPIN_CHAIN_PACK_ID, session.usedCardIds);
   return added ? { ...session, deckSnapshot: deck } : session;
 }

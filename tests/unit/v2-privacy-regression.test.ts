@@ -291,7 +291,7 @@ describe("R-CB10｜单向原始选择不落入 Session / 存储 / 对外序列�
     // p2 点「愿意」→ 唯一候选 p1（单向；p1 未回应）
     submitMutualChoice(run, "p2", "p1");
     const result = finalizeMutualCheckRun(run, createInitialRelationshipState());
-    const events = mutualCheckFinalEvents(run.runId, 9, result, TS);
+    const events = mutualCheckFinalEvents(run.runId, 12, result, TS);
 
     // Session 落盘形状（withV2State 的真实产物）+ 外发事件：不得带单向明细
     const base = { ...privacySession(), relationshipState: createInitialRelationshipState() };
@@ -316,7 +316,7 @@ describe("R-CB10｜单向原始选择不落入 Session / 存储 / 对外序列�
     submitMutualChoice(run, "p2", "p1");
     submitMutualChoice(run, "p1", "p2");
     const result = finalizeMutualCheckRun(run, createInitialRelationshipState());
-    const events = mutualCheckFinalEvents(run.runId, 9, result, TS);
+    const events = mutualCheckFinalEvents(run.runId, 12, result, TS);
 
     const base = { ...privacySession(), relationshipState: createInitialRelationshipState() };
     const session = withV2State(base, reduceV2SessionEvents({

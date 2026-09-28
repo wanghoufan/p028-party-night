@@ -5,8 +5,11 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_BOUNDARIES } from "@/lib/domain/constants";
 import type { GameCard, GameSession, Player, SessionConfig } from "@/lib/domain/schemas";
-import { completeRound, createSession, startRound } from "@/lib/engine/session-engine";
+import { createSession, resolveRoundAndReduce, roundDisclosureSignal, startRound } from "@/lib/engine/session-engine";
 import { applyPlayerRosterChange, cardEventFamilyForPack, reduceResolvedRound } from "@/lib/engine/v2-deal";
+import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
+import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
+import { setCardQualityIndexOverrides } from "@/lib/v2-content/v2-card-quality-index";
 import { mutualCheckTrigger } from "@/lib/v2-relationship/v2-mutual-check";
 import {
   applyPlayerExit,
@@ -15,6 +18,7 @@ import {
   mayCreateMatch,
   mutualDueGates,
   reduceRelationshipEvent,
+  type RelationshipEvent,
 } from "@/lib/v2-relationship/v2-reducer";
 import {
   diffPlayerRoster,
@@ -35,6 +39,7 @@ import {
   type MatchState,
   type PairFiveGuarantee,
   type PairState,
+  type RecognitionEvidenceEntry,
   type RelationshipEventType,
   type RelationshipState,
   type SessionParticipant,
@@ -75,10 +80,51 @@ const male = (playerId: string): SessionParticipant => ({ playerId, active: true
 const female = (playerId: string): SessionParticipant => ({ playerId, active: true, pairGender: "female" });
 const genders = (): SessionParticipant[] => [male("a"), female("b"), { playerId: "c", active: true, pairGender: null }];
 
+/* ------------------------------------------------------------------ */
+/* §7.2 生产链夹具：真实 SSOT 主线卡 + 「已补标」覆盖层                     */
+/* ------------------------------------------------------------------ */
+
+const REL_PACK_ID = "truth-dare";
+
+/**
+ * `eventForRoundTerminal` 的卡侧 metadata 走**正式 sidecar**（`metadataForCard`），
+ * 而 sidecar 只覆盖真实 SSOT 卡、且 SSOT 三件套本批零改动（一张都还没补标）。
+ * 所以生产链夹具必须用**真实 SSOT 主线卡**（否则 sidecar 查不到卡 → metadata 恒 null），
+ * 再用测试/CI 覆盖层（`setCardQualityIndexOverrides`，生产恒为空）把它们模拟成**已补标**：
+ * 「已审卡 → 有效信息轮 → 认识证据」走的是与生产完全相同的入口、事件形状与谓词。
+ *
+ * 选卡条件＝H1 档、强度 ≤3、非 match-pair 目标、人数门槛 ≤3 —— 保证 H1 的第 1 轮真能被生产
+ * Router 抽到（不是把卡硬塞进 `currentRound`）。
+ */
+const auditedRelDeck = (count: number): GameCard[] => {
+  const raw = new Map(getV2ContentAdapter().mainlineCards.map((card) => [card.cardId, card]));
+  return mainlineSsotCardsByPack(REL_PACK_ID)
+    .filter((entry) => {
+      const meta = raw.get(entry.id);
+      return (
+        meta !== undefined &&
+        meta.heatMin === 1 &&
+        meta.intensity <= 3 &&
+        meta.targetMode !== "match-pair" &&
+        meta.matchRequired !== true &&
+        entry.minPlayers <= 3
+      );
+    })
+    .slice(0, count);
+};
+
+const AUDITED_REL_DECK: GameCard[] = auditedRelDeck(5);
+const AUDITED_REL_CARD = AUDITED_REL_DECK[0]!;
+
+setCardQualityIndexOverrides(
+  Object.fromEntries(AUDITED_REL_DECK.map((entry) => [entry.id, { informationGain: "medium", topic: "恋爱观" }])),
+);
+
 /** 出一轮（真牌堆 → 真 currentRound），默认单点名单轮（participantIds 恰 1 人）。 */
 function dealOne(options: { packId?: string; participantIds?: string[] } = {}): GameSession {
-  const packId = options.packId ?? "truth-dare";
-  const deck = [card(`c-${packId}`, packId)];
+  const packId = options.packId ?? REL_PACK_ID;
+  // 关系主线轮用真实 SSOT 主线卡（才有 sidecar metadata）；其它玩法沿用最小合成卡。
+  const deck = packId === REL_PACK_ID ? [AUDITED_REL_CARD] : [card(`c-${packId}`, packId)];
   return startRound(
     createSession(config({ enabledPackIds: [packId] }), deck, genders()),
     () => 0,
@@ -86,14 +132,40 @@ function dealOne(options: { packId?: string; participantIds?: string[] } = {}): 
   );
 }
 
-/** 直接归约 n 条 REL_CARD_COMPLETED，返回关系态（用于 Heat / 结算边界断言）。 */
+/**
+ * 生产链夹具：主线 REL 轮走**正式轮次结算 API** 提供显式揭晓信号，
+ * 由引擎唯一的原子入口 `resolveRoundAndReduce` 一次完成 resolve + reduce
+ * （测试不手塞 `recognitionEvidence`、不手改计数、不手改 Heat）。
+ */
+const completeWithDisclosure = (
+  session: GameSession,
+  playerIds: string[],
+  disclosed = true,
+): GameSession =>
+  resolveRoundAndReduce(
+    session,
+    "complete",
+    roundDisclosureSignal({ selfDisclosed: disclosed, disclosedPlayerIds: playerIds }),
+  );
+
+/**
+ * 直接归约 n 条 REL_CARD_COMPLETED，返回关系态（用于 Heat / 结算边界断言）。
+ *
+ * P0 fail-closed：裸 `REL_CARD_COMPLETED` 现在**不再**推进有效卡计数（缺 §7.2 元数据），
+ * 故这里必须带齐三样输入（informationGain / topic / selfDisclosed+disclosedPlayerIds），
+ * 才代表一个真正的「有效信息轮」——与生产链 `eventForRoundTerminal` 产出的形状一致。
+ */
 function reduceCompleted(n: number, base: RelationshipState = createInitialRelationshipState()): RelationshipState {
   const state = createV2SessionState({ sessionId: "h", participants: [male("a"), female("b")] });
-  const events = Array.from({ length: n }, (_, index) => ({
+  const events = Array.from({ length: n }, (_, index): RelationshipEvent => ({
     eventId: `e${index}`,
-    type: "REL_CARD_COMPLETED" as RelationshipEventType,
+    type: "REL_CARD_COMPLETED",
     ref: `i${index}`,
     cardId: `card-${index}`,
+    informationGain: index === 0 ? "high" : "medium",
+    topic: "恋爱观",
+    selfDisclosed: true,
+    disclosedPlayerIds: ["a"],
   }));
   const reduced = reduceV2SessionEvents({ ...state, relationship: base }, events).state;
   return reduced.relationship;
@@ -138,11 +210,24 @@ const saturated = (): RelationshipState => ({
   fiveGuarantees: { "a::b": pendingGuarantee("a::b"), "b::d": pendingGuarantee("b::d") },
 });
 
+/**
+ * P1-1｜§7.2 认识阈值证据：中及以上≥5（默认全部 medium）、高≥1（第 1 轮 high）、
+ * 人物维度 3（择偶偏好/恋爱观/相处规则）、两名候选 a/b 各有本人披露。用于「窗口可达」类断言。
+ */
+const recognitionEvidenceFor = (count: number): RecognitionEvidenceEntry[] =>
+  Array.from({ length: count }, (_, index) => ({
+    cardId: `card-${index}`,
+    informationGain: index === 0 ? ("high" as const) : ("medium" as const),
+    topic: (["择偶偏好", "恋爱观", "相处规则"] as const)[index % 3],
+    disclosedPlayerIds: [index % 2 === 0 ? "a" : "b"],
+  }));
+
 const relAt = (count: number, overrides: Partial<RelationshipState> = {}): RelationshipState => ({
   ...createInitialRelationshipState(),
   heat: heatForEffectiveCount(count),
   relationshipEffectiveCardCount: count,
   sessionCompletedRounds: count,
+  recognitionEvidence: recognitionEvidenceFor(count),
   ...overrides,
 });
 
@@ -166,24 +251,54 @@ function rosterSession(): GameSession {
 /* ------------------------------------------------------------------ */
 
 describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
-  it("REL_CARD_COMPLETED：推进 relationshipEffectiveCardCount 与 used，currentRound 保留给引擎", () => {
+  it("REL_CARD_COMPLETED：走原子入口后推进 relationshipEffectiveCardCount 与 used，同一轮只落盘一次", () => {
     const session = dealOne({ participantIds: ["a"] });
     expect(session.currentRound).toBeDefined();
     expect(session.relationshipState?.relationshipEffectiveCardCount).toBe(0);
 
     const round = session.currentRound!;
-    const reduced = reduceResolvedRound(session, "completed", "2026-09-25T00:00:00.000Z");
+    const resolved = completeWithDisclosure(session, ["a"]);
 
-    expect(reduced.relationshipState?.relationshipEffectiveCardCount).toBe(1);
-    expect(reduced.relationshipState?.sessionCompletedRounds).toBe(1);
-    expect(reduced.relationshipState?.heat).toBe("H1");
-    expect(reduced.relationshipState?.terminalExclusivity[round.id]).toBe("completed");
+    expect(resolved.relationshipState?.relationshipEffectiveCardCount).toBe(1);
+    expect(resolved.relationshipState?.sessionCompletedRounds).toBe(1);
+    expect(resolved.relationshipState?.heat).toBe("H1");
+    expect(resolved.relationshipState?.terminalExclusivity[round.id]).toBe("completed");
+    // 本轮的披露真的进了本轮 reducer：认识证据恰 1 条，且指向本轮卡
+    expect(resolved.relationshipState?.recognitionEvidence).toEqual([
+      { cardId: round.cardId, informationGain: "medium", topic: "恋爱观", disclosedPlayerIds: ["a"] },
+    ]);
     // 出牌时已记 used，归约不重复记（同一 cardId 只一条）
-    expect(reduced.usedCardIds).toEqual([...new Set(reduced.usedCardIds)]);
-    expect(reduced.usedCardIds).toEqual(session.usedCardIds);
-    // currentRound 原样保留，供 completeRound/startRound 继续
-    expect(reduced.currentRound?.id).toBe(round.id);
-    expect(reduced.deckSnapshot).toEqual(session.deckSnapshot);
+    expect(resolved.usedCardIds).toEqual([...new Set(resolved.usedCardIds)]);
+    expect(resolved.usedCardIds).toEqual(session.usedCardIds);
+    // 同一轮只落盘一次：rounds 恰好 +1，currentRound 已清空（引擎原子入口负责 resolve）
+    expect(resolved.rounds).toHaveLength(1);
+    expect(resolved.rounds[0]!.id).toBe(round.id);
+    expect(resolved.rounds[0]!.status).toBe("completed");
+    expect(resolved.rounds[0]!.result?.disclosure).toEqual({ selfDisclosed: true, disclosedPlayerIds: ["a"] });
+    expect(resolved.currentRound).toBeUndefined();
+    expect(resolved.deckSnapshot).toEqual(session.deckSnapshot);
+  });
+
+  it("披露不得串轮：只有本轮自己带披露的轮才计入（上一轮的披露不得挂到本轮）", () => {
+    let session: GameSession = createSession(config(), AUDITED_REL_DECK.slice(0, 3), genders());
+    const cardIds: string[] = [];
+
+    // 第 1 轮：不提供披露（未判定）→ 不计有效轮
+    session = startRound(session, () => 0);
+    cardIds.push(session.currentRound!.cardId);
+    session = resolveRoundAndReduce(session, "complete");
+    expect(session.relationshipState?.relationshipEffectiveCardCount).toBe(0);
+
+    // 第 2、3 轮：各自显式提供披露 → 各计 1（旧「回查 rounds 尾条」实现会把第 2 轮的披露错挂到第 3 轮）
+    for (const index of [1, 2]) {
+      session = startRound(session, () => 0);
+      cardIds.push(session.currentRound!.cardId);
+      session = completeWithDisclosure(session, ["a"]);
+      expect(session.relationshipState?.relationshipEffectiveCardCount).toBe(index);
+    }
+
+    expect(session.relationshipState?.recognitionEvidence?.map((entry) => entry.cardId)).toEqual(cardIds.slice(1));
+    expect(session.rounds.map((entry) => entry.id)).toHaveLength(3);
   });
 
   it("skip / swap 不计：不推进有效卡计数、不消耗 20/25 限额、不推 Heat", () => {
@@ -219,28 +334,35 @@ describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
   });
 
   it("连续有效回合端到端：4 轮 completed → 计数 4 / Heat H2 / 两个计数器同值", () => {
-    let session: GameSession = createSession(
-      config(),
-      [1, 2, 3, 4, 5].map((n) => card(`t-${n}`, "truth-dare")),
-      genders(),
-    );
+    let session: GameSession = createSession(config(), AUDITED_REL_DECK, genders());
     for (let index = 0; index < 4; index += 1) {
       session = startRound(session, () => 0);
       expect(session.currentRound).toBeDefined();
-      session = reduceResolvedRound(session, "completed");
-      session = completeRound(session);
+      session = completeWithDisclosure(session, ["a"]);
     }
 
     expect(session.relationshipState?.relationshipEffectiveCardCount).toBe(4);
     expect(session.relationshipState?.sessionCompletedRounds).toBe(4);
     expect(session.relationshipState?.heat).toBe("H2");
+    expect(session.relationshipState?.recognitionEvidence).toHaveLength(4);
     expect(session.rounds.filter((round) => round.status === "completed")).toHaveLength(4);
   });
 
-  it("归约已接入 /game 发牌完成路径（resolve 先归约再走引擎）", () => {
+  it("归约已接入 /game 发牌完成路径（页面只调引擎唯一原子入口，不再自己协调先后）", () => {
     const page = readFileSync(join(process.cwd(), "app/game/page.tsx"), "utf8");
-    expect(page).toMatch(/reduceResolvedRound\(session, /);
-    expect(page).toMatch(/const reduced = reduceResolvedRound/);
+    const start = page.indexOf("function applyRoundSignal");
+    expect(start).toBeGreaterThan(-1);
+    const applyRoundSignal = page.slice(start, page.indexOf("\n}", start));
+    // 普通玩法轮终态只调引擎的单一业务入口
+    expect(applyRoundSignal).toMatch(/resolveRoundAndReduce\(session, terminal, signal\)/);
+    // 页面不再自己拼「先归约 / 再落盘」两步，也不再直接调三个 resolve 包装
+    expect(applyRoundSignal).not.toMatch(/reduceResolvedRound/);
+    expect(applyRoundSignal).not.toMatch(/completeRound\(|swapRound\(|skipRound\(/);
+    const engine = readFileSync(join(process.cwd(), "lib/engine/session-engine.ts"), "utf8");
+    expect(engine).toMatch(/export function resolveRoundAndReduce/);
+    // 披露只从本轮 record 自己的 result 读：不得再回查 rounds 尾条
+    const deal = readFileSync(join(process.cwd(), "lib/engine/v2-deal.ts"), "utf8");
+    expect(deal).not.toMatch(/session\.rounds\[session\.rounds\.length - 1\]/);
   });
 
   /* ---------------------------------------------------------------- */
@@ -268,57 +390,62 @@ describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
   });
 
   /* ---------------------------------------------------------------- */
-  /* 3. mutual 9/14/19 可达 + 单一口径                                    */
+  /* 3. 中途互选窗口 12–14 可达 + 单一口径 + 中途最多一次                   */
   /* ---------------------------------------------------------------- */
 
-  it("mutual 检查点 9/14/19 可达，且触发判定与 mutualDueGates 同源同结果", () => {
-    const at9 = relAt(9);
-    const at14 = relAt(14, { lastMutualCheckAtEffectiveCount: 9, regularMutualCheckRuns: 1 });
-    const at19 = relAt(19, {
-      extensionActivated: true,
-      lastMutualCheckAtEffectiveCount: 14,
-      regularMutualCheckRuns: 2,
-    });
-    const blocked = relAt(9, { regularMutualCheckRuns: MAX_REGULAR_MUTUAL_RUNS });
-
-    for (const [state, checkpoint] of [
-      [at9, 9],
-      [at14, 14],
-      [at19, 19],
-    ] as const) {
-      expect(mutualDueGates(state, checkpoint)).toBe(true);
+  it("窗口 12/13/14 内可达，且触发判定与 mutualDueGates 同源同结果；问过一次即封顶", () => {
+    for (const count of [12, 13, 14] as const) {
+      const fresh = relAt(count);
+      expect(mutualDueGates(fresh, count)).toBe(true);
       const trigger = mutualCheckTrigger({
-        relationship: state,
+        relationship: fresh,
         participants: [male("a"), female("b")],
         sessionStatus: "active",
       });
-      expect(trigger.checkpoint).toBe(checkpoint);
+      expect(trigger.checkpoint).toBe(count);
       expect(trigger.due).toBe(true);
-      expect(trigger.due).toBe(mutualDueGates(state, checkpoint));
+      expect(trigger.due).toBe(mutualDueGates(fresh, count));
     }
 
-    // 整局次数用尽 → 同一检查点不再弹，触发判定与 reducer 门结果一致
-    expect(mutualDueGates(blocked, 9)).toBe(false);
-    const blockedTrigger = mutualCheckTrigger({
-      relationship: blocked,
-      participants: [male("a"), female("b")],
-      sessionStatus: "active",
-    });
-    expect(blockedTrigger.due).toBe(false);
-    expect(blockedTrigger.reason).toBe("gates-not-passed");
+    // 已问过一次（regularMutualCheckRuns 达上限）→ 窗口内同一/其余检查点都不再弹，触发判定与 reducer 门一致
+    for (const count of [12, 13, 14] as const) {
+      const used = relAt(count, {
+        lastMutualCheckAtEffectiveCount: 12,
+        regularMutualCheckRuns: MAX_REGULAR_MUTUAL_RUNS,
+      });
+      expect(mutualDueGates(used, count)).toBe(false);
+      const blockedTrigger = mutualCheckTrigger({
+        relationship: used,
+        participants: [male("a"), female("b")],
+        sessionStatus: "active",
+      });
+      expect(blockedTrigger.due).toBe(false);
+      expect(blockedTrigger.reason).toBe("gates-not-passed");
+    }
   });
 
-  it("第三次 regular mutual 与 Session 结算边界不断：19 需已加玩；21–25 无第四个检查点", () => {
-    // 未加玩：19 时只剩 1 轮，不给新 MATCH 保障窗口 → 19 常规不触发
-    const noExtension = relAt(19);
-    expect(mutualDueGates(noExtension, 19)).toBe(false);
-    // 已加玩：目标 25，剩余 6 轮 → 19 触发（第三次 regular）
-    const extended = relAt(19, {
-      extensionActivated: true,
-      lastMutualCheckAtEffectiveCount: 14,
-      regularMutualCheckRuns: 2,
-    });
-    expect(mutualDueGates(extended, 19)).toBe(true);
+  it("到 14 仍未问即跳过本局；窗口外（15+）无第二个检查点，旧的 9/19 也不再是检查点", () => {
+    // 窗口外：15 之后一律不弹（不补问、不为了凑次数强制出现）
+    for (const count of [15, 16, 20, 25] as const) {
+      const outside = relAt(count, { extensionActivated: true });
+      expect(mutualDueGates(outside, count)).toBe(false);
+      expect(mutualCheckTrigger({
+        relationship: outside,
+        participants: [male("a"), female("b")],
+        sessionStatus: "active",
+      }).reason).toBe("not-at-checkpoint");
+    }
+    // 旧频率 9/19 不在窗口内：即便从未问过也不触发
+    for (const count of [9, 19] as const) {
+      const legacy = relAt(count, { extensionActivated: true });
+      expect(mutualDueGates(legacy, count)).toBe(false);
+      expect(mutualCheckTrigger({
+        relationship: legacy,
+        participants: [male("a"), female("b")],
+        sessionStatus: "active",
+      }).reason).toBe("not-at-checkpoint");
+    }
+    expect(MUTUAL_CHECK_COUNTS).toEqual([12, 13, 14]);
 
     // 未加玩的 20 上限：第 21 个 completed 被拒，计数不涨
     const at20 = relAt(20);
@@ -341,31 +468,17 @@ describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
     });
     expect(overflow25.delta.reasons).toContain("session_limit_reached");
     expect(overflow25.state.heat).toBe("H4");
-
-    // 21 不是常规检查点：即使已加玩也不标记 due（无第四次 regular mutual）
-    expect(MUTUAL_CHECK_COUNTS).toEqual([9, 14, 19]);
-    const due21 = reduceRelationshipEvent(extended, {
-      eventId: "d21",
-      type: "SYSTEM_MUTUAL_CHECK_DUE",
-      dueCount: 21,
-    });
-    expect(due21.delta.reasons).not.toContain("mutual_due");
-    expect(due21.state.regularMutualCheckRuns).toBe(2);
   });
 
-  it("final mutual 是独立系统事件：与 19 常规 due 不合并、不去重，且不补计数", () => {
-    const state = relAt(19, {
-      extensionActivated: true,
-      lastMutualCheckAtEffectiveCount: 14,
-      regularMutualCheckRuns: 2,
-    });
+  it("final mutual 是独立系统事件：中途已问过一次后仍可正常成立，且不叠加第二个中途次数", () => {
+    const state = relAt(12);
     const due = reduceRelationshipEvent(state, {
       eventId: "run::due",
       type: "SYSTEM_MUTUAL_CHECK_DUE",
-      dueCount: 19,
+      dueCount: 12,
     });
     expect(due.delta.reasons).toContain("mutual_due");
-    expect(due.state.regularMutualCheckRuns).toBe(3);
+    expect(due.state.regularMutualCheckRuns).toBe(1);
 
     const final = reduceRelationshipEvent(due.state, {
       eventId: "run::final",
@@ -378,8 +491,10 @@ describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
     expect(final.delta.applied).toBe(true);
     expect(final.delta.replayed).toBe(false);
     expect(final.state.matches["a::b"]).toBeDefined();
-    expect(final.state.relationshipEffectiveCardCount).toBe(19);
-    expect(final.state.heat).toBe("H4");
+    // final 不计入中途上限：仍是 1 次中途互选，不叠加成 2
+    expect(final.state.regularMutualCheckRuns).toBe(1);
+    expect(final.state.relationshipEffectiveCardCount).toBe(12);
+    expect(final.state.heat).toBe("H3");
   });
 
   /* ---------------------------------------------------------------- */
@@ -426,7 +541,7 @@ describe("V2-B10 R3 事件归约（发牌完成路径）", () => {
     const session = dealOne();
     const round = session.currentRound!;
 
-    const first = reduceResolvedRound(session, "completed");
+    const first = completeWithDisclosure(session, ["a"]);
     expect(first.relationshipState?.relationshipEffectiveCardCount).toBe(1);
 
     const replay = reduceResolvedRound(first, "completed");

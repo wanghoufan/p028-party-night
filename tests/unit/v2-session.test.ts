@@ -320,8 +320,20 @@ describe('v2-session（B6 Session 级编排器，D8=A+ / D2 单 Router）', () =
       participants: [male('m1'), female('f1')],
     });
 
+    // §7.2 有效信息轮：事件必须带齐卡侧 metadata（已补标）与轮侧披露信号，
+    // 形状与生产链 `v2-deal.eventForRoundTerminal` 一致；缺任一项即 fail-closed（不计有效轮）。
     const reduced = reduceV2SessionEvents(state, [
-      { eventId: 'e1', type: 'REL_CARD_COMPLETED', ref: 'i1', cardId: 'PN-TRUTH-001', playerId: 'm1' },
+      {
+        eventId: 'e1',
+        type: 'REL_CARD_COMPLETED',
+        ref: 'i1',
+        cardId: 'PN-TRUTH-001',
+        playerId: 'm1',
+        informationGain: 'medium',
+        topic: '恋爱观',
+        selfDisclosed: true,
+        disclosedPlayerIds: ['m1'],
+      },
     ]);
     expect(reduced.state.relationship.relationshipEffectiveCardCount).toBe(1);
     expect(reduced.state.relationship.sessionCompletedRounds).toBe(1);
@@ -489,6 +501,7 @@ describe('v2-session（B6 Session 级编排器，D8=A+ / D2 单 Router）', () =
     expect(code).not.toMatch(FORBIDDEN_IMPORT);
 
     // 唯一允许的同族依赖：state / reducer / routing / guarantee / exhaustion
+    // + participants（B3-9：归约入口需按当前 participants 算「此刻合法候选」，与 Mutual 触发点同源）。
     const imports = [...code.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
     expect(new Set(imports)).toEqual(
       new Set([
@@ -497,6 +510,7 @@ describe('v2-session（B6 Session 级编排器，D8=A+ / D2 单 Router）', () =
         './v2-routing',
         './v2-guarantee',
         './v2-exhaustion',
+        './v2-participants',
       ]),
     );
 

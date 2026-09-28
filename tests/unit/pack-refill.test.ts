@@ -5,6 +5,7 @@ import {
   PACK_PLAYABLE_THRESHOLD, countPlayablePackCards, ensurePackPlayable, refillPackFromSeeds, refillPackInBackground,
 } from "@/lib/ai/generate-deck";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
+import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 
 const config = (overrides: Partial<SessionConfig> = {}): SessionConfig => ({
   players: ["a", "b", "c"].map((id) => ({ id, displayName: id, active: true, createdAt: "x", lastUsedAt: "x" })),
@@ -25,18 +26,22 @@ describe("pack-specific refill", () => {
     expect(countPlayablePackCards(deck, config(), "would-you-rather", ["w1", "w2"])).toBe(0);
   });
 
-  it("keeps seed refill inside the target pack and never duplicates ids", () => {
-    const refilled = refillPackFromSeeds([aiCard("w1", "would-you-rather", "A VS B")], config(), "compatibility-test");
-    const added = refilled.slice(1);
+  it("keeps refill inside the target pack and never duplicates ids", () => {
+    // B3-14：跨轨补卡闸收紧后，补位只能与牌堆同轨。本局以快照轨（PN-*）建堆，补位来源同属快照轨
+    // （原 fixture 用一张 AI 卡当牌堆，等于让 AI 轨吃下快照卡，正是本次要堵的方向）。
+    const base = mainlineSsotCardsByPack("would-you-rather")[0]!;
+    const refilled = refillPackFromSeeds([base], config(), "compatibility-test");
+    const added = refilled.filter((card) => card.id !== base.id);
     expect(added.length).toBeGreaterThan(0);
     expect(added.every((card) => card.packId === "compatibility-test")).toBe(true);
     expect(new Set(refilled.map((card) => card.id)).size).toBe(refilled.length);
   });
 
-  it("tops a starved pack up from local seeds immediately, with no network", () => {
+  it("tops a starved pack up from the frozen snapshot immediately, with no network", () => {
     // 玩法全开时，只要目标玩法在牌堆里一张可玩卡都没有（例如对手玩法占满了牌堆），就需要 pack-specific 补位。
     const allPacks = config({ enabledPackIds: ["truth-dare", "most-likely", "never-have", "ai-improv", "would-you-rather", "pointing-game", "compatibility-test", "spin-bottle"] });
-    const deck = seedsOf("truth-dare");
+    // Human Step 5 同轨闸：本局是快照轨（快照内旧题局），补位只补快照内卡。
+    const deck = [...mainlineSsotCardsByPack("truth-dare")];
     const before = countPlayablePackCards(deck, allPacks, "compatibility-test");
     const { deck: refilled, added } = ensurePackPlayable(deck, allPacks, "compatibility-test");
     expect(before).toBeLessThan(PACK_PLAYABLE_THRESHOLD);

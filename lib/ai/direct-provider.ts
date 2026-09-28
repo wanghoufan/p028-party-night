@@ -1,5 +1,6 @@
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { aiDeckResponseSchema } from "./card-schema";
+import { AI_MAINLINE_DISABLED, isAiMainlineEnabled } from "./mainline-flag";
 import { getOpenCodeHeaders } from "./presets";
 import { buildDeckPrompt } from "./prompt-builder";
 import { providerErrorCodeForException, providerErrorCodeForStatus, type ProviderErrorCode } from "./provider-errors";
@@ -307,6 +308,9 @@ export interface DirectDeckResult {
  * 不在此处 buildPlayableDeck，避免与 generate-deck 循环依赖。
  */
 export async function generateDeckDirect(input: DirectDeckInput): Promise<DirectDeckResult> {
+  // 正式主线 AI 隔离（Plan §13）：自包含直连是无 /api 代理时的独立通道，关闭时在最外层停住，
+  // 绝不发任何 directChatCompletion 请求（原生 HTTP 与 fetch 两条传输都不触发）。
+  if (!isAiMainlineEnabled()) throw new Error(AI_MAINLINE_DISABLED);
   const targetCardCount = input.targetCardCount ?? 40;
   const packs = BUILTIN_GAME_PACKS.filter((pack: GamePackDefinition) => input.sessionConfig.enabledPackIds.includes(pack.id));
   const totalBatches = Math.max(1, Math.ceil(targetCardCount / DECK_BATCH_CARD_TARGET));

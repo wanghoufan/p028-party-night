@@ -269,6 +269,7 @@
 - 另有 1,660 局（占 41.5%）跑不满 20 轮：开放度上限 ≤2 的桌在 Heat 升到高段后，**relationship-aware 关系主线没有合法关系卡**——证明的是**关系主线发生结构性断粮**，**而不是 App 无法继续游戏**（App 已有「切换玩法 / 结束本局」安全出口，neutral / expansion 玩法的完成轮同样计入 sessionCompletedRounds）。这是卡面 intensity 与 Heat 区间绑定的结构问题。
 
 > 并列对照（不同口径，不得混用）：uniform-baseline estimate（假设等概率均匀抽题、忽略 Router 过滤与 Heat 门控）下，「中及以上」期望 6.91 题/局、「高」期望 2.29 题/局。真实 Router 模拟是上一条，不是这一条。
+> ⚠️（2026-09-28 neat-freak 加注，未改写生成内容）本节 Q5 的运行时数字（58.5% / 7.49 / 2.34 / 2.85 / 9.12 / 41.5% / 1,660）已由 2026-09-28 重跑取代，真源见 `docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（4,000/4,000 跑满、dead-end 0、heatAtDraw 100% H1、matchesCreated 0）。
 
 ## 15. 结论（供 Human 决策，本轮不执行）
 

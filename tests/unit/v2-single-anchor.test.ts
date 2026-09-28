@@ -257,6 +257,17 @@ function runOpportunities(input: {
          多数方端点（单点定向归属）；非定向轮不记（全桌卡没有单点归属）。 */
       const offeredPlayerId =
         targetPairKey === null ? undefined : majorityEndpoint(targetPairKey, anchorPlayerId);
+      /* §7.2 有效信息轮：completed 轮必须带齐**卡侧 metadata（已补标）**与**轮侧披露信号**才计数，
+         形状与生产链 `v2-deal.eventForRoundTerminal` 一致；skipped 轮不带，一律 +0（fail-closed）。 */
+      const disclosureFields =
+        input.terminal === "completed"
+          ? {
+              informationGain: "medium" as const,
+              topic: "恋爱观",
+              selfDisclosed: true,
+              disclosedPlayerIds: offeredPlayerId ? [offeredPlayerId] : [],
+            }
+          : {};
       next = reduceV2SessionEvents(next, [
         {
           eventId: `r${round}::${input.terminal}`,
@@ -264,6 +275,7 @@ function runOpportunities(input: {
           ref: `r${round}`,
           cardId: outcome.cardId,
           ...(offeredPlayerId ? { playerId: offeredPlayerId } : {}),
+          ...disclosureFields,
         },
       ]).state;
     }

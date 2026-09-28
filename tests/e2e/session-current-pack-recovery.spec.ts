@@ -38,7 +38,7 @@ test("刷新后仍停在转瓶子（纯本地玩法没有题卡），不白屏",
   expect((await readSession(page, id)).currentPackId).toBe("spin-bottle");
 });
 
-/** 题库一张可玩卡都不剩的玩法（例如被尺度/雷区过滤到 0 张）：空状态而不是白屏。 */
+/** 牌堆一张卡都没有的玩法：进 /game 经正常出卡链三层皆 0，判为 awaiting 无合法题，空状态而不是白屏。 */
 function emptyDeckSession(): GameSession {
   const now = new Date().toISOString();
   const players = ["Alex", "Emma"].map((displayName, index) => ({ id: `p${index + 1}`, displayName, active: true, createdAt: now, lastUsedAt: now }));
@@ -59,17 +59,29 @@ test("刷新后仍停在没有可玩题卡的玩法上，不白屏也不自动�
   await seedSession(page, emptyDeckSession());
   await page.goto("/game?session=e2e-empty-deck-session");
 
-  // P1：牌堆真空时「洗牌再玩」是空转（清 used 也补不出题卡），面板改为直接给三条明确出口。
+  // 牌堆真空（deckSnapshot=[]）经正常出卡链被判为 AWAITING_HOST_EXHAUSTION_DECISION（三层皆 0）；
+  // Host 洗牌实测也救不回 → 渲染「可玩的题都出完了」＋中性说明，只给「结束本局」一条明确出路：
+  // 不白屏、不自动切玩法、也不给空转的「洗牌再玩」（清 used 也补不出题卡）。
   await expect(page.locator("h1")).toHaveText("可玩的题都出完了");
-  await expect(page.getByText("洗牌也补不出新题")).toBeVisible();
+  await expect(page.getByText("当前条件下没有可继续的合法题，本局到此为止。")).toBeVisible();
   await expect(page.getByRole("button", { name: "洗牌再玩" })).toHaveCount(0);
+  // awaiting 态禁止切包：不渲染「切换玩法／查看总结／返回首页」，唯一出路是结束本局。
+  await expect(page.getByRole("button", { name: "切换玩法" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "查看总结" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "返回首页" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "结束本局" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "切换玩法" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "返回首页" })).toBeVisible();
+
+  const persisted = await readSession(page, "e2e-empty-deck-session");
+  expect(persisted.v2Orchestration?.awaitingHostDecision).toBe(true);
+  expect(persisted.v2Orchestration?.lastExhaustionLevel).toBe("AWAITING_HOST_EXHAUSTION_DECISION");
+  expect(persisted.currentPackId).toBe("never-have");
 
   await page.reload();
 
+  // 刷新后不自动切玩法、不白屏：仍停在 awaiting 无合法题的同一出口，当前玩法不变。
   await expect(page.locator("h1")).toHaveText("可玩的题都出完了");
+  await expect(page.getByText("当前条件下没有可继续的合法题，本局到此为止。")).toBeVisible();
+  await expect(page.getByRole("button", { name: "结束本局" })).toBeVisible();
   expect((await readSession(page, "e2e-empty-deck-session")).currentPackId).toBe("never-have");
 });
 

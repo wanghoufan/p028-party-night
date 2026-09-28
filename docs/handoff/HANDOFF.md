@@ -2,12 +2,13 @@
 
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
-- Captured at（YYYY-MM-DD HH:MM）：2026-09-27（**内容质量专项审查 Phase A.2 + Mutual 1TAP 收口均已 CLOSED 并提交（基线 commit Mutual `987da2d`、A.2 `92943e7`、收尾 `2e84b29`）；技术 RC 为 `RC_NEEDS_REFREEZE`（基线 commit：Mutual `987da2d` / A.2 `92943e7` / 收尾 `2e84b29`；**当前 HEAD 与 ahead 数量以 Git 实时状态为准，不在本文件硬编码**），未 bump，工作区干净**）
-- PROJECT_PHASE（**WAITING_HUMAN_APPROVAL** —— Human 2026-09-27 新方向 **固定题库优先（Fixed Content First）+ AI 暂停正式主线**；`docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 已产出并通过 Research Reviewer **三轮**复审（79 → FAIL/blockingP1=1 → 87 → **PASS 94/100**，Gate 全勾、**无需例外**），DEV_BASELINE 待 Human 批准后设为 `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`；未启动 Builder、未开始 AI 扩题、未批量改 350 题、未重冻 RC、未执行 RG-02）
-- PLAN_VERSION：（PRODUCT_PLAN_V2.0）
-- PLAN_READINESS_SCORE：（83＋Human例外有条件批准）
-- PLAN_GATE：（APPROVED，V2.0 Human Gate终版）
-- DEV_BASELINE：（PRODUCT_PLAN_V2.0）
+- Captured at（YYYY-MM-DD HH:MM）：2026-09-28 **【Phase B B2.2 技术收口批次 Step 1~6 完成，门禁全绿，待 supervisor 终检】**（2026-09-28 傍晚本轮全部改动**未 commit、未 push**；技术 RC 仍 `RC_NEEDS_REFREEZE`；版本三处 `1.5.0` 未 bump；SSOT 零改动）
+  - **上一条描述已过期**（旧文称「tsc 1 错 / unit 9 文件失败 / 工作区是红的」）：2026-09-28 实测 `tsc` 0 error、unit 全绿。现行门禁（编排者亲自复跑）：`npx tsc --noEmit` 0 error｜`pnpm lint` 0 error（11 warning 既有）｜`npx vitest run --testTimeout=30000` **116 文件 / 1142 用例 / 0 failed**｜`npx playwright test` **106 passed / 0 failed / 6 skipped**｜`pnpm build` 通过｜`pnpm build:fixed-manifest` 通过（legacy 390 / **formal 0** / BAR-FIT 逐卡 390:390 一致、0 mismatch / 快照外 ID 0 / 两次构建 hash 一致）｜`node scripts/model/check-ledger.mjs` = LEDGER-OK（TASK-MODEL-LOG 161 行 / DISPATCH-LOG 218 行）
+- PROJECT_PHASE（**DEVELOP** —— Human 2026-09-27 已批准「第二阶段，开发」，正式进入 Phase B Fixed Content First 开发；不再开启新的 Planner / Research Review 循环）
+- PLAN_VERSION（`PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`）
+- PLAN_READINESS_SCORE：（**94/100**，Research Reviewer 三轮复审最终 PASS、Gate 全勾、无需例外；**此前记录的「83＋Human例外有条件批准」已作废，以本行为准**）
+- PLAN_GATE（APPROVED，Human 2026-09-27 批准进入开发；Readiness 94/100 三轮复审过关）
+- DEV_BASELINE（`PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`）
 - CHANGE_REQUEST：（B：用户 2026-09-27 内容质量专项审查 Phase A + Phase A.1 校准，留 DEVELOP；前一轮为 A）
 - Stage ID（本阶段叫什么）：V2.0-Relationship Engine（Human已决D1换真源/D2切Router/D3=A20+5/D4=A异性/D5上限2/D6中性不推进/D7=A展示即给过/D8=A+；Release前强制Gate RG-01~RG-07须7/7）
   - 剩 P0（没完的才列，多一条都不行）：
@@ -18,7 +19,7 @@
   - 审查对象：`lib/v2-content/generated/v2-ssot.generated.json` → `mainlineCards` 350 张 `PN-*`（7 玩法 × 50），**只读，零改动**（`git diff` 为空）。
   - 交付物 8 份：CONTENT-AUDIT-350.csv（21 列）、CONTENT-STRUCTURE-REPORT.md、TOP20-LOW-INFO.md、TOP20-HIGH-INFO.md、DUPLICATE-TOP10.md、CONTENT-GAP-AND-NEXT.md、CALIBRATION-REPORT.md、ROUTER-CONTENT-MONTE-CARLO.md；数据源 AUDIT-STATS-A1.json / CALIBRATION-STATS.json / ROUTER-MONTE-CARLO.json / GAP-LITERAL.json；复跑脚本 scripts/audit-a1-{verify,aggregate,calib-sample,calibration,literal-semantic,router-montecarlo,report}.ts。
   - 结论摘要：信息增量 高 40（11.4%）/ 中 82 / 低 215 / 0 13；低+0 合计 228（65.1%）；现场评价/猜测 132（37.7%）；人物信息类主题 156（44.6%）；8 类人物维度中 **2 类为 0**（边界/吃醋/异性朋友/前任、人生价值/未来）。词面证据：前任/吃醋/异性朋友/底线雷区/人生目标 **显式词面命中均为 0**（已降级为词面证据，不等于语义不存在；semanticHits 记 UNREVIEWED，未臆造）。
-  - 真实 Router Monte Carlo（复用生产 createV2MainlineRouter / drawV2SessionCard / reduceV2SessionEvents / applyV2HostDecision，4 桌型 × 1000 局 = 4000 局，每局 20 completed rounds；P1#2 修复后重跑）：跑满 20 轮的 2340 局（58.5%）中高 2.34/局、中+ 7.49/局、人物主题 2.85/8 类、**最长连续低/0 连击 9.12 轮**；运行时 Heat 主口径 heatAtDraw H1 25.0% / H2 25.0% / H3 24.5% / H4 25.5%（静态可用范围 H1 58 / H2 128 / H3 160 / H4 222，跨 Heat 卡 218 张）。
+  - 真实 Router Monte Carlo（**⚠️ 历史数字，已作废；现值见上方「当前 Task」节的 MC 重跑段**。复用生产 createV2MainlineRouter / drawV2SessionCard / reduceV2SessionEvents / applyV2HostDecision，4 桌型 × 1000 局 = 4000 局，每局 20 completed rounds；P1#2 修复后重跑）：跑满 20 轮的 2340 局（58.5%）中高 2.34/局、中+ 7.49/局、人物主题 2.85/8 类、**最长连续低/0 连击 9.12 轮**；运行时 Heat 主口径 heatAtDraw H1 25.0% / H2 25.0% / H3 24.5% / H4 25.5%（静态可用范围 H1 58 / H2 128 / H3 160 / H4 222，跨 Heat 卡 218 张）。
   - 根因表述（已按第三方要求收口）：**题库内容本身已足以构成体验 blocker；Router 是否进一步放大该问题，以真实 Router Monte Carlo 结果判断**——不武断单归 Router。
 - **GOVERNANCE INCIDENT（2026-09-27，记入本文件，不降级为 P2）**
   - 分类：**执行违规 + 检测失效**。
@@ -33,7 +34,114 @@
   - **本轮不生成新 APK、不重冻 RC**：Phase B 内容重构会再次改变候选内容，重冻留到 Phase B Change C 之后。7/7 前仍禁版本号升级、禁正式部署。
 - RC 状态历史记录：**上一 RC = `eeaebf3`**（其真机证据：新构建 machine smoke Change B 10 项 + Change A 返回键 5 项 ＋ 启动画面逐帧复录 0 白帧，全部 PASS，见 docs/qa/RG-01-NEWRC-SMOKE.md）。
 - Phase A.2 状态：**CLOSED（2026-09-27）**。P1#2（Router 曝光饥饿）= **CLOSED**；P1#1（低开放度关系主线断粮）= **OPEN / CHANGE_C_CONTENT_MATRIX**（不实施 Heat 改动，随 Phase B 方案 E 一并解决）；最终 QA `docs/qa/BUGS-CONTENT-A2.md` 首判 **FAIL**（4 项遗留：复审标签术语旧称残留 / HANDOFF 过期数字 / 账本缺 A.2 收口行 / 工作区归属未清）→ builder 收口清理（稳定版术语→复审标签口径）→ **supervisor 终检 PASS 放行**（依据 `docs/model/TASK-MODEL-LOG.jsonl` 第 112–114 行；QA 报告本身未回填放行结论，见「收尾记一笔」）。**明确不再开 Phase A.3 / A.4 审查循环。**
-- 当前 Task：**Phase A.2 内容审查可靠性收口 ＋ Mutual 1TAP 已全部完成并提交**（基线 commit Mutual `987da2d` / A.2 `92943e7` / 收尾 `2e84b29`；当前 HEAD 与 ahead 以 Git 实时状态为准）。评审 `docs/review/CODE_REVIEW-CONTENT-A2.md` = **PASS（P0=0，blocking P1=0，非 blocking P1=2，P2×4，P3×4）**、`docs/review/CODE_REVIEW-MUTUAL-1TAP.md` = **PASS**；QA `docs/qa/BUGS-CONTENT-A2.md` = **FAIL→收口清理后由 supervisor 放行**、`docs/qa/BUGS-MUTUAL-1TAP.md` = **PASS**。门禁：tsc 0 error、lint 0 error（11~12 个既有 warning）、unit **103 files / 947 tests**、`audit-a1-verify.ts` 350/350 合规、报告 **1,105 项一致性自检 PASS**。**已 commit，未 push（待 Human 授权；领先数量以 `git rev-list --left-right --count @{u}...HEAD` 实时为准）。**
+- 当前 Task：**Phase B｜B2.2 技术收口批次 Step 1~6 已完成并过 code-reviewer（PASS，P0=0/blocking P1=0）与 QA（首判 FAIL 仅因覆盖不完整 → 补齐后复验 PASS）。⚠️ 工作区仍红、全部未 commit。**
+  - **本轮新 P0（已定位、已修、已过检）**：「Heat 永久 H1 → 每包仅 8~10 张 H1 卡 → 任何单玩法局第 9 轮 PACK_EXHAUSTED」。
+    - 根因链（D1 fail-closed 的必然后果）：`app/game/page.tsx` `roundDisclosureForCurrentRound()` 恒 `undefined` ＋ SSOT schema 2.3 无 `informationGain/topic` → `isEffectiveInformationRound` 恒 false → `relationshipEffectiveCardCount` 恒 0 → `HEAT_THRESHOLDS` 使 Heat 恒 H1 → `v2-router.ts` / `v2-deal.ts` 对 Heat 硬过滤 ⇒ H1 桶耗尽。
+    - 该根因同时卡死「中途 Mutual 窗口 `[12,14]` 不可达」，是 B2.2 Step 2 的前置阻塞。
+    - **修法（不放松任何冻结）**：新增纯谓词 `isFormalFixedCard` / `formalFixedIdSet`（读 manifest `provenance.metadataStatus/reviewed/humanBarFit`；**`classifyMainlineCard` 的 `"fixed"` 只表示「在冻结快照内」，不等于 Formal**），Heat 硬过滤**只对 Formal 卡生效**；当前 formal=0 ⇒ 全库豁免。`isEffectiveInformationRound` fail-closed 四项、认识阈值、窗口 `[12,14]`、D6 一律未改。
+  - **本轮 Step 1~6 产出**：①Step 1 fail-closed 计数＋双 Router 同口径豁免；②Step 2 负向 E2E 改写（legacy 20 轮不弹互选、无 MATCH）+ count=14 abandoned 全前置覆盖 + **修 D1（候选口径同源，删模块级 resolver）与 D2（awaiting 实时阻断）**；③Step 3 移除最终互选 `Heat>=H3` 硬编码（Heat/时点继续留空）；④Step 4 manifest 拆 `tracks.legacyCompatibility` / `tracks.formalFixed` 两轨、删 `allowLegacyMetadata`（代码区 grep 0 命中）、`reviewed` 只认真实人工审查；⑤Step 5 跨轨补卡闸（`refillAllowsCard` / `cardContentTrack` / `countCardsOutsideFormalTrack`）并收紧 custom/AI↔snapshot；⑥Step 6 BAR-FIT 唯一 canonical input（正文+instruction）＋逐卡对账 fail-closed＋text-only 标 forensic 不进 admission；另 `package.json` 新增 `build:fixed-manifest` script（仅加脚本，版本号未 bump）。
+  - **新增测试**：`tests/integration/v2-production-chain-recognition-mutual.test.ts`（正向生产链）、`tests/integration/v2-mid-mutual-abandoned.test.ts`（count=14 全前置）、`tests/integration/v2-legacy-seven-modes-20-rounds.test.ts`（7 玩法各 20/20）、`tests/unit/content-track-gate.test.ts`、`tests/unit/bar-fit-canonical-input.test.ts`。
+  - **账本**：本轮 19 次派工 + 2 条 CORRECTION（C1 / C3）已补记，`check-ledger.mjs` = LEDGER-OK。
+  - **红线现状（已核实）**：版本三处 `1.5.0` 同值未 bump；`lib/v2-content/generated/v2-ssot.generated.json` **零改动**；`AI_MAINLINE_ENABLED` 正式主线仍关闭；`CONTENT-01=OPEN`；`RG-02=HOLD_BY_CONTENT_01`；`RC=RC_NEEDS_REFREEZE`；无新增 Host 披露 UI（`roundDisclosureForCurrentRound` 仍恒 undefined）；未 commit / 未 push。
+  - **Router Monte Carlo 已重跑（旧运行时数字全部作废）**：`docs/qa/content-audit/ROUTER-MONTE-CARLO.json` 已是新数字 —— 4000/4000 跑满 20 轮、**dead-end 归零**、`heatAtDraw` **100% 落在 H1**、`matchesCreated=0`。
+    - 结论变化：旧「低开放度关系主线结构性断粮（lim1 850/850、lim2 810/810）」的**运行时**结论已消失；代价是 legacy 轨 Heat 恒 H1、**Mutual/MATCH 在 legacy 轨不可达**（Human 已接受的 fail-closed 代价，非新回归）。
+    - 仍有效的**静态**卡面口径（不经 Router）：H1 58 / H2 128 / H3 160 / H4 222、跨 Heat 218、H4×I1 = 0 张。
+    - **仍引用旧数字、待编排者/neat-freak/planner 更新的手写报告**：`docs/qa/DEADEND-CHANGE-C-IMPACT.md`、`docs/qa/content-audit/ROUTER-CONTENT-MONTE-CARLO.md`、`docs/qa/content-audit/CONTENT-STRUCTURE-REPORT.md:267`、`docs/pm/PRODUCT_PLAN_V2.1-CHANGE-C.md:22,23`（owner=planner）、`docs/qa/BUGS-CONTENT-A1.md` / `BUGS-CONTENT-A2.md` / `CODE_REVIEW-CONTENT-A1.md`（历史留痕，建议保留或加注）。
+  - **本轮停线未做的 C 类缺口（待 Human 裁决，不阻断本批）**：`buildPlayableDeck` 新建牌堆仍会把 custom 卡与 snapshot 卡混装（实测 mixed 模式 40 张 = snapshot 39 + custom 1）。builder 给出选项：**A** 自定义包退出混合组局、只保留单玩 self-mode（C 类，改 5~7 文件 + 2 处 UI 文案）；**B** 会话层 custom 分槽（改核心数据结构，风险最高）；**C** 不改行为、仅显式标注同堆共存（等于不关）。
+
+
+  ### 1｜已完成的审查回合（两轮第三方静态审查，均 FAIL）
+  - **第一轮**（原件 `temp/第三方审查-V1.1.md`）：P0=0、blocking P1=5。核心指控＝**只把 Mutual 窗口 9/14/19 改成 12/13/14 就当「先了解再询问兴趣」已完成**，实际运行时完全没有「了解」概念；以及 AI=0 ≠ Fixed Content Only、metadata fail-open、BAR-FIT 机器估算直写正式 FAIL、unit gate 仍红。
+  - **第二轮**（原件 `temp/第三方回审-V1.1.md`）：P0=0、blocking P1=5、P2=2。**只有 P1-4 / P1-5 / P1-7 真修好**；P1-1 / P1-2 / P1-3 / P1-6 判**部分修复**。
+  - 编排者已实读逐条核实两轮全部条目，**均接受 FAIL**，未辩解。
+
+  ### 2｜B2.1 收口批次（已落盘）
+  - P1-1 Mutual 认识门槛四阈值（medium+≥5 / high≥1 / 人物维度≥3 / ≥2 合法候选本人披露）+ `midMutualCheckAbandoned` 持久化
+  - P1-2 metadata 拆 `validateLegacyCardQualityMetadata`（允许 missing）/ `validateFixedCardMetadataStrict`（缺一即 FAIL，正式入库 `barFit` 只准 PASS）
+  - P1-3 `FixedContentManifest`（390 张、快照外 ID=0、hash 可复现）
+  - P1-4 BAR-FIT 分层：`machineVerdict`(PASS/SUSPECT/HARD_FAIL_PATTERN) 与 `humanBarFit`(UNREVIEWED/PASS/BORDERLINE/FAIL) 分离，机器阶段恒 `UNREVIEWED`、不产正式 FAIL
+  - P1-5 两条 Monte Carlo 加 30s 显式 timeout（未改全局/未降样本/未放宽 ±18%）
+  - P1-7 6 个未接开关的标签降为 `V2_CONTENT_SEMANTIC_TAGS`，退出精确雷区枚举
+
+  ### 3｜B2.2 Human 冻结裁决（不可推翻）
+  - **采用方案 B**：本轮**不新增 Host 披露 UI**（禁止「TA 揭晓了/没揭晓」、Host 每轮额外确认、披露确认按钮、为披露增加第二次点击）。
+  - **接受中途 Mutual 暂时不可达**；不得为让 E2E 变绿而放宽认识阈值。
+  - 允许测试提供 disclosure signal，**但必须走真实生产链**：
+    `completed round → RelationshipEvent → selfDisclosed/disclosedPlayerIds → reducer → recognitionEvidence → Mutual trigger`。
+    **禁止**测试直接改 `recognitionEvidence` / 直接构造满足条件的 relationship state / 直接改 effective count / 直接改 Heat / 直接把 `midMutualCheckAbandoned` 塞成目标状态 / 任何绕过 production event+reducer 的捷径。
+  - `UI 正向 Playwright E2E = DEFERRED_BY_HUMAN`（不属于 B2.2 blocker，**但不得写成 PASS**）。
+  - 阈值不得修改：`count ∈ [12,14]`、medium+≥5、high≥1、人物维度≥3、≥2 合法候选本人披露。
+  - Builder **不得自行冻结**最终 Mutual 的 `Heat>=H3`。
+  - 决策原文已归档：`temp/B2.2批次提示词-V1.1.md`。
+
+  ### 4｜D1（Step 1）已落盘的部分 —— 已实读核实
+  | 项 | 状态 | 位置 |
+  |---|---|---|
+  | undefined metadata **fail-closed** | ✅ | `lib/v2-relationship/v2-reducer.ts:131+`（`informationGain`/`topic` 缺失 → 不给档、不计数） |
+  | P1-E **cooldown 同源** | ✅ | 同文件 559 行已由 `isEffectiveAdvancingType(...)` 换成 `isEffectiveInformationRound(event)` |
+  | metadata **sidecar** | ✅ | 新建 `lib/v2-content/v2-card-quality-index.ts`（161 行，**懒构建 + 缓存的 Map**，不逐次读盘） |
+  | `gameCardSchema` 扩展 | ✅ | `lib/domain/schemas.ts` 已改 |
+  | 生产链 producer | ✅ | `lib/engine/v2-deal.ts`、`lib/engine/session-engine.ts` 已改 |
+
+  ### 5｜⚠️ 未完成 —— 这是接手后第一件事
+  1. **`tsc` 1 个真实错误**：`tests/unit/v2-b10-event-reduce.test.ts(112,22) TS1355`
+     （`(index === 0 ? "high" : "medium") as const` 非法）
+  2. **unit 9 个文件真实失败**（用 `--testTimeout=30000` 跑出的真实底数，**不是**超时假象）：
+     `v2-b10-event-reduce`(3) / `v2-router-fair-exposure`(2) / `v2-single-anchor` / `v2-session` /
+     `v2-b7-content-switch` / `spin-bottle-chain` / `packs-page` / `disabled-pack-selection` /
+     `ai-mainline-generating-page`
+     - **注意**：默认 5s 下会炸出 18 个失败文件，**绝大多数是超时不是逻辑**。
+       接手后请用 `--testTimeout=30000` 取真实底数，别被 18 个吓到。
+  3. **负向 E2E 未改**：`tests/e2e/v2-mutual-flow.spec.ts:69` 仍是旧断言「走满窗口→互选成MATCH」
+  4. **正向 production-chain integration test 不存在**
+  5. **count=14 abandoned 的完整覆盖未确认**（须覆盖 recognition threshold、当前合法 candidate、eligible pair、Heat、private flow、exhaustion/awaiting、已发生 regular mutual；**不能只查全局 recognition**）
+  6. D1 因超时退出，**builder 未提交 Human 要求的 10 项报告**
+
+  ### 6｜⚠️ 治理欠账（Human Step 7 要求，尚未做）
+  - **TM 越权**：Plan 阶段改了锁定的 `DEV_BASELINE` Plan
+    （`docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 的 `PROJECT_PHASE`→DEVELOP、H-TM 标已完成；
+    另 `docs/pm/PRODUCT_PLAN_V2.1-CHANGE-C.md` 加横幅）。两份文件**至今仍是 modified、未 commit**。
+    按 AGENTS.md，`docs/pm` owner = **planner**，TM 只能写 `docs/handoff`。
+    **处理方式**：若不是 Planner 合法产物 → 恢复到 Human 批准的 locked baseline。
+    **不得靠「单独 commit 一次」把越权洗白**；**不得与业务代码混 commit**。
+  - **账本需补 reviewer correction 行**：~~`C1` / `C3` 记的 `result=PASS` **只表示「Builder 完成了一次派工」，
+    不代表该 P1 已验收关闭**。**保留历史记录**，追加 correction 行。~~ → **2026-09-28 本轮已补**：两条 CORRECTION 行已追加
+    （原历史行保留不回改），语义＝dispatch 完成 ≠ 验收关闭。
+  - ~~两本账本当前 `LEDGER-OK`（TASK-MODEL-LOG 140 行 / DISPATCH-LOG 199 行）。~~ → **已过期**，本轮补记后现值见顶部
+    Captured at（TASK-MODEL-LOG 161 行 / DISPATCH-LOG 218 行，`check-ledger.mjs` = LEDGER-OK）。
+
+  ### 7｜过程事故（接手必读）
+  - **builder 幻觉**：B5 首次派工实例谎报「已写入 `PROJECT_SUMMARY.md` / `ACCEPTANCE_MATRIX.md`」，
+    **磁盘上根本没有这两个文件**，且偏离任务。处置：查证 → 作废该实例产物 → 换实例 →
+    改为「先只读诊断、确认后再动手」。此后所有派工均要求贴 `ls -l` 与门禁真实输出。
+  - **builder 反复超时**：本项目历史上大单会超时留半成品（B1 大单超时零落盘、D1 超时）。
+    **接手后请把派工切碎**（单次只改一个文件 + 跑一次门禁）。
+  - **两次记账失误（编排者已自陈）**：曾把「reducer 写好了」当「P1-1 完成」记 `PASS`，
+  第二轮审查指出这是**半成品当成品**。教训：dispatch 完成 ≠ 验收关闭，两者要在账本里分开表达。
+
+  ### 8｜恢复后的正确顺序
+  1. **先诊断再动手**：把 9 个真实失败分成「D1 改 schema 的必然后果(测试需适配)」/「真回归」/「性能退化」，
+     **不要批量改测试掩盖问题**
+  2. 修 `tsc` TS1355
+  3. 改负向 E2E（`v2-mutual-flow.spec.ts:69`）
+  4. 写正向 production-chain integration test（**必须走真实 round-resolution/event API，禁止手塞 evidence**）
+  5. 补 count=14 abandoned 完整覆盖
+  6. 门禁恢复：`tsc` 0 error、`lint` 0 error、`vitest` 全绿（`--testTimeout=30000` 下 0 failed）、
+     `playwright` **0 failed**、`build` 通过、`build:fixed-manifest` 通过
+  7. 治理收口（`docs/pm` 归属、账本 correction 行、HANDOFF 事实）
+  8. 才走 `Code Reviewer → QA → Supervisor`
+  9. **全部 PASS 后**才可开始第一包真心话固定题
+
+  ### 9｜仍未做的 B2.2 Step（本轮完全未开工）
+  - Step 2：Mutual 闭环（count=14 全前置条件持久化 abandoned、reducer/trigger 候选口径对齐、负向+正向 E2E）
+  - Step 3：最终互选只做技术能力，**移除 H3 硬编码当冻结规则、不接 App 结束流程**
+  - Step 4：拆 Formal Fixed Manifest 与 Legacy Compatibility（**Human 接受 formal manifest 当前为 0 张**；
+    删 `allowLegacyMetadata` 折让；`reviewed` 必须表示真实人工审查）
+  - Step 5：禁止 fixed/legacy/custom 混轨（旧 seed 不得因 `ensurePackPlayable`/`switchPack`/`spin-chain` 补进 PN-*；
+    outside-ID 统计要含 custom/ai/alien）
+  - Step 6：统一 BAR-FIT canonical input（正文+必需 instruction；audit 与 manifest 逐卡 `machineVerdict` 必须对账；
+    text-only 扫描标为 forensic 不参与 admission）
+  - Step 7：治理收口（见上方第 6 条）
   - **Phase A.1 修掉的 Phase A 确定性错误**：①TOP20 LOW 排序反了（`GAIN_ORDER` 升序把「高」排最前）→ 改「0→低→中→高」最差优先，实测低信息榜 20 条全为 0/低；②报告硬编码（曾出现结构表 10 / 正文 6 / 交接 11 三处互相矛盾）→ 全部改由 JSON 机械生成 + 315 项读回对账（A.2 已扩至 1,105 项）；③重复簇口径（曾把 taggedGroupRate=345/350 直接写成「同质重复率 98.6%」）→ 拆成 taggedGroupRate 与 actualDuplicateCandidateRate 两口径，本轮两值均为 323（92.3%）且**如实写明该标签区分度弱**，不硬凑差异；④Heat 统计曾把 218 张跨 Heat 卡强塞单一档 → 改「静态可用范围」与「运行时实际曝光」双口径并列；⑤关键词 0 命中曾写成「语义完全不存在」→ 降级为「显式词面命中 0，semanticHits 记 UNREVIEWED」，未臆造语义命中数；⑥Q5 曾把 `96/350×20≈5.5` 均匀估算称作「20 轮模拟」→ 改名为 uniform-baseline estimate，并新增**真实 Router Monte Carlo**。
   - **QA 给出的关键限制（必须随数据一起传下去）**：交叉校准六轴全一致率仅 **20.0%~31.4%**（orig↔r1 20.0% / orig↔r2 31.4% / r1↔r2 30.0%），最难对齐轴 `promotesUnderstanding`（60.0%）；漂移最大 = 大冒险（原 reviewer 偏离多数票 70.0%），最稳 = 真心话（0.0%）。**这反映口径不稳，不等于标签错误率。** 因此 QA 判定：A.1 数据**可作为 Phase B 的候选定位与排序输入，但单题标签不得当作已校准事实直接自动改写或删除**。
   - **两个产品口径问题（2026-09-27 A.2 收口后已更新，旧问法作废）**：
@@ -57,16 +165,22 @@
    - V1.6：评审`docs/review/CODE_REVIEW-V1.6.md`（PASS，commit 4ba3d13）、QA`docs/qa/BUGS-V1.6.md`（lint0/typecheck0/511/E2E80+4skip/三处1.5.0）、把关`docs/content/题库把关/`9件（00总览旧180审计+01–07+08新题纲）、终稿`docs/content/题库终稿/`9件（00总览§一终稿350分布3/5/7/14/21+01–07各50+08新题纲）；旧`docs/content/题库审查/`已删（文档搬家映射）；账本35行至V1.6补遗（dup删后27行自验口径作废，以现35行为准）
  - V2-B3：评审`docs/review/CODE_REVIEW-V2-B3.md`（FAIL→返工→复验PASS）、QA`docs/qa/BUGS-V2-B3.md`（lint0/typecheck0/610）；账本随行。
  - 2026-09-26 收口链：评审`docs/review/CODE_REVIEW-AI-GEN-STABILITY.md`（过）/`CODE_REVIEW-DEADLOCK-P1.md`（过）/`CODE_REVIEW-MATRIX-3L.md`（过，P1×2待整改+P2×4）；QA`docs/qa/BUGS-AI-GEN-STABILITY.md`（PASS，终审待更新）/`AI-MATRIX-FULL.md`（OpenCode 80/80，72合法）/`AI-MATRIX-PHONE.md`（24/24，origin运行时口径）/`AI-MATRIX-RESULT.md`（三层 DeepSeek 184 总格/合法 174/98.3% P0=0）/`AI-GEN-DIAG-0926.md`；三层逐格`docs/qa/ai-content-3l/`（176）+修复前备份`ai-content-3l-pre-fix/`+OpenCode旧证据`ai-content/`+DeepSeek旧证据`ai-content-deepseek-0926/`；harness `tests/mac/ai-matrix-3l.ts|ai-matrix-full.ts|ai-matrix-redline.ts`、`tests/phone/ai-matrix-phone.ts`；真机截图原存 `test-results/phone/ai-matrix/`25张（2026-09-27 收口核对：已被后续 playwright 全量跑覆盖清空，现 `test-results/` 只剩 `.last-run.json`；矩阵证据真源是 `docs/qa/ai-content-3l*/` 的逐格 JSON，截图不作门禁证据）。
-  - 下一步（Next Single Action）：**先跑完 Phase A.2 的 code-reviewer 复审 → QA → supervisor**，然后**不重冻 RC**，直接进入 `PLAN_REOPEN_REQUIRED`，由 `Sol Planner → Research Reviewer → Human Gate` 生成 Phase B 新 Plan / 新 DEV_BASELINE。Human 批准后才开始正式改题与 metadata。**不再开 Phase A.3 / A.4 审查循环**；下一步的转向是「从证明题库不好 → 设计一套真正好玩的新内容基线」。
+  - 下一步（Next Single Action）（**2026-09-28 重载，取代下方旧文**）：**① supervisor 终检本轮 B2.2 Step 1~6（code-reviewer PASS + QA PASS 已就位）；② 收口「人要拍什么板」新增 3 项（buildPlayableDeck / 最终互选 Heat 与时点 / 旧 MC 数字报告更新归属）；③ 用户授权后再 commit + push（**本轮全部改动仍未 commit、未 push**）；④ 全部 PASS 后才可开始第一包真心话固定内容。**
+    - 旧文（已过期，保留留痕）：先跑完 Phase A.2 的 code-reviewer 复审 → QA → supervisor，然后不重冻 RC，直接进入 `PLAN_REOPEN_REQUIRED`……该链已全部走完（Human 2026-09-27 已批准进入 DEVELOP）。
+    - **数字快照说明（防误读）**：`docs/review/CODE_REVIEW-PHASEB-B2.2.md` 记的 unit `115 文件 / 1134 用例` 是 **QA-COV-01 补测之前**的快照；终态为 `116 文件 / 1142 用例`（多出的是七玩法 legacy 20 轮覆盖的 8 例）。两处数字**不矛盾**，以顶部 Captured at 为准。
   - **Phase B Change C 规划链已走完（停在 Human Gate）**：`docs/pm/PRODUCT_PLAN_V2.1-CHANGE-C.md`（Sol Planner，覆盖 8 块：Mutual 隐私揭屏、严格 D8、Heat×Intensity 正交内容矩阵、内容蓝图、7 玩法信息机制、AI 出题合同、20 轮体验指标、Design Delta/Misuse Review 门禁）；`docs/review/RESEARCH_REVIEW-V2.1-CHANGE-C.md`（Research Reviewer 两轮）：第 1 轮 FAIL（P0=0 / blocking P1=0 / 非 blocking P1=4，Readiness **74/100**）→Planner 回修 4 项（恢复默认写死安全取消整轮、加 `intimacyClass` 机器可校验字段、补 asker/拒绝出口/计数归属、定死「不显示」+三行渲染优先级表）→第 2 轮 **4/4 P1 全部 CLOSED**，但 **Readiness 86/100 < 90 数值门**，结果仍 FAIL。独立复算确认：**H4×I1 全库 0 张**（对角绑定实测）。残差项均为 Builder 阶段外部证据（新内容 snapshot、库存 solver、新库 Monte Carlo、真人小样），Plan 阶段结构上无法填满 ——与 V2.0（83 分 + Human 例外批准）同构，**请 Human 定是否例外放行**（若坚持满 90，Planner 能补的仅剩 2 句，第三轮返工无意义）。
   - **Mutual 任务隔离（已收口）**：4 个 Mutual 文件（`components/game/MutualCheckSheet.tsx`、`lib/v2-relationship/v2-mutual-check.ts`、`tests/e2e/v2-mutual-flow.spec.ts`、`tests/unit/mutual-check-sheet.test.tsx`，互选面板「每人 1 次点击」）已走 `code-reviewer（PASS）→ QA（PASS）→ supervisor`，并于 `987da2d` **单独 commit**（未与 A.2 合并）。supervisor 首次终检因「Mutual 三派账本零记录」= FAIL（`TASK-MODEL-LOG` 第 111 行，A.1 同类 incident 复发）；账本补记后随本轮收口放行（**无独立第二次 Mutual supervisor 行，供编排者复核**）。
 - 人要拍什么板（**2026-09-27 重载：Phase B Change C 人工决策，共 5 项，编排者不代决**）：
-  1. **是否 push 当前全部已审查 commit**（基线：Mutual `987da2d`、Phase A.2 `92943e7`、收尾对齐 `2e84b29`；已通过 reviewer/QA/supervisor）。**本轮不得推送，等 Human 明确授权**；待推数量以 `git rev-list --left-right --count @{u}...HEAD` 实时为准。
-  2. **是否批准 Phase B 新方向（Fixed Content First）并进入 Builder**——Plan `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 已过 Reviewer 三轮，最终 **PASS 94/100、Gate 全勾、无需例外放行**。Human 明确说「第二阶段，开发」才进 DEVELOP。
+  1. ~~是否 push~~ → **Human 2026-09-27 已授权并执行**：push 已完成（`2527e9f..57f5be3` → origin/main，当时 tree clean / ahead 5）。
+  2. ~~是否批准 Phase B~~ → **Human 2026-09-27 已批准**，已进入开发（DEVELOP）。
   3. ~~是否接受 Mutual 从「1.35s 自动揭屏」改为「下一位本人主动揭屏」~~ → **Human 2026-09-27 已决：作废**。真实用法是主持人持机逐人递交，因此不需下一位主动揭屏；保持「每人一次作答点击」即可（现有实现已符合）。
   4. **D8 是否正式允许「切换玩法继续」作为第三个 Host 决策**（B），还是**严格保持 finish/reshuffle 二选一**（A）。缺口见上方 P1-D8-AWAITING-EXIT。
   5. **Phase B 20 轮体验目标最终数值**（仅为待验证假设，未经 Review/Human 不得冻结）：保约 20 轮覆盖 ≥5 个人物维度、中及以上信息轮 ≥8、高信息轮目标 ≥3、连续低/0 信息轮 ≤3、social buffer 约 20%–30%。
   - 已作废、不再占用 Human 决策：① 4 个 Mutual 文件已由 `987da2d` 单独提交；② Router 曝光偏斜已修（P1#2 CLOSED）；③ 「低开放度桌是否自动提开放度」已作废（自动提开放度是明令禁止项）；④ 处置配额 40/82/166/60/2 已被「不按标签自动施工」取代，Phase B 改为先定新内容蓝图、再决定旧题去留；⑤ 两包低增量玩法不删整包，改为「全桌猜/指人 → 被选中本人揭露」结构。
+  - **本轮（2026-09-28）新增待 Human 拍板 3 项，编排者不代决**：
+    1. **`buildPlayableDeck` custom/snapshot 混装**（C 类，本批未关）：**A** 自定义包退出混合组局、只保留单玩 self-mode；**B** 会话层 custom 分槽；**C** 不改行为仅标注。详见上方「本轮停线未做的 C 类缺口」。
+    2. **最终互选的 Heat 门槛与最终时点**（继续留空，等 MC + Human Gate）：`lib/v2-relationship/v2-mutual-check.ts` 的 `HEAT / TIMING` 占位注释处，现按 Human Step 3 不参与判定。
+    3. **旧 MC 数字作废后的手写报告更新归属**：`docs/qa/DEADEND-CHANGE-C-IMPACT.md` 等 4 份仍引用旧数字；`docs/pm/PRODUCT_PLAN_V2.1-CHANGE-C.md:22,23` owner 是 planner，**需用户定是否走 Change C 流程让 planner 回填**（TM 不得自行编辑 `docs/pm`）。
 - 上述 4 项之外，4 个 Mutual 文件的收口已由 `987da2d` 单独提交完成（见上方「Mutual 任务隔离」），不再占用 Human 决策。
   - ~~装 JDK21 需用户点头~~（**已解决**，2026-09-27：用户批准后 `brew install openjdk@21`（21.0.12.1）已装，新 APK 与 machine smoke 均已跑通；见上方「剩 P0」）。
   - ~~11T Pro+ 需开机回同一 Wi-Fi~~（**已解决**，本轮全程 USB `IN9LZTAYV4UGU4JF`；12 Pro indq5xfi6hovay4d 仍禁碰，本轮全程未碰）。后续若改无线，仍按「回同一 Wi-Fi 或 `adb connect 192.168.31.63:5555`，`getprop ro.serialno` 核同一台」执行。

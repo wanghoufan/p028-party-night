@@ -2,8 +2,10 @@
  * B9 / D5｜SYSTEM_MUTUAL_CHECK 私密互选运行控制器（纯内存，UI 无关）。
  *
  * 职责边界：
- * - 触发判定：按 v2-state 口径（`MUTUAL_CHECK_COUNTS` 9/14/19 + R3 mutual due 四道门）
- *   判「现在该不该弹」，且必须 `pairMode=ACTIVE`（D4=A 无合法 pair 一律不弹、不空转）。
+ * - 触发判定：按 v2-state 口径（`MUTUAL_CHECK_COUNTS` = 中途互选窗口 12/13/14）＋ §7.2 硬门
+ *   ＋ §7.2 认识阈值（先了解再询问兴趣），判「现在该不该弹」，且必须 `pairMode=ACTIVE`
+ *   （D4=A 无合法 pair 一律不弹、不空转）。一局中途最多一次；到 14 仍未全满足即永久跳过。
+ *   结束时最多一次最终互选（`SYSTEM_MUTUAL_CHECK_FINAL`）是独立机制，走 `mutualFinalCheckTrigger`。
  * - run 编排：每位参与者一份 `v2-private` 纯内存 run（按 pairKey），单向选择只写进这些内存对象；
  *   本模块不 import 任何 storage / DB / 日志，单向秘密没有落盘入口。
  * - final（R4 §6.2）：先在内存里算出「允许公开的互选结果」，再清空全部单向数据；
@@ -21,13 +23,25 @@ import {
   submitPrivateChoice,
   type PrivateMutualRun,
 } from "./v2-private";
-import { eligiblePairKeys, pairModeFor, type PairMode } from "./v2-participants";
+import { eligiblePairKeys, mutualCandidateIds, pairModeFor, type PairMode } from "./v2-participants";
 import {
   mayCreateMatch,
   mutualDueGates,
+  mutualMidWindowGates,
+  recognitionThresholdMet,
   type RelationshipEvent,
 } from "./v2-reducer";
-import { MUTUAL_CHECK_COUNTS, type RelationshipState, type SessionParticipant } from "./v2-state";
+import {
+  MUTUAL_CHECK_COUNTS,
+  type RelationshipState,
+  type SessionParticipant,
+} from "./v2-state";
+
+/**
+ * 互选候选人投影（唯一真源在 `v2-participants`）：本模块与 `v2-session` 归约入口共用同一实现。
+ * 这里原样转出，保持既有 `@/lib/v2-relationship/v2-mutual-check` 导入路径不变。
+ */
+export { mutualCandidateIds } from "./v2-participants";
 
 /** 一位参与者对某条 pair 的「我选 TA」标记：同 run 双方写同值才构成互选。 */
 const MUTUAL_PICK = "mutual-pick";
@@ -41,10 +55,25 @@ export type MutualCheckTriggerReason =
   | "ok"
   /** D4=A：无合法男女 pair（含人数不足/全未选/单目标性别）→ 不创建 run、不空转。 */
   | "no-eligible-pair"
-  /** 当前 relationshipEffectiveCardCount 不在 9/14/19 检查点上（含已消耗过的那一档）。 */
+  /** 当前 relationshipEffectiveCardCount 不在中途互选窗口 12/13/14 内（含已越过 14 后的所有计数，不补问）。 */
   | "not-at-checkpoint"
-  /** 到了检查点但 R3 四道门未过（剩余轮次/整局次数/最小间隔）。 */
+  /** 到了检查点但 §7.2 硬门未过（剩余轮次/整局次数/最小间隔/Heat<H3）。 */
   | "gates-not-passed"
+  /**
+   * P1-1｜§7.2：硬门已过但**认识阈值未达**（中及以上信息轮<5 / 高<1 / 人物维度<3 /
+   * 不足两名此刻合法候选各有本人披露）→ 先了解再询问兴趣：不弹。
+   */
+  | "recognition-threshold-not-met"
+  /**
+   * P1-1｜§7.2：本局中途互选已**永久跳过**（有效卡计数越过 14 仍未全满足）→ 后续不补问。
+   */
+  | "mid-mutual-abandoned"
+  /**
+   * D8=A+｜Host 耗尽决策等待态（`AWAITING_HOST_EXHAUSTION_DECISION`）：实时阻断，不弹。
+   * 语义是「暂时被挡」而非「永久放弃」——因此**不**置 `midMutualCheckAbandoned`，
+   * 解除等待后若仍在窗口内可再次弹（详见 `mutualCheckTrigger` 判定顺序）。
+   */
+  | "awaiting-host-decision"
   /** 本局已暂停/结束：私密流程不开始。 */
   | "session-not-running";
 
@@ -55,35 +84,96 @@ export interface MutualCheckTriggerInput {
   sessionStatus: "generating" | "active" | "paused" | "finished";
   /** 是否已有别的私密流程在跑（本流程自身运行时为 true）。 */
   privateFlowRunning?: boolean;
+  /**
+   * D8=A+｜是否处于 Host 耗尽决策等待态（`v2Orchestration.awaitingHostDecision`）。
+   * true = 实时阻断本次弹窗（不弹、不空转）；属「暂时被挡」，不写永久放弃标志。
+   * 缺省 `undefined` = 与加该输入前逐条一致（非等待态）。
+   */
+  awaitingHostDecision?: boolean;
 }
 
 export interface MutualCheckTrigger {
   due: boolean;
-  /** 命中的常规互选检查点（9/14/19）；未命中为 null。 */
+  /** 命中的中途互选检查点（窗口 12/13/14 内当前值）；未命中为 null。 */
   checkpoint: number | null;
   pairMode: PairMode;
   reason: MutualCheckTriggerReason;
 }
 
-/** 该不该弹私密互选：v2-state 口径 + 合法 pair + Session RUNNING + 无并行私密流程。 */
+/**
+ * 该不该弹私密互选（P1-1「先了解，再询问兴趣」）：v2-state 口径 + 合法 pair + Session RUNNING +
+ * 无并行私密流程 + §7.2 认识阈值。
+ *
+ * 判定顺序（口径唯一，复用 v2-reducer 的 `mutualMidWindowGates` / `recognitionThresholdMet`，
+ * 总门 = `mutualDueGates`，不另写第二套）：
+ * ①本局中途互选已永久跳过 → `mid-mutual-abandoned`；
+ * ②无合法男女 pair → `no-eligible-pair`；
+ * ③有效卡计数不在窗口 12/13/14 → `not-at-checkpoint`（15+ 不补问）；
+ * ④Host 耗尽等待态 → `awaiting-host-decision`（实时阻断；不写永久放弃）；
+ * ⑤非 RUNNING / 已有私密流程 → `session-not-running`；
+ * ⑥§7.2 硬门未过（剩余轮次/一局一次/最小间隔/Heat<H3）→ `gates-not-passed`；
+ * ⑦认识阈值未达（且「两名候选」收窄为**此刻合法候选**）→ `recognition-threshold-not-met`；
+ * ⑧否则 `ok`。
+ */
 export function mutualCheckTrigger(input: MutualCheckTriggerInput): MutualCheckTrigger {
   const pairMode = pairModeFor(input.participants);
   const count = input.relationship.relationshipEffectiveCardCount;
   const checkpoint = (MUTUAL_CHECK_COUNTS as readonly number[]).includes(count) ? count : null;
 
+  if (input.relationship.midMutualCheckAbandoned === true) {
+    return { due: false, checkpoint, pairMode, reason: "mid-mutual-abandoned" };
+  }
   if (pairMode !== "ACTIVE") {
     return { due: false, checkpoint, pairMode, reason: "no-eligible-pair" };
   }
   if (checkpoint === null) {
     return { due: false, checkpoint: null, pairMode, reason: "not-at-checkpoint" };
   }
+  if (input.awaitingHostDecision === true) {
+    return { due: false, checkpoint, pairMode, reason: "awaiting-host-decision" };
+  }
   if (input.sessionStatus !== "active" || input.privateFlowRunning === true) {
     return { due: false, checkpoint, pairMode, reason: "session-not-running" };
   }
-  if (!mutualDueGates(input.relationship, checkpoint)) {
-    return { due: false, checkpoint, pairMode, reason: "gates-not-passed" };
+  const candidateIds = mutualCandidateIds(input.participants);
+  if (!mutualDueGates(input.relationship, checkpoint, candidateIds)) {
+    // 唯一总门未过：只为给出可读 reason 再分解一次（规则本身不重复）。
+    const reason: MutualCheckTriggerReason = mutualMidWindowGates(input.relationship, checkpoint)
+      ? "recognition-threshold-not-met"
+      : "gates-not-passed";
+    return { due: false, checkpoint, pairMode, reason };
   }
   return { due: true, checkpoint, pairMode, reason: "ok" };
+}
+
+/**
+ * P1-1｜§7.2 结束时的**最终互选**资格：只在认识阈值满足且候选合法时可提出。
+ *
+ * 与中途互选解耦：不受窗口 12/13/14 / 一局一次 / 最小间隔约束（这些只约束中途常规互选），
+ * 但同样要求 Session RUNNING、有合法候选 pair，且认识阈值已达
+ * （「至少两名实际候选各有本人披露」按**此刻合法候选**判定）。
+ *
+ * Step 3（2026-09-28 Human 决策）：最终互选当前**只做技术能力**，不替 Human 冻结 Heat。
+ * - 原写死的 `Heat>=H3`（`MUTUAL_MIN_HEAT`）已**移除**，Heat **不参与**最终互选判定；
+ * - 最终互选 Heat / 最终时点**继续留空**，等后续 Monte Carlo + Human Gate 冻结
+ *   （留空位置见函数内 `HEAT / TIMING` 占位）；
+ * - 本函数**未接入 App 结束流程**（Human 明令不接），只暴露「可判断」能力，不强制执行。
+ */
+export function mutualFinalCheckTrigger(input: MutualCheckTriggerInput): MutualCheckTrigger {
+  const pairMode = pairModeFor(input.participants);
+  if (pairMode !== "ACTIVE") {
+    return { due: false, checkpoint: null, pairMode, reason: "no-eligible-pair" };
+  }
+  if (input.sessionStatus !== "active" || input.privateFlowRunning === true) {
+    return { due: false, checkpoint: null, pairMode, reason: "session-not-running" };
+  }
+  /* HEAT / TIMING（留空占位，不参与判定）：
+   * 最终互选的最低 Heat 与触发时点**尚未冻结**——此处禁止写死 `Heat>=H3` 等产品规则，
+   * 也禁止借该门接 App 结束流程强制触发。待 MC 复算 + Human Gate 冻结后，才可在此补入真实条件。 */
+  if (!recognitionThresholdMet(input.relationship, mutualCandidateIds(input.participants))) {
+    return { due: false, checkpoint: null, pairMode, reason: "recognition-threshold-not-met" };
+  }
+  return { due: true, checkpoint: null, pairMode, reason: "ok" };
 }
 
 /* ------------------------------------------------------------------ */
@@ -99,15 +189,7 @@ export interface MutualCheckRun {
 }
 
 /** 候选人 = 至少属于一条合法 eligible 边的参与者（R4 §7.1 mutualCandidateCount 口径）。 */
-export function mutualCandidateIds(
-  participants: readonly SessionParticipant[],
-  pairKeys: readonly string[] = eligiblePairKeys(participants),
-): string[] {
-  const inPair = new Set(pairKeys.flatMap((key) => key.split("::")));
-  return participants
-    .filter((participant) => participant.active && inPair.has(participant.playerId))
-    .map((participant) => participant.playerId);
-}
+/* `mutualCandidateIds` 的唯一实现已上移到 `v2-participants`（与归约入口同源），此处 import 复用。 */
 
 /* ------------------------------------------------------------------ */
 /* R-CB9｜Mutual UI 按「当前合法异性候选数」分支（与 Guard 阈值解耦）          */
@@ -130,8 +212,11 @@ export const MUTUAL_MULTI_CANDIDATE_PROMPT = "今晚到现在，你最想继续�
 /** 唯一候选分支的两个选项：「愿意」→ 该唯一候选；「暂时没有」→ null。 */
 export const MUTUAL_SINGLE_CANDIDATE_YES = "愿意";
 export const MUTUAL_SINGLE_CANDIDATE_NO = "暂时没有";
-/** 候选在作答期间暂离/失效时的可读提示：拒绝提交、不产生非法 MATCH。 */
-export const MUTUAL_STALE_TARGET_NOTICE = "TA 现在不在可选范围内，先跳过吧。";
+/**
+ * 候选在作答期间暂离/失效时的可读提示：拒绝提交、不产生非法 MATCH。
+ * 不写字面「TA」：互选全流程（问句标题 / 提示）统一不用含糊代词，避免看不出在说谁。
+ */
+export const MUTUAL_STALE_TARGET_NOTICE = "对方现在不在可选范围内，先跳过吧。";
 
 /**
  * 某玩家在**当前合法 pair 池**里的合法异性候选（去重、升序）。

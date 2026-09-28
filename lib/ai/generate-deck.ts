@@ -1,10 +1,12 @@
 import { aiDeckResponseSchema } from "./card-schema";
 import { directErrorCode, generateDeckDirect, isSelfContained, type DeckBatchProgress } from "./direct-provider";
+import { AI_MAINLINE_DISABLED, filterMainlineCards, isAiMainlineEnabled } from "./mainline-flag";
 import { filterCards } from "./safety-filter";
 import { dedupeCards } from "./normalize";
 import type { AIProviderProfile } from "./provider";
 import type { GameCard, SessionConfig } from "@/lib/domain/schemas";
 import { mainlineSsotCards, mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
+import { fixedContentCards, refillAllowsCard, type FixedContentManifest } from "@/lib/v2-content/fixed-content-manifest";
 
 /**
  * 运行期本地内容真源（D1）：V1.3 Frozen SSOT 生成物（350 张 PN-*）。
@@ -39,10 +41,14 @@ const playable = (cards: GameCard[], config: SessionConfig) => filterCards(cards
 export function buildPlayableDeck(raw: unknown, config: SessionConfig, targetCount = 40, customCards: GameCard[] = []): GameCard[] {
   const parsed = aiDeckResponseSchema.safeParse(raw);
   const aiCards = parsed.success ? parsed.data.cards : [];
-  const allowedAI = playable(aiCards.filter((card) => config.enabledPackIds.includes(card.packId)), config);
-  const local = playable(localMainlineCards().filter((card) => config.enabledPackIds.includes(card.packId)), config);
+  // 正式主线 AI 隔离（Plan §13）：开关关闭时 AI 输出一律不并入；AI 卡也不能经自定义包混入正式快照。
+  const allowedAI = isAiMainlineEnabled() ? playable(aiCards.filter((card) => config.enabledPackIds.includes(card.packId)), config) : [];
+  // 固定库池唯一入口（Plan §13「快照创建」）：只收 ID 属于当前冻结快照的 builtin 卡。
+  // SSOT 桥本身只产出 PN-*，这里的 manifest 过滤是硬门禁——将来任何一条给本地池塞卡的路径
+  // 都无法只凭「不是 AI」把快照外 ID 混进正式快照。
+  const local = playable(fixedContentCards(localMainlineCards()).filter((card) => config.enabledPackIds.includes(card.packId)), config);
   const allowedCustom = playable(customCards.filter((card) => config.enabledPackIds.includes(card.packId)), config);
-  const pool = dedupeCards([...allowedAI, ...allowedCustom, ...local]);
+  const pool = filterMainlineCards(dedupeCards([...allowedAI, ...allowedCustom, ...local]));
   // 按启用玩法 round-robin 轮流取牌：每轮每个玩法各取一张，先保证 7 个玩法都有份，再轮到第二轮；
   // 避免单玩法（或 AI 一整包）把 targetCount 填满、其余玩法一张都进不来。总量仍为 targetCount。
   const byPack = new Map<string, GameCard[]>();
@@ -63,6 +69,8 @@ export function buildPlayableDeck(raw: unknown, config: SessionConfig, targetCou
 }
 
 export async function requestGeneratedDeck(input: GeneratedDeckRequest): Promise<GameCard[]> {
+  // 正式主线 AI 隔离（Plan §13）：关闭时在入口直接停住，绝不发服务端生成请求。
+  if (!isAiMainlineEnabled()) throw new Error(AI_MAINLINE_DISABLED);
   const targetCardCount = input.targetCardCount ?? 40;
   const response = await fetch("/api/generate-session", {
     method: "POST", cache: "no-store",
@@ -81,6 +89,8 @@ export async function requestGeneratedDeck(input: GeneratedDeckRequest): Promise
  * 本地兜底，保证服务器/直连两种来源口径一致。
  */
 async function requestDeckDirect(input: GeneratedDeckRequest): Promise<GameCard[]> {
+  // 正式主线 AI 隔离（Plan §13）：自包含直连是绕过服务端的独立通道，同样必须在入口停住，绝不直连 Provider。
+  if (!isAiMainlineEnabled()) throw new Error(AI_MAINLINE_DISABLED);
   const targetCardCount = input.targetCardCount ?? 40;
   const { data } = await generateDeckDirect({
     profile: input.profile, apiKey: input.apiKey, sessionConfig: input.sessionConfig, sessionId: input.sessionId, targetCardCount, onProgress: input.onProgress,
@@ -97,6 +107,8 @@ async function requestDeckDirect(input: GeneratedDeckRequest): Promise<GameCard[
  * - 测试注入的 request（非默认值）原样使用，离线单测不起网络；
  * - 自包含版（无 /api 代理）走前端直连 `requestDeckDirect` → `direct-provider`；
  * - 服务器模式维持原样：只走 `/api/generate-session`，不发起直连。
+ * 两条默认通道都各自在入口做 `AI_MAINLINE_ENABLED` 守卫（见 requestGeneratedDeck / requestDeckDirect），
+ * 关闭时本函数即使被直接调用也只会回落到本地固定库，不发任何生成请求。
  */
 export function resolveDeckTransport(request?: typeof requestGeneratedDeck): typeof requestGeneratedDeck {
   if (request && request !== requestGeneratedDeck) return request;
@@ -159,8 +171,11 @@ export function countPlayablePackCards(deck: GameCard[], config: SessionConfig, 
 }
 
 /** pack-specific 本地补位（历史函数名，内容源已切到 V2 SSOT）：同步、离线可用；按 id/题面去重，只补目标玩法。 */
-export function refillPackFromSeeds(deck: GameCard[], config: SessionConfig, packId: string): GameCard[] {
-  const local = playable([...mainlineSsotCardsByPack(packId)], config);
+export function refillPackFromSeeds(deck: GameCard[], config: SessionConfig, packId: string, manifest?: FixedContentManifest): GameCard[] {
+  // 补位同样只从当前冻结固定库取卡（Plan §13「每轮发卡」），并过 Human Step 5 的跨轨补卡闸：
+  // 纯旧 seed 局不得被偷偷补进快照内 PN-*，正式轨不得补进任何非 Formal 卡（判定真源见 fixed-content-manifest）。
+  const local = playable(fixedContentCards(mainlineSsotCardsByPack(packId)), config)
+    .filter((card) => refillAllowsCard(deck, card, manifest));
   return dedupeCards([...deck, ...local]);
 }
 
@@ -170,9 +185,10 @@ export function refillPackFromSeeds(deck: GameCard[], config: SessionConfig, pac
  */
 export function ensurePackPlayable(
   deck: GameCard[], config: SessionConfig, packId: string, usedCardIds: string[] = [], threshold = PACK_PLAYABLE_THRESHOLD,
+  manifest?: FixedContentManifest,
 ): { deck: GameCard[]; added: number } {
   if (countPlayablePackCards(deck, config, packId, usedCardIds) >= threshold) return { deck, added: 0 };
-  const refilled = refillPackFromSeeds(deck, config, packId);
+  const refilled = refillPackFromSeeds(deck, config, packId, manifest);
   return { deck: refilled, added: refilled.length - deck.length };
 }
 
@@ -182,6 +198,8 @@ export interface BackgroundRefillInput extends Omit<GeneratedDeckRequest, "targe
   targetCardCount?: number;
   /** 测试注入；默认走 `resolveDeckTransport`（自包含版＝前端直连，服务器模式＝/api）。 */
   request?: typeof requestGeneratedDeck;
+  /** 测试/未来显式注入的固定库 manifest；缺省＝运行期冻结 manifest。 */
+  manifest?: FixedContentManifest;
 }
 
 /**
@@ -189,9 +207,15 @@ export interface BackgroundRefillInput extends Omit<GeneratedDeckRequest, "targe
  * 走与整局生成同一条传输链（`resolveDeckTransport`）：自包含版直接请求 Provider，不再静默撞 /api。
  */
 export async function refillPackInBackground(input: BackgroundRefillInput): Promise<GameCard[]> {
+  // 正式主线 AI 隔离（Plan §13）：关闭时后台补题不得发任何生成请求（含经 resolveDeckTransport 的直连），也不并入快照。
+  if (!isAiMainlineEnabled()) return input.deck;
   try {
     const request = resolveDeckTransport(input.request);
     const incoming = await request({ profile: input.profile, apiKey: input.apiKey, sessionConfig: input.sessionConfig, sessionId: input.sessionId, targetCardCount: input.targetCardCount ?? 20, customCards: input.customCards });
-    return dedupeCards([...input.deck, ...playable(incoming.filter((card) => card.packId === input.packId), input.sessionConfig)]);
+    // Human Step 5 跨轨补卡闸：后台补题是恢复/补位路径之一，同样只能补进与这一局同轨的卡——
+    // 纯旧 seed 局不收 PN-*，正式轨只收 Formal，避免「偷偷跨轨」。
+    const local = playable(incoming.filter((card) => card.packId === input.packId), input.sessionConfig)
+      .filter((card) => refillAllowsCard(input.deck, card, input.manifest));
+    return dedupeCards([...input.deck, ...local]);
   } catch { return input.deck; }
 }

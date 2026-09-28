@@ -16,16 +16,17 @@ import { RoundHeader } from "@/components/game/RoundHeader";
 import { RoundTimer } from "@/components/game/RoundTimer";
 import type { CustomGamePack, GameSession, GenerationSource, Intensity, Player } from "@/lib/domain/schemas";
 import { PACK_PLAYABLE_THRESHOLD, refillPackInBackground } from "@/lib/ai/generate-deck";
+import { isolateLegacyAiDeck } from "@/lib/ai/mainline-flag";
 import { generationFallbackNoticeText, deckGenerationSource, shouldAnnounceGenerationFallback } from "@/lib/domain/generation-source";
 import { providerErrorMessage } from "@/lib/ai/provider-errors";
 import { dedupeCards } from "@/lib/ai/normalize";
-import { completeRound, finishSession, pauseSession, resumeSession, segmentRoundNo, skipRound, startRound, swapRound, updateIntensity, updatePackState } from "@/lib/engine/session-engine";
-import { applyHostDecisionToSession, applyPlayerRosterChange, awaitingHostDecision, NO_RECOVERABLE_CARDS_GUIDANCE, orchestrationOf, reduceResolvedRound, relationshipOf, reshuffleWouldRevealCard, withV2State } from "@/lib/engine/v2-deal";
+import { finishSession, pauseSession, resolveRoundAndReduce, resumeSession, roundDisclosureSignal, segmentRoundNo, startRound, updateIntensity, updatePackState } from "@/lib/engine/session-engine";
+import { applyHostDecisionToSession, applyPlayerRosterChange, AWAITING_NO_RECOVERABLE_GUIDANCE, awaitingHostDecision, orchestrationOf, reduceResolvedRound, relationshipOf, reshuffleWouldRevealCard, withV2State } from "@/lib/engine/v2-deal";
 import { NO_ELIGIBLE_PAIR_HINT, normalizeParticipants, pairModeFor } from "@/lib/v2-relationship/v2-participants";
 import { mutualCandidateIds, mutualCheckFinalEvents, mutualCheckTrigger } from "@/lib/v2-relationship/v2-mutual-check";
 import { reduceV2SessionEvents, type V2SessionState } from "@/lib/v2-relationship/v2-session";
 import { PACK_EXHAUSTED_GUIDANCE, RELATIONSHIP_GLOBAL_EXHAUSTED_GUIDANCE } from "@/lib/v2-relationship/v2-session";
-import { listSwitchablePacks, noSwitchablePackNotice, packMinPlayersNotice, packSwitchBlockedNotice, switchPackAndDeal } from "@/lib/engine/pack-switcher";
+import { listSwitchablePacks, noSwitchablePackNotice, packSwitchBlockedNotice, switchPackAndDeal } from "@/lib/engine/pack-switcher";
 import { selectEligiblePlayer } from "@/lib/engine/player-selector";
 import { enterSpinChain, remainingSpinChainCards, replaceInSpinChain, resolveSpinChain, returnToBottle, spinChainAvailability, SPIN_CHAIN_PACK_ID } from "@/lib/engine/spin-chain";
 import { COMPATIBILITY_PACK_ID, createCompatibilityState, defaultCompatibilityPair, readCompatibilityState, recordCompatibilityAnswer } from "@/lib/game-packs/compatibility-test";
@@ -37,13 +38,44 @@ import { gamePackRepository } from "@/lib/storage/game-pack-repository";
 import { sessionRepository, createSessionAutosave } from "@/lib/storage/session-repository";
 import { play } from "@/lib/audio";
 
-/** 还没有 pack-local state 时，从在场玩家取默认两人；不足 2 人返回 undefined（玩法不可用）。 */
+/**
+ * §7.2 逐轮「本人实际揭晓/披露」信号：从卡面交互上下文**显式**取，取不到就是「未判定」。
+ *
+ * 这里刻意**不经 `interactionType` 猜**（Human 明令封死的捷径）：只有当 UI 真实收集到
+ * 「本人揭晓」这一事实时才返回信号；当前没有该收集控件 → 恒返回 `undefined`，
+ * 于是本批生产环境**保守地不把任何轮次算作有效信息轮**（mid-session Mutual 暂时不可达，
+ * 这是 Human 已明确接受的代价，绝不为它放宽任何判定）。
+ *
+ * 未来接上真实收集流程（真正的问答/揭晓步骤）时，只改这一个函数的返回值，
+ * 链路（`roundHistory.result` → 事件 → reducer）已就位。
+ */
+function roundDisclosureForCurrentRound(): ReturnType<typeof roundDisclosureSignal> | undefined {
+  // 正式采集通道尚未冻结/落地，生产恒为「未判定」；不猜、不按题型硬编码。
+  return undefined;
+}
+
+/**
+ * 每轮终态（唯一业务入口）：引擎级原子入口 `resolveRoundAndReduce` 一次完成
+ * 「构造唯一 round record → 落盘 → 用**同一条** record 构造事件 → 归约关系态」，
+ * 页面不再自己协调 `reduceResolvedRound` 与 `completeRound` 的先后，
+ * 也就不存在「本轮披露尚未落盘 → 归约退化 / 错挂上一轮披露」的串轮可能。
+ */
+function applyRoundSignal(session: GameSession, terminal: "complete" | "swap" | "skip"): GameSession {
+  const signal = terminal === "complete" ? roundDisclosureForCurrentRound() : undefined;
+  return resolveRoundAndReduce(session, terminal, signal);
+}
+
+/**
+ * 还没有 pack-local state 时，从在场玩家取默认两人；不足 2 人返回 undefined（玩法不可用）。
+ */
 function pairFromDefaults(session: GameSession) {
   const pair = defaultCompatibilityPair(session.config.players);
   return pair ? createCompatibilityState(pair[0]!.id, pair[1]!.id) : undefined;
 }
 
-/** 链完成后落库的相位是 returning：恢复时若发现还停在别的玩法上，直接补一次回瓶子（保证「自动回瓶子 ready」）。 */
+/**
+ * 链完成后落库的相位是 returning：恢复时若发现还停在别的玩法上，直接补一次回瓶子（保证「自动回瓶子 ready」）。
+ */
 function recoverSpinChain(session: GameSession): GameSession {
   const chain = readSpinChain(session);
   return chain?.phase === "returning" && session.currentPackId !== SPIN_BOTTLE_PACK_ID ? returnToBottle(session, { chain }) : session;
@@ -64,7 +96,7 @@ function GamePageContent() {
   const [hostBusy, setHostBusy] = useState(false);
   // B9/D5：命中常规互选检查点后打开的私密互选（null = 未打开）；取消不产生任何结果。
   const [mutualCheckpoint, setMutualCheckpoint] = useState<number | null>(null);
-  useEffect(() => { if (!id) return router.replace("/"); void sessionRepository.get(id).then(async (stored) => { if (!stored) return router.replace("/"); const recovered = recoverSpinChain(stored); const next = recovered.currentRound ? recovered : startRound(recovered); await sessionRepository.save(next); setSession(next); }); }, [id, router]);
+  useEffect(() => { if (!id) return router.replace("/"); void sessionRepository.get(id).then(async (stored) => { if (!stored) return router.replace("/"); const recovered = recoverSpinChain(isolateLegacyAiDeck(stored)); const next = recovered.currentRound ? recovered : startRound(recovered); await sessionRepository.save(next); setSession(next); }); }, [id, router]);
   useEffect(() => { void gamePackRepository.list().then(setCustomPacks); }, []);
   // 重要动作（切玩法 / 完成 / 换一个 / 跳过 / 默契分数 / 转瓶子落点）共用一条串行 autosave，
   // 保证快速连点或动画期间刷新时，落库顺序与动作顺序一致（T187）。
@@ -93,6 +125,8 @@ function GamePageContent() {
         const profile = profiles.find((item) => item.isDefault) ?? profiles[0];
         const apiKey = profile ? await aiProviderRepository.getSecret(profile.id) : undefined;
         if (!profile || !apiKey) return; // 没配好 Provider/Key：静默，交给 L1
+        // Human Step 5 同轨不变量：后台补题入口经 `refillPackInBackground` 的跨轨补卡闸，
+        // 只能补进与这一局同轨的卡（纯旧 seed 局不收 PN-*），避免后台悄悄把牌堆混轨。
         const deck = await refillPackInBackground({ deck: snapshot.deckSnapshot, profile, apiKey, sessionConfig: snapshot.config, sessionId: snapshot.id, packId: SPIN_CHAIN_PACK_ID });
         // 只把相对快照新增的卡并回「最新」session，避免覆盖期间用户已经做出的动作；再统一去重。
         const added = deck.filter((card) => !snapshot.deckSnapshot.some((item) => item.id === card.id));
@@ -121,9 +155,10 @@ function GamePageContent() {
     }
     previousGenerationSource.current = source;
   }, [session]);
-  // B9/D5：Heat（relationshipEffectiveCardCount）打到常规互选检查点 9/14/19、且当局存在合法 pair 时弹私密互选。
+  // B9/D5：Heat（relationshipEffectiveCardCount）落进中途互选窗口 12/13/14、且当局存在合法 pair 时弹私密互选。
+  // 新口径：先了解再问兴趣——一局中途最多一次；到 14 仍不满足就跳过本局，不补问（详见 v2-state.MUTUAL_CHECK_COUNTS）。
   // 判定口径全在 v2-mutual-check（复用 v2-state 检查点 + v2-reducer 四道门，无第二套口径）；
-  // 无合法 pair / 未到检查点 / 已暂停 / 已有私密流程在跑 → 不弹、不空转；同一检查点只弹一次（取消不重弹）。
+  // 无合法 pair / 未到窗口 / 已暂停 / 已有私密流程在跑 → 不弹、不空转；同一检查点只弹一次（取消不重弹）。
   const mutualShown = useRef<Set<number>>(new Set());
   useEffect(() => {
     if (!session || mutualCheckpoint !== null) return;
@@ -131,6 +166,8 @@ function GamePageContent() {
       relationship: relationshipOf(session),
       participants: normalizeParticipants(session.participants, session.config.players),
       sessionStatus: session.status,
+      // B3-9/D2：Host 耗尽等待态实时阻断（不弹），与 reducer 侧「暂时被挡≠永久放弃」口径一致。
+      awaitingHostDecision: awaitingHostDecision(session) !== undefined,
     });
     if (!trigger.due || trigger.checkpoint === null) return;
     if (mutualShown.current.has(trigger.checkpoint)) return;
@@ -142,7 +179,7 @@ function GamePageContent() {
   useEffect(() => { if (roundId) play("deal"); }, [roundId]);
   // 推进本轮：链内（truth-dare 题面上，链相位 question）走链自己的相位机——完成＝resolving→returning 自动回瓶子；
   // 换一个＝replacing 重出同类型题、参与者仍是链里固定的被指人。普通玩法沿用共享引擎语义。
-  async function resolve(action: "complete" | "swap" | "skip") { if (!session) return; play(action === "complete" ? "complete" : action === "swap" ? "swap" : "skip"); /* V2-B10：每轮终态先按 R3 事件表归约到关系态——relationship-aware 普通卡 completed 推进有效卡计数/Heat，skip/swap 与 neutral/expansion 一律 +0；归约保留 currentRound，随后照旧走引擎/转瓶子链。 */ const reduced = reduceResolvedRound(session, action === "complete" ? "completed" : action === "swap" ? "swapped" : "skipped"); const chain = readSpinChain(session); if (chain?.phase === "question" && session.currentRound?.packId === SPIN_CHAIN_PACK_ID) { await commit(action === "swap" ? replaceInSpinChain(reduced, customPacks) : resolveSpinChain(reduced)); return; } const resolved = action === "complete" ? completeRound(reduced) : action === "swap" ? swapRound(reduced) : skipRound(reduced); const next = startRound(resolved, Math.random, action === "swap" && session.currentRound ? { reuseLogicalRoundId: session.currentRound.logicalRoundId } : {}); if (!next.currentRound) { const ended = next.v2Orchestration?.lastExhaustionLevel; if (next.v2Orchestration?.awaitingHostDecision || ended === "PACK_EXHAUSTED" || ended === "RELATIONSHIP_GLOBAL_EXHAUSTED") { await commit(next); return; } const finished = finishSession(resolved); await commit(finished); router.push(`/summary?session=${finished.id}`); } else await commit(next); }
+  async function resolve(action: "complete" | "swap" | "skip") { if (!session) return; play(action === "complete" ? "complete" : action === "swap" ? "swap" : "skip"); /* V2-B10：普通玩法每轮终态走**引擎级唯一原子入口** `applyRoundSignal` → `resolveRoundAndReduce`（同一 round record 一次落盘一次归约，卡侧 metadata 走 SSOT 侧车、轮侧揭晓信号走 roundHistory.result，未补标/未采集一律 fail-closed）。转瓶子链内终态是另一套相位机，仍沿用 reduce→resolve 两步（本轮在链上，无 result → 披露即未判定，同样 fail-closed）。 */ const chain = readSpinChain(session); if (chain?.phase === "question" && session.currentRound?.packId === SPIN_CHAIN_PACK_ID) { const reduced = reduceResolvedRound(session, action === "complete" ? "completed" : action === "swap" ? "swapped" : "skipped"); await commit(action === "swap" ? replaceInSpinChain(reduced, customPacks) : resolveSpinChain(reduced)); return; } const resolved = applyRoundSignal(session, action); const next = startRound(resolved, Math.random, action === "swap" && session.currentRound ? { reuseLogicalRoundId: session.currentRound.logicalRoundId } : {}); if (!next.currentRound) { const ended = next.v2Orchestration?.lastExhaustionLevel; if (next.v2Orchestration?.awaitingHostDecision || ended === "PACK_EXHAUSTED" || ended === "RELATIONSHIP_GLOBAL_EXHAUSTED") { await commit(next); return; } const finished = finishSession(resolved); await commit(finished); router.push(`/summary?session=${finished.id}`); } else await commit(next); }
   // 切玩法：同一 Session 内换 currentPackId → 目标玩法 seed 立即补位 → 出下一题并 autosave（不重建 Session、不改 config）。
   // 手动切包（manual-switch）会开新段，顶栏轮次从 1 重计（V1.5）。
   async function switchTo(packId: string) {
@@ -203,23 +240,25 @@ function GamePageContent() {
   // 取消：面板已清空内存里的单向数据，这里不产生任何 MATCH/DUE 事件，也不公布任何人。
   function cancelMutualCheck() { setMutualCheckpoint(null); }
   if (!session) return <NeonBackground><main className="screen game-screen"><p>正在恢复本局…</p></main></NeonBackground>;
-  const switcher = <PackSwitcherSheet open={switcherOpen} packs={switchablePacks} currentPackId={session.currentPackId} emptyNotice={switchEmptyNotice} onSelect={(packId) => void switchTo(packId)} onClose={() => setSwitcherOpen(false)} />;
+  // D8 严格方案 A｜渲染优先级（唯一口径）：
+  //   awaitingHostDecision > cardless / normal-empty > PACK_EXHAUSTED / RELATIONSHIP_GLOBAL_EXHAUSTED。
+  // awaiting 分支必须先于 cardless 与所有空题库分支判定，且不渲染切包入口 / 切包面板（禁第三种 Host 状态迁移）。
   const card = session.currentRound ? session.deckSnapshot.find((item) => item.id === session.currentRound?.cardId) : undefined;
-  // 纯本地玩法（转瓶子）不需要题卡：没有 currentRound 也要照常进主局，不落到空题库页。
-  const cardless = packIsCardless(session.currentPackId);
   const awaiting = awaitingHostDecision(session);
   const exhaustionLevel = session.v2Orchestration?.lastExhaustionLevel;
-  // B8/D8=A+：耗尽等待态先交 Host 二选一；本玩法/全局仍有卡时给中性指引，允许切换其他有卡玩法（都不自动结束）。
-  if ((!card || !session.currentRound) && !cardless) {
-    if (awaiting) {
-      // P1 兜底：洗牌救不回任何卡（牌堆为空，或本玩法在当前人数·尺度·雷区下没有任何硬合法卡）时，
-      // 「洗牌再玩」纯属空转——不再只给这一条路，直接给结束本局/换玩法/回首页三条明确出口。
-      if (!reshuffleWouldRevealCard(session)) {
-        const shortfall = packMinPlayersNotice(session.currentPackId, session.config.players.filter((player) => player.active).length, customPacks);
-        return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>可玩的题都出完了</h1><p className="game-hint">{shortfall ?? NO_RECOVERABLE_CARDS_GUIDANCE}</p><Button type="button" onClick={() => setSwitcherOpen(true)}>切换玩法</Button><Button variant="ghost" type="button" disabled={hostBusy} onClick={() => void hostDecision("finish")}>结束本局</Button><Link href="/">返回首页</Link></section>{switcher}</main></NeonBackground>;
-      }
-      return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>可玩的题都出完了</h1><p className="game-hint">换一换口味，或者就此收工。</p></section><HostExhaustionSheet open busy={hostBusy} onFinish={() => void hostDecision("finish")} onReshuffle={() => void hostDecision("reshuffle")} /></main></NeonBackground>;
+  if (awaiting) {
+    // 洗牌有效性前置检查：真跑一遍 Host 洗牌再按同一出卡链试抽，抽不到卡说明「洗牌再玩」纯属空转——
+    // 不展示无效按钮/占位，只给中性说明「当前条件下没有可继续的合法题」＋结束本局。
+    if (!reshuffleWouldRevealCard(session)) {
+      return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>可玩的题都出完了</h1><p className="game-hint">{AWAITING_NO_RECOVERABLE_GUIDANCE}</p><Button variant="ghost" type="button" disabled={hostBusy} onClick={() => void hostDecision("finish")}>结束本局</Button></section></main></NeonBackground>;
     }
+    return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>可玩的题都出完了</h1><p className="game-hint">换一换口味，或者就此收工。</p></section><HostExhaustionSheet open busy={hostBusy} onFinish={() => void hostDecision("finish")} onReshuffle={() => void hostDecision("reshuffle")} /></main></NeonBackground>;
+  }
+  const switcher = <PackSwitcherSheet open={switcherOpen} packs={switchablePacks} currentPackId={session.currentPackId} emptyNotice={switchEmptyNotice} onSelect={(packId) => void switchTo(packId)} onClose={() => setSwitcherOpen(false)} />;
+  // 纯本地玩法（转瓶子）不需要题卡：没有 currentRound 也要照常进主局，不落到空题库页。
+  const cardless = packIsCardless(session.currentPackId);
+  // B8/D8=A+：非 awaiting 下本玩法/全局仍有卡时给中性指引，允许切换其他有卡玩法（不自动结束）。
+  if ((!card || !session.currentRound) && !cardless) {
     if (exhaustionLevel === "PACK_EXHAUSTED" || exhaustionLevel === "RELATIONSHIP_GLOBAL_EXHAUSTED") return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>{exhaustionLevel === "PACK_EXHAUSTED" ? PACK_EXHAUSTED_GUIDANCE : RELATIONSHIP_GLOBAL_EXHAUSTED_GUIDANCE}</h1><Button type="button" onClick={() => setSwitcherOpen(true)}>切换玩法</Button><Button variant="ghost" type="button" onClick={() => void end()}>查看总结</Button><Link href="/">返回首页</Link></section>{switcher}</main></NeonBackground>;
     return <NeonBackground className="game-bg"><main className="screen game-screen"><section className="empty-deck"><h1>这个玩法暂时没有可玩的题卡</h1><Button type="button" onClick={() => setSwitcherOpen(true)}>切换玩法</Button><Button variant="ghost" type="button" onClick={() => void end()}>查看总结</Button><Link href="/">返回首页</Link></section>{switcher}</main></NeonBackground>;
   }
