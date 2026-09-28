@@ -1,0 +1,326 @@
+{
+  "generator": "scripts/audit-formal-truth-montecarlo.ts",
+  "pack": "truth-dare",
+  "packLabel": "真心话（truth-dare）",
+  "router": "createV2MainlineRouter（审计 / MC 侧）— C1-8 起与生产 createDeckRouter 共享桥接卡源 mainlineRuntimeCards()",
+  "cardSource": {
+    "description": "mainlineSsotCardsByPack('truth-dare')（SSOT 主线 + 第一包正式内容）",
+    "packTotal": 124,
+    "formalTotal": 24,
+    "legacyTotal": 100
+  },
+  "config": {
+    "sessionsPerTable": 1000,
+    "targetCompletedRounds": 20,
+    "guardLimit": 1000,
+    "completedProbability": 0.85,
+    "softDedupWindow": 5,
+    "tables": [
+      {
+        "key": "2m2f",
+        "label": "2男2女",
+        "players": 4
+      },
+      {
+        "key": "1m3f",
+        "label": "1男3女",
+        "players": 4
+      },
+      {
+        "key": "2m3f",
+        "label": "2男3女",
+        "players": 5
+      },
+      {
+        "key": "1m4f",
+        "label": "1男4女",
+        "players": 5
+      }
+    ],
+    "seedFormula": "20260928 + i*7919 + (tableIndex+1)*104729",
+    "totalSessionsPerMode": 4000,
+    "modes": {
+      "A": "生产实况：不给披露信号 ⇒ Heat 恒 H1（disclosure 通道未落地）",
+      "B": "disclosure 生产链口径：每 completed 轮给 selfDisclosed + disclosedPlayerIds ⇒ Formal 卡推进有效计数与 Heat"
+    }
+  },
+  "staticHeatAvailability": [
+    {
+      "heat": "H1",
+      "packTotal": 124,
+      "legalCount": 124,
+      "formalLegal": 24,
+      "legacyLegal": 100
+    },
+    {
+      "heat": "H2",
+      "packTotal": 124,
+      "legalCount": 122,
+      "formalLegal": 22,
+      "legacyLegal": 100
+    },
+    {
+      "heat": "H3",
+      "packTotal": 124,
+      "legalCount": 119,
+      "formalLegal": 19,
+      "legacyLegal": 100
+    },
+    {
+      "heat": "H4",
+      "packTotal": 124,
+      "legalCount": 113,
+      "formalLegal": 13,
+      "legacyLegal": 100
+    }
+  ],
+  "formalProfiles": {
+    "byIntensity": {
+      "1": 4,
+      "2": 9,
+      "3": 7,
+      "4": 2,
+      "5": 2
+    },
+    "byHeatMax": {
+      "1": 2,
+      "2": 3,
+      "3": 6,
+      "4": 13
+    },
+    "byTopic": {
+      "兴趣爱好": 2,
+      "生活方式": 2,
+      "性格·习惯·小癖好": 2,
+      "恋爱观": 2,
+      "择偶偏好": 1,
+      "相处规则": 2,
+      "吃醋·占有": 2,
+      "异性朋友边界": 2,
+      "前任态度": 2,
+      "底线·雷区": 2,
+      "人生目标·理想生活": 2,
+      "亲密边界": 1,
+      "性观念·亲密态度": 2
+    }
+  },
+  "modeA": {
+    "mode": "A",
+    "sessions": 4000,
+    "sessionsCompleted20": 3482,
+    "sessionRate": 0.8705,
+    "completedRoundsMean": 19.72,
+    "deadEndSessions": 518,
+    "deadEndRate": 0.1295,
+    "termination": {
+      "round_limit": 3482,
+      "pack_exhausted": 0,
+      "global_exhausted": 518,
+      "awaiting_host": 0,
+      "guard_limit": 0
+    },
+    "truncatedSessions": 0,
+    "guardUsedMax": 33,
+    "totalDraws": 92925,
+    "drawsPerSession": 23.23,
+    "formalDraws": 18469,
+    "formalShare": 0.1988,
+    "formalExposedDistinct": 24,
+    "formalTotal": 24,
+    "legacyTotal": 100,
+    "heatAtDraw": {
+      "H1": 92925,
+      "H2": 0,
+      "H3": 0,
+      "H4": 0
+    },
+    "heatAtDrawShare": {
+      "H1": 1,
+      "H2": 0,
+      "H3": 0,
+      "H4": 0
+    },
+    "heatAfterTerminal": {
+      "H1": 92925,
+      "H2": 0,
+      "H3": 0,
+      "H4": 0
+    },
+    "sessionsReachingH2": 0,
+    "sessionsReachingH3": 0,
+    "sessionsReachingH4": 0,
+    "repeatedDraws": 0,
+    "effectiveRoundsTotal": 0,
+    "effectivePerSession": 0,
+    "effectiveByGain": {},
+    "effectiveTopics": {},
+    "distinctTopicsCovered": 0,
+    "topicsPerSessionMean": 0,
+    "highEffectivePerSession": 0,
+    "longestLowZeroRunMean": 20,
+    "sessionsZeroFormal": 0,
+    "sessionsZeroEffective": 4000,
+    "sessionsMediumPlus5": 0,
+    "sessionsHighAtLeast1": 0,
+    "sessionsTopicsAtLeast3": 0,
+    "distinctFirstFive": 3977,
+    "topFirstFiveShare": 0.0005,
+    "mutualWindowReached": 0
+  },
+  "modeB": {
+    "mode": "B",
+    "sessions": 4000,
+    "sessionsCompleted20": 3482,
+    "sessionRate": 0.8705,
+    "completedRoundsMean": 19.72,
+    "deadEndSessions": 518,
+    "deadEndRate": 0.1295,
+    "termination": {
+      "round_limit": 3482,
+      "pack_exhausted": 0,
+      "global_exhausted": 518,
+      "awaiting_host": 0,
+      "guard_limit": 0
+    },
+    "truncatedSessions": 0,
+    "guardUsedMax": 33,
+    "totalDraws": 92925,
+    "drawsPerSession": 23.23,
+    "formalDraws": 18465,
+    "formalShare": 0.1987,
+    "formalExposedDistinct": 24,
+    "formalTotal": 24,
+    "legacyTotal": 100,
+    "heatAtDraw": {
+      "H1": 76777,
+      "H2": 15959,
+      "H3": 189,
+      "H4": 0
+    },
+    "heatAtDrawShare": {
+      "H1": 0.8262,
+      "H2": 0.1717,
+      "H3": 0.002,
+      "H4": 0
+    },
+    "heatAfterTerminal": {
+      "H1": 74482,
+      "H2": 18148,
+      "H3": 295,
+      "H4": 0
+    },
+    "sessionsReachingH2": 2295,
+    "sessionsReachingH3": 106,
+    "sessionsReachingH4": 0,
+    "repeatedDraws": 0,
+    "effectiveRoundsTotal": 15728,
+    "effectivePerSession": 3.93,
+    "effectiveByGain": {
+      "high": 9431,
+      "medium": 6297
+    },
+    "effectiveTopics": {
+      "性观念·亲密态度": 2096,
+      "前任态度": 2040,
+      "兴趣爱好": 1313,
+      "生活方式": 1182,
+      "性格·习惯·小癖好": 1168,
+      "吃醋·占有": 1132,
+      "恋爱观": 1130,
+      "相处规则": 1125,
+      "人生目标·理想生活": 1122,
+      "底线·雷区": 1105,
+      "异性朋友边界": 1100,
+      "亲密边界": 700,
+      "择偶偏好": 515
+    },
+    "distinctTopicsCovered": 13,
+    "topicsPerSessionMean": 3.64,
+    "highEffectivePerSession": 2.36,
+    "longestLowZeroRunMean": 9.01,
+    "sessionsZeroFormal": 0,
+    "sessionsZeroEffective": 11,
+    "sessionsMediumPlus5": 1244,
+    "sessionsHighAtLeast1": 3141,
+    "sessionsTopicsAtLeast3": 2823,
+    "distinctFirstFive": 3978,
+    "topFirstFiveShare": 0.0008,
+    "mutualWindowReached": 0
+  },
+  "ceilingCohorts": [
+    {
+      "mode": "A",
+      "intensityLimit": 1,
+      "sessions": 771,
+      "deadEndSessions": 518,
+      "deadEndRate": 0.6719,
+      "completedRoundsMean": 18.56,
+      "formalShare": 0.1816,
+      "formalDrawsOnFinished": 3.89,
+      "effectivePerSession": 0,
+      "termination": {
+        "round_limit": 253,
+        "pack_exhausted": 0,
+        "global_exhausted": 518,
+        "awaiting_host": 0,
+        "guard_limit": 0
+      }
+    },
+    {
+      "mode": "A",
+      "intensityLimit": 2,
+      "sessions": 760,
+      "deadEndSessions": 0,
+      "deadEndRate": 0,
+      "completedRoundsMean": 20,
+      "formalShare": 0.3098,
+      "formalDrawsOnFinished": 7.31,
+      "effectivePerSession": 0,
+      "termination": {
+        "round_limit": 760,
+        "pack_exhausted": 0,
+        "global_exhausted": 0,
+        "awaiting_host": 0,
+        "guard_limit": 0
+      }
+    },
+    {
+      "mode": "B",
+      "intensityLimit": 1,
+      "sessions": 771,
+      "deadEndSessions": 518,
+      "deadEndRate": 0.6719,
+      "completedRoundsMean": 18.56,
+      "formalShare": 0.1819,
+      "formalDrawsOnFinished": 3.9,
+      "effectivePerSession": 3.41,
+      "termination": {
+        "round_limit": 253,
+        "pack_exhausted": 0,
+        "global_exhausted": 518,
+        "awaiting_host": 0,
+        "guard_limit": 0
+      }
+    },
+    {
+      "mode": "B",
+      "intensityLimit": 2,
+      "sessions": 760,
+      "deadEndSessions": 0,
+      "deadEndRate": 0,
+      "completedRoundsMean": 20,
+      "formalShare": 0.3117,
+      "formalDrawsOnFinished": 7.35,
+      "effectivePerSession": 6.18,
+      "termination": {
+        "round_limit": 760,
+        "pack_exhausted": 0,
+        "global_exhausted": 0,
+        "awaiting_host": 0,
+        "guard_limit": 0
+      }
+    }
+  ],
+  "worstTraceFile": "docs/qa/content-audit/FORMAL-TRUTH-MC-WORST-TRACE.json",
+  "readingGuide": "Formal 曝光占比＝抽到 PN-TRUTH-201~224 的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。 Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。 Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。 所有数字由本脚本机械产出，报告侧不得手写。"
+}

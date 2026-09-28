@@ -5,6 +5,7 @@ import {
   PACK_PLAYABLE_THRESHOLD, countPlayablePackCards, ensurePackPlayable, refillPackFromSeeds, refillPackInBackground,
 } from "@/lib/ai/generate-deck";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
+import { cardContentTrack } from "@/lib/v2-content/fixed-content-manifest";
 import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 
 const config = (overrides: Partial<SessionConfig> = {}): SessionConfig => ({
@@ -40,8 +41,13 @@ describe("pack-specific refill", () => {
   it("tops a starved pack up from the frozen snapshot immediately, with no network", () => {
     // 玩法全开时，只要目标玩法在牌堆里一张可玩卡都没有（例如对手玩法占满了牌堆），就需要 pack-specific 补位。
     const allPacks = config({ enabledPackIds: ["truth-dare", "most-likely", "never-have", "ai-improv", "would-you-rather", "pointing-game", "compatibility-test", "spin-bottle"] });
-    // Human Step 5 同轨闸：本局是快照轨（快照内旧题局），补位只补快照内卡。
-    const deck = [...mainlineSsotCardsByPack("truth-dare")];
+    // Human Step 5 同轨闸：本局是**快照轨**（快照内旧题局），补位只补快照内卡。
+    // ⚠️ 前提更新（C1-3 之后）：`truth-dare` 池里已追加第一包 Formal 卡（PN-TRUTH-201~224），
+    // 整包建堆会被判定为「已有 Formal 卡 ⇒ Formal session」而拒收快照卡补位。本用例的前提是
+    // 快照轨，故显式只取快照轨卡（`cardContentTrack === "snapshot"`），使牌堆轨与前提一致。
+    const deck = mainlineSsotCardsByPack("truth-dare").filter((card) => cardContentTrack(card) === "snapshot");
+    expect(deck.length).toBeGreaterThan(0);
+    expect(deck.every((card) => cardContentTrack(card) === "snapshot")).toBe(true);
     const before = countPlayablePackCards(deck, allPacks, "compatibility-test");
     const { deck: refilled, added } = ensurePackPlayable(deck, allPacks, "compatibility-test");
     expect(before).toBeLessThan(PACK_PLAYABLE_THRESHOLD);

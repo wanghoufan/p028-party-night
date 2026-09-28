@@ -11,7 +11,7 @@ import {
 } from "@/lib/v2-content/bar-fit";
 import { judgeCanonicalBarFit } from "@/lib/v2-content/bar-fit-input";
 import { FIXED_CONTENT_MANIFEST } from "@/lib/v2-content/fixed-content-manifest";
-import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
+import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 
 /**
  * BAR-FIT 规则夹具：每条规则一个正例（必须命中）＋一个反例（不得命中）。
@@ -286,17 +286,21 @@ describe("BAR-FIT 旧题审查产物与判定引擎一致", () => {
   };
 
   it("冻结固定库 390 全量在册，且产物 machineVerdict 与 canonical 引擎重算一致", () => {
-    const frozen = [...mainlineSsotCards(), ...expansionSsotCards()];
+    // 口径＝**冻结 SSOT 快照 390**（主线 350 + 扩圈 40），与磁盘 BAR-FIT-AUDIT.json 的
+    // `sets.frozenFixed390` 同集合。第一包正式内容（PN-TRUTH-201~224）走 sidecar，**不进**这份冻结快照
+    // （其 BAR-FIT 审查属 C1-6 的独立审查脚本），故这里从 SSOT adapter 真源取卡，不用桥接合并视图。
+    const adapter = getV2ContentAdapter();
+    const frozen = [...adapter.mainlineCards, ...adapter.expansionCards];
     expect(audit.sets.frozenFixed390.cardCount).toBe(390);
     expect(audit.sets.frozenFixed390.rows).toHaveLength(390);
     expect(frozen).toHaveLength(390);
 
     for (const card of frozen) {
-      const row = audit.sets.frozenFixed390.rows.find((entry) => entry.cardId === card.id);
-      expect(row, card.id).toBeDefined();
+      const row = audit.sets.frozenFixed390.rows.find((entry) => entry.cardId === card.cardId);
+      expect(row, card.cardId).toBeDefined();
       // 唯一 canonical input（正文 + instruction）重算，逐卡一致。
-      expect(row?.machineVerdict, card.id).toBe(judgeCanonicalBarFit(card).machineVerdict);
-      expect(row?.includesInstruction, card.id).toBe(true);
+      expect(row?.machineVerdict, card.cardId).toBe(judgeCanonicalBarFit(card).machineVerdict);
+      expect(row?.includesInstruction, card.cardId).toBe(true);
     }
   });
 

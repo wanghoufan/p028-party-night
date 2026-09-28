@@ -1,0 +1,137 @@
+{
+  "source": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变）",
+  "reviewedAt": "2026-09-28T15:10:00Z",
+  "reviewerKind": "ai-role",
+  "note": "本文件已由 product-reviewer（Research Reviewer，AI 角色，非真人物品审）逐卡填写 24 条人审结论。判定依据三条：①安全红线（无露骨性描写／无强迫惩罚灌酒／无隐私脱衣非自愿；I1 不触亲密性内容，I4/I5 才触及态度与边界，且全部 consentMode=skip-anytime 可无惩罚跳过）；②BAR-FIT（题面是否像人话、有无尴尬/冒犯/说教/审讯腔/AI 腔）；③信息增量（答完能否真的更了解对方本人，是否会落到现场评价/猜测/空话/套话）。机器档位（machineVerdict）只作分流参考，未作为任何一条结论的依据。第二轮复判（2026-09-28T12:48:29Z）：对 builder 按建议重写的 4 张（204/207/220/223）重走同一套三条标准，204/207/220 由 BORDERLINE 升 PASS，223 维持 BORDERLINE（题面腔调已改好但信息增量仍偏薄，属封闭式二选一只换一个标签）。第三轮复判（2026-09-28T15:10:00Z）：仅对 223 重走同一套三条标准——builder 采 208 式量化重写为「亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。」，二轮指出的封闭式单标签与易滑成辩论两个缺陷均已消除，信息增量达标，223 由 BORDERLINE 升 PASS（其余 23 条结论一字未动）。结论：PASS 24 / BORDERLINE 0 / FAIL 0；按 satisfiesFormalAdmission 四条件，预期 formal fixed = 24 张。审查报告：docs/review/RESEARCH_REVIEW-FORMAL-TRUTH-PACK-1.md。",
+  "entries": {
+    "PN-TRUTH-201": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "题面口语自然、只要求一件具体小事，不评价不引导，能问出真实生活细节；机器档位 PASS 与本判定独立得出。"
+    },
+    "PN-TRUTH-202": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "长期爱好＋它当下还在给自己什么，指向可复述的具体生活内容，不是性格形容词；无尴尬与说教。"
+    },
+    "PN-TRUTH-203": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "问每日固定的一段安排，答案必然是可核对的作息细节，信息增量实；I1 不涉亲密话题，分档正确。"
+    },
+    "PN-TRUTH-204": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判（由 BORDERLINE 升 PASS）：重写后题面为一次具体事件的决策复盘，「你照做了还是没照」是二值具体行为、「当时怎么决定的」要的是决策过程与理由，答案必然落到可复述的一次真实决定（如老板让加班／朋友让帮忙／家里让相亲），不再有原版「哪些是自己选的、哪些是顺着别人期待」的二元价值审视框架，也不易再答成「我要做自己」式套话。安全红线无破（I2 不触亲密性内容），口语自然不尴尬、无线上教。informationGain=high 与 deepen 与新题面自洽。残留小瑕疵（不影响入库）：「抱有期待」略书面、句尾用句号而非问号。"
+    },
+    "PN-TRUTH-205": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "限定为「熟人相处久了才会发现」的小习惯，指向真实且不易套话的细节，现场自然不尴尬。"
+    },
+    "PN-TRUTH-206": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「说一个最近发生的事」把抽象状态落成具体事件，答案可复述；虽有心理分析味但不构成说教或冒犯。"
+    },
+    "PN-TRUTH-207": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判（由 BORDERLINE 升 PASS）：重写后删掉了心理咨询腔的「安全感」抽象词与冗余半句，改为一个可观察的触发场景＋具体行为（追问／反复看手机／先去忙自己的事／先睡），答案天然是行为描述而非「怕被冷落」式情绪套话，informationGain=high 站得住。口语度与尴尬度明显改善，无说教无线上教。I2 档位现在合适（比原题轻）。残留小瑕疵（不影响入库）：隐含假设对方有伴侣，单身/丧偶/不愿谈前任者会答不出，虽有 skip-anytime 兜底但现场仍可能扫兴；本卡可考虑后续把「伴侣」放宽为「重要的人」。"
+    },
+    "PN-TRUTH-208": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「各占几成＋为什么这么分」用可量化口吻逼出真实取舍与理由，不是空泛恋爱观口号；有轻微辩论感但仍在可玩范围。"
+    },
+    "PN-TRUTH-209": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「说一个具体行为，别只给形容词」直接封死形容词式套话，能落到看得见的具体行为；无尴尬。"
+    },
+    "PN-TRUTH-210": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "冲突处理方式＋对对方的具体期待，两问都指向可复述的行为模式；主题与「相处规则」一致，无审讯感。"
+    },
+    "PN-TRUTH-211": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "问的是本人硬边界而非评判他人，说清一条即可；安全、无冒犯，信息增量实。"
+    },
+    "PN-TRUTH-212": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「说一件真发生过的、别用看情况带过」明确排除猜测与套话，能问出真实吃醋触发点；无强迫、可跳过。"
+    },
+    "PN-TRUTH-213": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「到哪一步／你的分界」要的是可执行边界而非态度，指向具体规则；异性朋友边界属 Plan 明列缺失维度，安全且有价值。"
+    },
+    "PN-TRUTH-214": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "先问有无关系很好的异性朋友、再问会聊到什么，能问出真实交往边界；「深度」略抽象但答得出来，不构成套话卡。"
+    },
+    "PN-TRUTH-215": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "假设情境压出真实取舍（会照做／会拒绝／会吵），能听到具体做法；「说实话」略带轻微压力但未构成强迫，未触碰红线。"
+    },
+    "PN-TRUTH-216": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "问的是他自己总结出的那条结论，答案具体且不可套话；已标 ex-partner 雷区标签，符合 Plan §4 前任题要求。"
+    },
+    "PN-TRUTH-217": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「说说那种时刻的样子」要画面而非态度，指向真实情绪触发场景；I4 与前任主题匹配，未越出可谈边界。"
+    },
+    "PN-TRUTH-218": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "问的是他愿意直接终止关系的那条硬线，答案具体、不评判他人；I2 承担此类话题在酒吧可行，无尴尬。"
+    },
+    "PN-TRUTH-219": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "自我敏感点＋明确不许被拿来开玩笑的边界，属真实可复述的本人信息；不涉他人隐私，无冒犯。"
+    },
+    "PN-TRUTH-220": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判（由 BORDERLINE 升 PASS）：重写后答案长度由「从早到晚说」压到「哪三段」，解决了原判的核心缺陷——酒吧现场不再要求长答案、不易冷场也不会漂成理想生活作文。「最想保住」是取舍口径而非罗列理想，答出的三段即他真实的生活优先级排序，可复述、难套话。量化口吻（要三段）与已判 PASS 的 208「各占几成」同一手法，风格一致。安全红线无破，无尴尬无线上教。"
+    },
+    "PN-TRUTH-221": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「已经为它做过的一步」把目标拉回可核对的行动，能问出是否真在动；自然口语，无说教。"
+    },
+    "PN-TRUTH-222": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "I5／intimacyClass=attitude，问的是要求对方先征得同意的边界，安全且正是 Plan 缺失的亲密边界维度；consentMode=skip-anytime 可无惩罚跳过，符合分档要求。"
+    },
+    "PN-TRUTH-223": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第三轮复判（升 PASS）。当前题面为「亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。」①安全红线：只让对方陈述自己在亲密节奏上的偏好与理由，不点名要求露骨细节、不引导具体行为描述，intensity=I4、heatMax=4、intimacyClass=attitude、consentMode=skip-anytime、boundaryTags=[] 未变，越分档风险与二轮同档无恶化，PASS。②BAR-FIT：「各占几成」＋「为什么这么分」把二轮的封闭式二选一改成开放量化题，无尴尬、无说教、无 AI 腔；同时因量化本身要求给出配比，两项不再是互斥对立，现场不会滑成「谁对谁错」的辩论。③信息增量：现场可听到具体配比＋归因，例如「三七开，因为对方主动我才确定他想要我」或「五五开，看当时状态」——答案之间存在可区分的行为倾向与心理动因，听完多知道的是对方的相处节奏与边界逻辑，而不再只是一个标签；这正是二轮指出缺失的那一层。本卡 informationGain 由作者标为 medium（低于 208 的 high），与题面实际要求的「配比＋理由」相称，informationGoal 已同步为「听到他在亲密里给『对方主动』和『自己留空间』各分几成，以及他为什么这么分」，与题面一致，不存在目标与题面脱节。机器档位 PASS 与本判定独立得出。"
+    },
+    "PN-TRUTH-224": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "「你会怎么开口谈？说一句」要的是实际会说出的话，指向真实沟通习惯与边界表达；I5 但只触及态度与节奏分歧，不越红线，可无惩罚跳过。"
+    }
+  },
+  "machineVerdictSummary": {
+    "total": 24,
+    "PASS": 24,
+    "SUSPECT": 0,
+    "HARD_FAIL_PATTERN": 4,
+    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414",
+    "note": "注：本包 24 张机器档位实测全部 PASS（SUSPECT 0 / HARD_FAIL_PATTERN 0），与骨架原记录一致。上列 HARD_FAIL_PATTERN=4 是整份冻结库 414 张的分布（PN-DARE-005/016/027 + PN-EXPAND-036），与本包无关。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
+  },
+  "generatedBy": "scripts/audit-bar-fit-human-review-skeleton.ts（骨架）＋ product-reviewer 逐卡填写（结论）"
+}

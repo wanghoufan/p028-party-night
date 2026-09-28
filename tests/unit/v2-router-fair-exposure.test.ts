@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 
 import { eventForRoundTerminal } from "@/lib/engine/v2-deal";
-import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
+import { mainlineRuntimeCards } from "@/lib/v2-content/v2-card-bridge";
 import type { V13MainlineCard } from "@/lib/v2-content/v2-types";
 import {
   drawSeedFor,
@@ -46,8 +46,6 @@ import {
  */
 const MONTE_CARLO_TIMEOUT_MS = 30_000;
 
-const adapter = getV2ContentAdapter();
-
 /** 2 男 2 女（有合法男女 pair，跑真正的 pair runtime，不触发 D4 降级）。 */
 const TABLE_2M2F: SessionParticipant[] = [
   { playerId: "m1", active: true, pairGender: "male" },
@@ -56,13 +54,18 @@ const TABLE_2M2F: SessionParticipant[] = [
   { playerId: "f2", active: true, pairGender: "female" },
 ];
 
-/** 只认主线 SSOT 卡的元数据（扩圈卡不在本 Router 值域，拿不到即测试自身出错）。 */
-const mainlineById = new Map(
-  (adapter.mainlineCards as readonly V13MainlineCard[]).map((card) => [card.cardId, card]),
+/**
+ * 只认主线卡的元数据（扩圈 / 旧 seed 不在本 Router 值域，拿不到即测试自身出错）。
+ *
+ * C1-8：主线卡**唯一卡源**已统一到桥接的 `mainlineRuntimeCards()`（SSOT 主线 350 +
+ * 第一包正式内容 24；审计 Router 与生产 `createDeckRouter` 同源），不再只认 adapter 的 350 张。
+ */
+const mainlineById = new Map<string, V13MainlineCard>(
+  mainlineRuntimeCards().map((card) => [card.cardId, card as unknown as V13MainlineCard]),
 );
 const mainlineMeta = (cardId: string): V13MainlineCard => {
   const card = mainlineById.get(cardId);
-  if (!card) throw new Error(`非主线 SSOT 卡：${cardId}`);
+  if (!card) throw new Error(`非主线卡：${cardId}`);
   return card;
 };
 const gameTypeOf = (cardId: string): string => mainlineMeta(cardId).gameType;
@@ -71,23 +74,30 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
 /**
  * TIE_FIXTURE｜tie 场景夹具（本文件所有用例共用）。
  *
- * 选 `truth-dare` 包 + H1 + intensityLimit=5：SSOT 里该包共 100 张（truth 50 + dare 50），
- * 强度分布 1:18 / 2:20 / 3:22 / 4:20 / 5:20；强度 5 的 20 张是 `match-pair`（未建立 MATCH 时不出），
- * 故本夹具的 bucket = 100 − 20 = **80 张**（强度 1–4 全在）。
+ * 选 `truth-dare` 包 + H1 + intensityLimit=4：SSOT 里该包共 100 张（truth 50 + dare 50），
+ * 其中强度 5 的 20 张是 `match-pair`（未建立 MATCH 时不出）；强度 1–4 = 80 张。
+ * 第一包正式内容（`PN-TRUTH-201~224`，全 truth）中强度 ≤4 的有 22 张（强度 4 两张：217/223），
+ * 强度 5 的两张（222/224，非 match-pair）不进本夹具强度上限。
  *
- * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（当前快照 350 张全为 legacy ⇒ 豁免），bucket 不再按
- * Heat 收窄 ⇒ 出卡集中在包的 **top 强度档：强度 4 的 20 张（truth 10 : dare 10）**，「组内先出哪一张」
+ * ⚠️ C1-8 口径变更：原夹具用 `intensityLimit=5`，其「顶档 = I4」的前提是「I5 全为 match-pair 被排除」。
+ * 第一包新增 2 张**非 match-pair 的 I5 truth 卡**后，该前提不再成立（I5 顶档只剩 2 张 truth，
+ * 不再是对称 tie 组）。故夹具改为 `intensityLimit=4`，让顶档继续落在对称的 I4 组
+ * （truth 12 : dare 10），±18% 阈值、样本量、tie-break 回归语义均未改。
+ *
+ * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（冻结快照 390 张旧卡全为 legacy ⇒ 豁免），bucket 不再按
+ * Heat 收窄 ⇒ 出卡集中在包的 **top 强度档：强度 4 的 22 张（truth 12 : dare 10）**，「组内先出哪一张」
  * 完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
  * 修复前 `bucket(...)[0]` 恒为同强度组里 cardId 字典序最小者；修复后随 seed 轮换。
  */
 const TIE_FIXTURE = {
   packId: "truth-dare",
-  /** 实测：H1 + 强度上限 5 + 未 MATCH，bucket = 100 − 20（match-pair）= 80 张。 */
-  expectedBucketSize: 80,
+  intensityLimit: 4,
+  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 22（I1–I4）= 102 张。 */
+  expectedBucketSize: 102,
   /** 实测：top 强度档 = 强度 4。 */
   expectedTieTierMaxIntensity: 4,
-  /** 实测：top 强度档 20 张（truth 10 : dare 10）。 */
-  expectedTieTierSize: 20,
+  /** 实测：top 强度档 22 张（SSOT truth 10 : dare 10 + 第一包 truth 2）。 */
+  expectedTieTierSize: 22,
   expectedGameTypes: ["truth", "dare"] as const,
 } as const;
 
@@ -97,7 +107,7 @@ function input(overrides: Partial<V2RouterInput> = {}): V2RouterInput {
     relationship,
     participants: overrides.participants ?? TABLE_2M2F,
     targetPairKey: overrides.targetPairKey ?? pairKey("f1", "m1"),
-    intensityLimit: overrides.intensityLimit ?? 5,
+    intensityLimit: overrides.intensityLimit ?? TIE_FIXTURE.intensityLimit,
     softDedupWindow: overrides.softDedupWindow ?? 5,
     requireFiveTierForPair: overrides.requireFiveTierForPair ?? null,
     ...(overrides.drawSeed === undefined ? {} : { drawSeed: overrides.drawSeed }),
@@ -151,7 +161,7 @@ describe("P1#2①｜truth-dare 包内 dare / truth 曝光不再由 cardId 字典
       let guard = 0;
       while (completed < ROUNDS && guard < 1000) {
         guard += 1;
-        const outcome = drawV2SessionCard(state, router, { intensityLimit: 5 });
+        const outcome = drawV2SessionCard(state, router, { intensityLimit: TIE_FIXTURE.intensityLimit });
         if (outcome.kind !== "CARD") break;
         const type = gameTypeOf(outcome.cardId);
         if (type in counters) counters[type] += 1;
@@ -189,7 +199,7 @@ describe("P1#2①｜truth-dare 包内 dare / truth 曝光不再由 cardId 字典
     let guard = 0;
     while (completed < 20 && guard < 1000) {
       guard += 1;
-      const outcome = drawV2SessionCard(state, router, { intensityLimit: 5 });
+      const outcome = drawV2SessionCard(state, router, { intensityLimit: TIE_FIXTURE.intensityLimit });
       if (outcome.kind !== "CARD") break;
       seen.add(gameTypeOf(outcome.cardId));
       const terminal = rnd() < 0.85 ? "completed" : "skipped";
@@ -313,7 +323,7 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     }
   });
 
-  it("TIE_FIXTURE 局面的构成稳定：80 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
+  it("TIE_FIXTURE 局面的构成稳定：102 张桶、top 强度档 22 张（强度 4）、truth+dare 两种 gameType", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const cards = router.bucket(input({ drawSeed: 0 }));
     const topTier = cards.filter((card) => intensityOf(card.cardId) === TIE_FIXTURE.expectedTieTierMaxIntensity);
@@ -376,7 +386,7 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
   it("usedCardIds / recentCardIds / cooldown 语义不变：抽一张只写 recent，used 仍由 R3 终态推进", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const state = createV2SessionState({ sessionId: "fair-semantics", participants: TABLE_2M2F });
-    const outcome = drawV2SessionCard(state, router, { intensityLimit: 5 });
+    const outcome = drawV2SessionCard(state, router, { intensityLimit: TIE_FIXTURE.intensityLimit });
 
     expect(outcome.kind).toBe("CARD");
     if (outcome.kind !== "CARD") return;
@@ -451,19 +461,20 @@ describe("P1#2⑤｜sessionId 盐：同 session 复现、跨 session 不同", ()
     const cards = router.bucket(input({ relationship, drawSessionSalt: "fixture" }));
 
     expect(drawSeedFor(relationship, "fixture")).toBe(2968762458);
+    // C1-8：卡源并入第一包 24 张后，同 seed 的确定性序列按新候选集重算（仍是逐字钉死）。
     expect(cards.map((card) => card.cardId).slice(0, 5)).toEqual([
+      "PN-TRUTH-223",
+      "PN-DARE-031",
       "PN-DARE-032",
       "PN-DARE-033",
       "PN-DARE-034",
-      "PN-DARE-035",
-      "PN-DARE-036",
     ]);
   });
 
   it("生产主链走 session salt：同 sessionId 的恢复态复现同一张，换 sessionId 序列不同", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const drawFirst = (sessionId: string) =>
-      drawV2SessionCard(createV2SessionState({ sessionId, participants: TABLE_2M2F }), router, { intensityLimit: 5 });
+      drawV2SessionCard(createV2SessionState({ sessionId, participants: TABLE_2M2F }), router, { intensityLimit: TIE_FIXTURE.intensityLimit });
 
     const a1 = drawFirst("prod-session-replay");
     const a2 = drawFirst("prod-session-replay");
@@ -497,7 +508,7 @@ describe("P1#2⑥｜跨 session 曝光公平性（sessionId 盐生效后）", ()
       let guard = 0;
       while (completed < ROUNDS && guard < 1000) {
         guard += 1;
-        const outcome = drawV2SessionCard(state, router, { intensityLimit: 5 });
+        const outcome = drawV2SessionCard(state, router, { intensityLimit: TIE_FIXTURE.intensityLimit });
         if (outcome.kind !== "CARD") break;
         const type = gameTypeOf(outcome.cardId);
         if (type in counters) counters[type] += 1;

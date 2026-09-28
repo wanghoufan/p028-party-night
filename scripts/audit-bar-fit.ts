@@ -1,9 +1,14 @@
 /**
  * BAR-FIT 旧题审查（只读）— canonical 输入 + 逐卡对账 + forensic 标记（Human Step 6）
  *
- * 真源：
- * - 主线 350 + 扩圈 40：`v2-card-bridge`（运行期唯一出口，instruction 由 SSOT consentMode 渲染）；
+ * 真源（两套口径共用同一 canonical 判定，不各拼字符串）：
+ * - **冻结 SSOT 快照 390**（主线 350 + 扩圈 40）：`v2-content-adapter` 真源，历史冻结口径，
+ *   产物集 `sets.frozenFixed390`（单测与 `reconciliation` 以它为准）；
+ * - **冻结固定库全量 414**（SSOT 390 + 第一包正式内容 `PN-TRUTH-201~224`）：
+ *   `v2-card-bridge.mainlineSsotCards()` + `expansionSsotCards()` 运行期唯一出口，
+ *   当前 manifest 口径，产物集 `sets.frozenFixed414`（`reconciliation414` 以它为准）；
  * - 内置种子 350：`lib/game-packs/built-in-seeds/index.ts` → BUILTIN_SEED_CARDS（seed-*）。
+ * 计数一律由真源推导，不写死。
  *
  * ## Step 6 冻结口径（本产物的核心）
  * 唯一 canonical input = `lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput`：
@@ -28,6 +33,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
 import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
+import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import {
   BAR_FIT_INPUT_CALIBER,
   BAR_FIT_INPUT_IMPLEMENTATION,
@@ -169,22 +175,44 @@ const toRow = (card: BarFitInputSource, gameType: string, mode: "canonical" | "f
   };
 };
 
-/* ------------------------- 冻结固定库 390（canonical） ------------------------- */
-const frozen = [...mainlineSsotCards(), ...expansionSsotCards()];
-const frozenRows: AuditRow[] = frozen.map((card) => toRow(card, card.type, "canonical"));
-/* 同 390 张的 text-only forensic 对照（旧口径，仅历史证据）。 */
-const forensicRows: AuditRow[] = frozen.map((card) => toRow(card, card.type, "forensic-text-only"));
-/* ---------------------- 内置种子 350（built-in-seeds） ---------------------- */
+/* ---------- 冻结 SSOT 快照 390（主线 350 + 扩圈 40；历史冻结口径，测试与 frozenFixed390 对账以它为准） ---------- */
+const adapter = getV2ContentAdapter();
+const ssotFrozen = [...adapter.mainlineCards, ...adapter.expansionCards];
+const ssotLabel = `冻结 SSOT 快照 ${ssotFrozen.length}（主线 ${adapter.mainlineCards.length} + 扩圈 ${adapter.expansionCards.length}）`;
+/** 扩圈卡无 `gameType` 字段（`V13ExpansionCard`），按集合标注 `expansion`。 */
+const ssotRows: AuditRow[] = [
+  ...adapter.mainlineCards.map((card) => toRow(card, card.gameType, "canonical")),
+  ...adapter.expansionCards.map((card) => toRow(card, "expansion", "canonical")),
+];
+/* 同批卡的 text-only forensic 对照（旧口径，仅历史证据）。 */
+const ssotForensicRows: AuditRow[] = [
+  ...adapter.mainlineCards.map((card) => toRow(card, card.gameType, "forensic-text-only")),
+  ...adapter.expansionCards.map((card) => toRow(card, "expansion", "forensic-text-only")),
+];
+
+/* ---------- 冻结固定库全量（SSOT 390 + 第一包正式内容 24；当前 manifest 的 414 口径） ---------- */
+const bridgeFrozen = [...mainlineSsotCards(), ...expansionSsotCards()];
+const bridgeLabel = `冻结固定库 ${bridgeFrozen.length}（主线 ${mainlineSsotCards().length} + 扩圈 ${expansionSsotCards().length}）`;
+const bridgeRows: AuditRow[] = bridgeFrozen.map((card) => toRow(card, card.type, "canonical"));
+
+/* ---------------------- 内置种子（built-in-seeds） ---------------------- */
+const seedsLabel = `内置种子 ${BUILTIN_SEED_CARDS.length}（built-in-seeds，非固定库快照内）`;
 const seedRows: AuditRow[] = BUILTIN_SEED_CARDS.map((card) => toRow(card, card.type, "canonical"));
 
-const frozenSet = summarize(
-  "冻结固定库 390（SSOT 主线 350 + 扩圈 40）",
-  "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards() + expansionSsotCards()",
+const frozen390Set = summarize(
+  ssotLabel,
+  "lib/v2-content/v2-content-adapter.ts → mainlineCards + expansionCards（冻结 SSOT 真源）",
   CANONICAL_SCAN_CALIBER,
-  frozenRows,
+  ssotRows,
+);
+const frozen414Set = summarize(
+  bridgeLabel,
+  "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（SSOT 350 + 第一包 24）+ expansionSsotCards()",
+  CANONICAL_SCAN_CALIBER,
+  bridgeRows,
 );
 const seedsSet = summarize(
-  "内置种子 350（built-in-seeds，非固定库快照内）",
+  seedsLabel,
   "lib/game-packs/built-in-seeds/index.ts → BUILTIN_SEED_CARDS",
   {
     ...CANONICAL_SCAN_CALIBER,
@@ -195,10 +223,10 @@ const seedsSet = summarize(
 );
 const forensicCaliber = textOnlyForensicCaliber(FORENSIC_REASON);
 const forensicSet = summarize(
-  "冻结固定库 390（text-only forensic 历史对照）",
-  "同上 390 张，仅剔除 instruction",
+  `冻结 SSOT 快照 ${ssotFrozen.length}（text-only forensic 历史对照）`,
+  `同上 ${ssotFrozen.length} 张，仅剔除 instruction`,
   forensicCaliber,
-  forensicRows,
+  ssotForensicRows,
 );
 
 /* ------------------------------ forensic 护栏自检 ------------------------------ */
@@ -214,9 +242,19 @@ const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as {
   tracks: { legacyCompatibility: { provenance: Record<string, { machineVerdict: MachineVerdict }> } };
 };
 const provenance = manifest.tracks.legacyCompatibility.provenance;
-const reconciliation = reconcileCardsAgainstManifest(provenance, frozen);
-// fail-closed：任何不一致即非零退出，并打印可复算差异清单。
-assertMachineVerdictsReconciled(reconciliation, "BAR-FIT audit↔manifest");
+
+/** 冻结 SSOT 快照 390 的 provenance 投影（只取两侧共有的 cardId，防「第一包 24 张」被误判为集合漂移）。 */
+const ssotProvenance = Object.fromEntries(
+  Object.entries(provenance).filter(([cardId]) => ssotFrozen.some((card) => card.cardId === cardId)),
+) as Record<string, { machineVerdict: MachineVerdict }>;
+
+/** 冻结 SSOT 快照 390 ↔ manifest（历史冻结口径；与 sets.frozenFixed390 同集合）。 */
+const reconciliation = reconcileCardsAgainstManifest(ssotProvenance, ssotFrozen);
+assertMachineVerdictsReconciled(reconciliation, "BAR-FIT audit↔manifest（冻结 SSOT 390）");
+
+/** 冻结固定库全量 414 ↔ manifest（当前 manifest 口径：SSOT 390 + 第一包 24）。 */
+const reconciliation414 = reconcileCardsAgainstManifest(provenance, bridgeFrozen);
+assertMachineVerdictsReconciled(reconciliation414, "BAR-FIT audit↔manifest（冻结固定库 414）");
 
 const payload = {
   baseline: BASELINE,
@@ -236,7 +274,7 @@ const payload = {
   },
   reconciliation: {
     manifestSource: "lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance",
-    auditSource: "本脚本 canonical input 重算（390 张）",
+    auditSource: `本脚本 canonical input 重算（冻结 SSOT 快照 ${ssotFrozen.length} 张）`,
     compared: reconciliation.compared,
     consistent: reconciliation.consistent,
     inconsistent: reconciliation.mismatches.length,
@@ -246,11 +284,24 @@ const payload = {
     failClosed: true,
     ok: reconciliation.ok,
   },
+  /** 冻结固定库全量 414 ↔ manifest（当前 manifest 口径，含第一包 24 张）。 */
+  reconciliation414: {
+    manifestSource: "lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance",
+    auditSource: `本脚本 canonical input 重算（冻结固定库全量 ${bridgeFrozen.length} 张）`,
+    compared: reconciliation414.compared,
+    consistent: reconciliation414.consistent,
+    inconsistent: reconciliation414.mismatches.length,
+    mismatches: reconciliation414.mismatches,
+    onlyInManifest: reconciliation414.onlyInManifest,
+    onlyInAudit: reconciliation414.onlyInAudit,
+    failClosed: true,
+    ok: reconciliation414.ok,
+  },
   forensicGuard: {
     rule: "text-only 扫描结果一律 forensic=true / admissionEligible=false，不参与 admission",
     canonicalAdmissionEligible: mayEnterAdmission(CANONICAL_SCAN_CALIBER),
     textOnlyAdmissionEligible: mayEnterAdmission(forensicCaliber),
-    sets: { canonical: "frozenFixed390", textOnly: "textOnlyForensic" },
+    sets: { canonical: "frozenFixed390", canonicalFull: "frozenFixed414", textOnly: "textOnlyForensic" },
   },
   verdictSemantics: {
     machineVerdict: {
@@ -277,7 +328,8 @@ const payload = {
     description: rule.description,
   })),
   sets: {
-    frozenFixed390: frozenSet,
+    frozenFixed390: frozen390Set,
+    frozenFixed414: frozen414Set,
     builtinSeeds350: seedsSet,
     textOnlyForensic: forensicSet,
   },
@@ -379,8 +431,9 @@ const md = `# BAR-FIT 旧题审查（canonical 口径 + 逐卡对账 + forensic 
 
 - canonical input 唯一实现：\`${BAR_FIT_INPUT_IMPLEMENTATION}\`，四类消费方共用：
   audit 本脚本 / manifest \`fixed-content-manifest-build.ts\` / CI \`build-fixed-content-manifest.ts\` + 单测 / Human export 本产物。
-- **逐 cardId 对账（fail-closed）**：manifest provenance 与本脚本 canonical 重算
-  相比 **${reconciliation.compared}** 张，一致 **${reconciliation.consistent}**，不一致 **${reconciliation.mismatches.length}**。
+- **逐 cardId 对账（fail-closed）**（manifest provenance 与本脚本 canonical 重算）：
+  - **冻结固定库全量 ${bridgeFrozen.length} ↔ manifest**：相比 **${reconciliation414.compared}** / 一致 **${reconciliation414.consistent}** / 不一致 **${reconciliation414.mismatches.length}**（当前 manifest 口径，含第一包 24 张）。
+  - 冻结 SSOT 快照 ${ssotFrozen.length} ↔ manifest：相比 ${reconciliation.compared} / 一致 ${reconciliation.consistent} / 不一致 ${reconciliation.mismatches.length}（历史冻结口径，\`sets.frozenFixed390\` 同集合）。
 - **text-only 只作 forensic**：\`textOnlyForensic\` 集 \`forensic: true\` / \`admissionEligible: false\`，
   **不参与 admission**。
 
@@ -388,45 +441,55 @@ const md = `# BAR-FIT 旧题审查（canonical 口径 + 逐卡对账 + forensic 
 
 | 数据源 | 口径 | forensic | 题数 | PASS | SUSPECT＝复核池 | HARD_FAIL_PATTERN＝候选 |
 |---|---|---|--:|---:|---:|---:|
-| 冻结固定库 390（\`PN-*\`） | canonical（正文+instruction） | 否 | ${frozenSet.cardCount} | ${frozenSet.machineVerdictDistribution.PASS} | ${frozenSet.reviewPoolCount} | ${frozenSet.hardFailCandidateCount} |
-| 内置种子 350（\`seed-*\`） | canonical，非快照内 | 否 | ${seedsSet.cardCount} | ${seedsSet.machineVerdictDistribution.PASS} | ${seedsSet.reviewPoolCount} | ${seedsSet.hardFailCandidateCount} |
-| 冻结固定库 390（text-only） | **forensic，不参与 admission** | **是** | ${forensicSet.cardCount} | ${forensicSet.machineVerdictDistribution.PASS} | ${forensicSet.reviewPoolCount} | ${forensicSet.hardFailCandidateCount} |
+| ${bridgeLabel}（\`PN-*\`） | canonical（正文+instruction） | 否 | ${frozen414Set.cardCount} | ${frozen414Set.machineVerdictDistribution.PASS} | ${frozen414Set.reviewPoolCount} | ${frozen414Set.hardFailCandidateCount} |
+| ${ssotLabel}（\`PN-*\`） | canonical，历史冻结口径 | 否 | ${frozen390Set.cardCount} | ${frozen390Set.machineVerdictDistribution.PASS} | ${frozen390Set.reviewPoolCount} | ${frozen390Set.hardFailCandidateCount} |
+| ${seedsLabel}（\`seed-*\`） | canonical，非快照内 | 否 | ${seedsSet.cardCount} | ${seedsSet.machineVerdictDistribution.PASS} | ${seedsSet.reviewPoolCount} | ${seedsSet.hardFailCandidateCount} |
+| 冻结 SSOT 快照 ${ssotFrozen.length}（text-only） | **forensic，不参与 admission** | **是** | ${forensicSet.cardCount} | ${forensicSet.machineVerdictDistribution.PASS} | ${forensicSet.reviewPoolCount} | ${forensicSet.hardFailCandidateCount} |
 
-> 冻结固定库 390 的 canonical 数字是**唯一正式口径**（与 manifest 逐卡对账一致）；
+> 冻结固定库全量 ${bridgeFrozen.length} 的 canonical 数字是**当前 manifest 口径**（与 manifest 逐卡对账一致）；
+> 冻结 SSOT 快照 ${ssotFrozen.length} 为历史冻结口径，两者差集＝第一包正式内容 24 张（\`PN-TRUTH-201~224\`，全部机器 PASS）。
 > text-only 行仅历史对照，**作废、不得用于 admission**。
 
 ## 二、逐卡对账（audit ↔ manifest）
 
 - manifest 来源：\`lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance\`
-- 相比 ${reconciliation.compared} / 一致 ${reconciliation.consistent} / 不一致 ${reconciliation.mismatches.length}
-- 仅 manifest 有 ${reconciliation.onlyInManifest.length} / 仅 audit 有 ${reconciliation.onlyInAudit.length}
-${reconciliation.mismatches.length > 0 ? reconciliation.mismatches.map((m) => `  - \`${m.cardId}\` audit=${m.audit} ≠ manifest=${m.manifest}`).join("\n") : "- 无差异"}
+- 冻结固定库全量 ${bridgeFrozen.length}：相比 ${reconciliation414.compared} / 一致 ${reconciliation414.consistent} / 不一致 ${reconciliation414.mismatches.length}
+  - 仅 manifest 有 ${reconciliation414.onlyInManifest.length} / 仅 audit 有 ${reconciliation414.onlyInAudit.length}
+- 冻结 SSOT 快照 ${ssotFrozen.length}：相比 ${reconciliation.compared} / 一致 ${reconciliation.consistent} / 不一致 ${reconciliation.mismatches.length}
+  - 仅 manifest 有 ${reconciliation.onlyInManifest.length} / 仅 audit 有 ${reconciliation.onlyInAudit.length}
+${reconciliation414.mismatches.length > 0 ? reconciliation414.mismatches.map((m) => `  - \`${m.cardId}\` audit=${m.audit} ≠ manifest=${m.manifest}`).join("\n") : "- 无差异"}
 
-## 三、冻结固定库 390（canonical）
+## 三、${bridgeLabel}（canonical，当前 manifest 口径）
 
-来源：\`${frozenSet.source}\`
+来源：\`${frozen414Set.source}\`
 
 ### 3.1 机器结论分布
 
-${machineDistributionTable(frozenSet)}
+${machineDistributionTable(frozen414Set)}
 
 ### 3.2 人工定档分布（本批无人工审查）
 
-${humanDistributionTable(frozenSet)}
+${humanDistributionTable(frozen414Set)}
 
 ### 3.3 按玩法分布
 
-${gameTypeTable(frozenSet)}
+${gameTypeTable(frozen414Set)}
 
 ### 3.4 hard-fail 候选（\`HARD_FAIL_PATTERN\`）全量
 
-${hardFailCandidates(frozenSet, 50)}
+${hardFailCandidates(frozen414Set, 50)}
 
 ### 3.5 人工复核池前 20 条示例（\`SUSPECT\`）
 
-${reviewPoolSamples(frozenSet, 20)}
+${reviewPoolSamples(frozen414Set, 20)}
 
-## 四、内置种子 350（\`seed-*\`，非固定库快照内，仅参考）
+### 3.6 冻结 SSOT 快照 ${ssotFrozen.length}（历史冻结口径，\`PN-*\`）
+
+来源：\`${frozen390Set.source}\`
+
+${machineDistributionTable(frozen390Set)}
+
+## 四、${seedsLabel}（\`seed-*\`，仅参考）
 
 来源：\`${seedsSet.source}\`
 
@@ -472,12 +535,14 @@ ${ruleTable()}
 writeFileSync(`${OUT_DIR}/BAR-FIT-AUDIT.md`, md);
 
 console.log(`canonical input: ${BAR_FIT_INPUT_IMPLEMENTATION}`);
-console.log(`frozenFixed390 machineVerdict: ${JSON.stringify(frozenSet.machineVerdictDistribution)}`);
-console.log(`  hard-fail 候选 ${frozenSet.hardFailCandidateCount} / 人工复核池 ${frozenSet.reviewPoolCount}`);
-console.log(`builtinSeeds350 machineVerdict: ${JSON.stringify(seedsSet.machineVerdictDistribution)}`);
+console.log(`frozenFixed390(${frozen390Set.cardCount}) machineVerdict: ${JSON.stringify(frozen390Set.machineVerdictDistribution)}`);
+console.log(`frozenFixed414(${frozen414Set.cardCount}) machineVerdict: ${JSON.stringify(frozen414Set.machineVerdictDistribution)}`);
+console.log(`  hard-fail 候选 ${frozen414Set.hardFailCandidateCount} / 人工复核池 ${frozen414Set.reviewPoolCount}`);
+console.log(`builtinSeeds350(${seedsSet.cardCount}) machineVerdict: ${JSON.stringify(seedsSet.machineVerdictDistribution)}`);
 console.log(`  hard-fail 候选 ${seedsSet.hardFailCandidateCount} / 人工复核池 ${seedsSet.reviewPoolCount}`);
 console.log(`textOnlyForensic machineVerdict: ${JSON.stringify(forensicSet.machineVerdictDistribution)}（forensic=true，不参与 admission）`);
 console.log(
-  `对账 audit↔manifest: 相比 ${reconciliation.compared} / 一致 ${reconciliation.consistent} / 不一致 ${reconciliation.mismatches.length}`,
+  `对账 audit↔manifest: 全量 414 相比 ${reconciliation414.compared} / 一致 ${reconciliation414.consistent} / 不一致 ${reconciliation414.mismatches.length}；` +
+    `SSOT 390 相比 ${reconciliation.compared} / 一致 ${reconciliation.consistent} / 不一致 ${reconciliation.mismatches.length}`,
 );
 console.log(`written: ${OUT_DIR}/BAR-FIT-AUDIT.json, ${OUT_DIR}/BAR-FIT-AUDIT.md`);

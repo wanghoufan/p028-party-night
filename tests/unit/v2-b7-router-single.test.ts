@@ -4,7 +4,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
-import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
+import {
+  expansionSsotCards,
+  mainlineCardMetaById,
+  mainlineSsotCards,
+} from "@/lib/v2-content/v2-card-bridge";
+import type { V13MainlineCard } from "@/lib/v2-content/v2-types";
 import { createMainlineContext, drawMainlineCard } from "@/lib/v2-relationship/v2-mainline";
 import { packIdForMainlineCard, createV2MainlineRouter } from "@/lib/v2-relationship/v2-router";
 import type { V2RouterInput } from "@/lib/v2-relationship/v2-session";
@@ -15,6 +20,7 @@ import { createInitialRelationshipState, pairKey, type RelationshipState, type S
 /* ------------------------------------------------------------------ */
 
 const adapter = getV2ContentAdapter();
+const EXPANSION_ID_SET = new Set(expansionSsotCards().map((card) => card.id));
 
 const male = (playerId: string): SessionParticipant => ({ playerId, active: true, pairGender: "male" });
 const female = (playerId: string): SessionParticipant => ({ playerId, active: true, pairGender: "female" });
@@ -33,11 +39,18 @@ function input(overrides: Partial<V2RouterInput> = {}): V2RouterInput {
   };
 }
 
-/** 取主线 SSOT 卡元数据；非主线卡（旧 seed / 扩圈 / neutral）一律抛错 —— 这本身也是一条「只出 SSOT」的断言。 */
-function mainlineMeta(cardId: string) {
-  const card = adapter.mainlineCards.find((item) => item.cardId === cardId);
-  if (!card) throw new Error(`非主线 SSOT 卡：${cardId}`);
-  return card;
+/**
+ * 取主线卡运行期元数据（SSOT 主线 350 + 第一包正式内容 24）；扩圈 / 旧 seed / neutral 一律抛错 ——
+ * 这本身也是一条「只出主线卡」的断言。
+ *
+ * C1-8：主线卡的**唯一卡源**已统一到桥接的 `mainlineRuntimeCards()`（审计 Router 与生产
+ * `createDeckRouter` 同源），故这里也改走同一读取路径 `mainlineCardMetaById`，不再只认 adapter
+ * 的 350 张 —— 否则第一包 24 张 Formal 卡会被误判为「非主线」。
+ */
+function mainlineMeta(cardId: string): V13MainlineCard {
+  const card = mainlineCardMetaById(cardId);
+  if (!card || EXPANSION_ID_SET.has(cardId)) throw new Error(`非主线卡：${cardId}`);
+  return card as unknown as V13MainlineCard;
 }
 
 const SOURCE_REL = [

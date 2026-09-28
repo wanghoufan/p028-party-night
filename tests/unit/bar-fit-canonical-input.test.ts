@@ -21,7 +21,8 @@ import {
   reconcileMachineVerdicts,
   textOnlyForensicCaliber,
 } from "@/lib/v2-content/bar-fit-reconcile";
-import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
+import { mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
+import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 
 /**
  * Human Step 6｜唯一 canonical input（正文 + 玩家实际必须听到的 instruction）：
@@ -34,8 +35,13 @@ import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "lib/v2-content/generated/fixed-content-manifest.json");
 
-/** 唯一 canonical input 实现只此一处（消费者不得各自拼字符串）。 */
-const FROZEN = [...mainlineSsotCards(), ...expansionSsotCards()];
+/**
+ * 冻结 SSOT 快照 390（主线 350 + 扩圈 40）＝磁盘 BAR-FIT-AUDIT.json 的 `sets.frozenFixed390` 同集合。
+ * 第一包正式内容（PN-TRUTH-201~224）走 sidecar，**不进**这份冻结快照（其审查属 C1-6 独立脚本），
+ * 故这里取 SSOT adapter 真源而非桥接合并视图。
+ */
+const FROZEN = [...getV2ContentAdapter().mainlineCards, ...getV2ContentAdapter().expansionCards];
+const FROZEN_IDS: ReadonlySet<string> = new Set(FROZEN.map((card) => card.cardId));
 
 describe("canonical input：正文 vs 正文+instruction 都可复算", () => {
   it("运行期卡（content/instruction）与 SSOT 卡（text/consentMode）收敛成同一 canonical input", () => {
@@ -91,7 +97,11 @@ describe("逐 cardId 对账（audit ↔ manifest）fail-closed", () => {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as {
     tracks: { legacyCompatibility: { provenance: Record<string, { machineVerdict: MachineVerdict }> } };
   };
-  const provenance = manifest.tracks.legacyCompatibility.provenance;
+  const provenance = Object.fromEntries(
+    Object.entries(manifest.tracks.legacyCompatibility.provenance).filter(([cardId]) =>
+      FROZEN_IDS.has(cardId),
+    ),
+  ) as Record<string, { machineVerdict: MachineVerdict }>;
 
   it("真实产物：390 张 canonical 重算与 manifest provenance 逐卡一致", () => {
     const result = reconcileCardsAgainstManifest(provenance, FROZEN);
@@ -104,7 +114,7 @@ describe("逐 cardId 对账（audit ↔ manifest）fail-closed", () => {
   });
 
   it("人为制造一张卡 verdict 不一致 → 对账失败且 assert 抛错（可复算差异清单）", () => {
-    const target = FROZEN[0]!.id;
+    const target = FROZEN[0]!.cardId;
     const current = provenance[target]!.machineVerdict as MachineVerdict;
     const flipped: MachineVerdict = current === "PASS" ? "SUSPECT" : "PASS";
     const corrupted = { ...provenance, [target]: { ...provenance[target]!, machineVerdict: flipped } };
@@ -133,10 +143,10 @@ describe("逐 cardId 对账（audit ↔ manifest）fail-closed", () => {
     expect(onlyManifest.onlyInManifest).toContain("PN-GHOST-999");
 
     const dropped = { ...provenance };
-    delete dropped[FROZEN[0]!.id];
+    delete dropped[FROZEN[0]!.cardId];
     const onlyAudit = reconcileCardsAgainstManifest(dropped, FROZEN);
     expect(onlyAudit.ok).toBe(false);
-    expect(onlyAudit.onlyInAudit).toContain(FROZEN[0]!.id);
+    expect(onlyAudit.onlyInAudit).toContain(FROZEN[0]!.cardId);
   });
 
   it("纯内存对账辅助（reconcileMachineVerdicts）同样 fail-closed", () => {

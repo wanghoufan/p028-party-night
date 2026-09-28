@@ -15,6 +15,8 @@ import {
   V2_SSOT_MAINLINE_CARD_COUNT,
   V2_SSOT_MAINLINE_SHA256,
 } from "@/lib/v2-content/v2-types";
+import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { V2_PRECISE_BOUNDARY_TAGS, cardPassesBoundaryFilter } from "@/lib/v2-content/v2-card-metadata";
 import { buildPlayableDeck, localSeedDeck, refillPackFromSeeds } from "@/lib/ai/generate-deck";
 import { filterCards, isHardBlocked } from "@/lib/ai/safety-filter";
 import { DEFAULT_BOUNDARIES } from "@/lib/domain/constants";
@@ -73,17 +75,28 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect((rawSnapshot as { provenance: { migrationIdPolicy: string } }).provenance.migrationIdPolicy).toBe("NONE");
   });
 
-  it("桥接出 350 主线卡（7 类落到 6 个玩法：truth-dare 100、其余各 50）且 cardType 落在 pack 支持类型内", () => {
+  it("桥接出 374 主线卡（SSOT 350 + 第一包 24：truth-dare 124、其余各 50）且 cardType 落在 pack 支持类型内", () => {
     const cards = mainlineSsotCards();
-    expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT);
+    // SSOT 冻结主线 350 + CONTENT-01 第一包正式内容 24（`PN-TRUTH-201~224`，追加在末尾）。
+    expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length);
 
     const perPack = new Map<string, number>();
     for (const card of cards) perPack.set(card.packId, (perPack.get(card.packId) ?? 0) + 1);
-    expect(perPack.get("truth-dare")).toBe(100);
+    // 第一包全是真心话（pack truth-dare），故只有它变化：100 + 24 = 124。
+    expect(perPack.get("truth-dare")).toBe(100 + FORMAL_TRUTH_CARDS.length);
     for (const packId of MAINLINE_PACK_IDS.filter((id) => id !== "truth-dare")) {
       expect(perPack.get(packId), packId).toBe(50);
     }
     expect([...perPack.keys()].sort()).toEqual([...V2_MAINLINE_PACK_IDS].sort());
+
+    // 追加、不前置：既有 SSOT 卡的相对顺序与首卡不变（保 `mainlineSsotCardsByPack(...)[0]` 稳定）。
+    expect(cards[0]!.id).toBe("PN-TRUTH-001");
+    expect(cards.slice(0, V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual(
+      getV2ContentAdapter().mainlineCards.map((card) => card.cardId),
+    );
+    expect(cards.slice(V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual(
+      FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+    );
 
     for (const card of cards) {
       const pack = getGamePack(card.packId);
@@ -132,15 +145,36 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(BUILTIN_SEED_CARDS.some((card) => newDeckIds.has(card.id))).toBe(false);
   });
 
-  it("SSOT 边界标签逐条映射到既有雷区；未登记标签 fail closed", () => {
+  it("边界标签映射：精确 10 项 1:1 直映；泛标签不冒充精确开关；未登记标签 fail closed", () => {
     expect(mapSsotBoundaryTags([])).toEqual([]);
-    expect(mapSsotBoundaryTags(["physical-contact"])).toEqual(["physical-contact"]);
-    expect(mapSsotBoundaryTags(["proximity"])).toEqual(["physical-contact"]);
-    expect(mapSsotBoundaryTags(["relationship-sensitive"])).toEqual(["ex-partner"]);
+    // 精确 10 项（Plan §3.1）= App BoundaryTag 同名同义 1:1 直映。
+    expect(V2_PRECISE_BOUNDARY_TAGS).toHaveLength(10);
+    for (const tag of V2_PRECISE_BOUNDARY_TAGS) {
+      expect(mapSsotBoundaryTags([tag]), tag).toEqual([tag]);
+    }
+    expect(mapSsotBoundaryTags(["ex-partner"])).toEqual(["ex-partner"]);
+    expect(mapSsotBoundaryTags(["ex-partner", "ex-partner", "money"])).toEqual(["ex-partner", "money"]);
+
+    // Plan §3.1：泛标签不自动等于精确开关。
+    expect(mapSsotBoundaryTags(["proximity"])).toEqual([]);
+    expect(mapSsotBoundaryTags(["relationship-sensitive"])).toEqual([]);
+    // 这两项泛标签语义本身就是「会拍摄 / 会引入桌外参与者」，映射到相应用户开关（保守方向）。
     expect(mapSsotBoundaryTags(["photo-optional"])).toEqual(["photo-video"]);
     expect(mapSsotBoundaryTags(["external-participant"])).toEqual(["stranger-contact"]);
-    expect(mapSsotBoundaryTags(["proximity", "photo-optional", "proximity"])).toEqual(["physical-contact", "photo-video"]);
+    expect(mapSsotBoundaryTags(["proximity", "photo-optional", "proximity"])).toEqual(["photo-video"]);
+
+    // Plan §3.1 反例：仅贴近/对视不接触、仅关系敏感不涉及前任 → 关闭相应精确开关时不得被误过滤。
+    expect(cardPassesBoundaryFilter(mapSsotBoundaryTags(["proximity"]), new Set(["physical-contact"]))).toBe(true);
+    expect(cardPassesBoundaryFilter(mapSsotBoundaryTags(["relationship-sensitive"]), new Set(["ex-partner"]))).toBe(true);
+    // 正向：真正标了精确开关的卡，命中关闭项必须被过滤。
+    expect(cardPassesBoundaryFilter(mapSsotBoundaryTags(["ex-partner"]), new Set(["ex-partner"]))).toBe(false);
+
     expect(() => mapSsotBoundaryTags(["未知标签"])).toThrow();
+    // 第一包卡只用精确标签，逐卡映射成功（`ex-partner` 不再 fail closed）。
+    for (const card of FORMAL_TRUTH_CARDS) {
+      expect(() => mapSsotBoundaryTags(card.boundaryTags), card.cardId).not.toThrow();
+    }
+    expect(mapSsotBoundaryTags(FORMAL_TRUTH_CARDS.find((card) => card.cardId === "PN-TRUTH-216")!.boundaryTags)).toEqual(["ex-partner"]);
 
     // 映射后的标签必须是 App 既有枚举：扩圈卡在「不接触陌生人」关闭时才可玩，开启时整包被安全过滤挡下。
     const expansion = expansionSsotCards();
@@ -164,8 +198,8 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     const blocked = all.filter((card) => isHardBlocked(`${card.content} ${card.instruction ?? ""}`)).map((card) => card.id);
     expect(blocked).toEqual(["PN-CHEM-048"]);
 
-    // 安全方向不变式：默认雷区下主线只被剔除这一张，其余 349 张全部可出。
+    // 安全方向不变式：默认雷区下主线只被剔除这一张，其余全部可出（374 = 350 SSOT + 24 第一包）。
     const allowed = filterCards([...mainlineSsotCards()], { intensity: 5, playerCount: 4, boundaries: DEFAULT_BOUNDARIES });
-    expect(allowed).toHaveLength(349);
+    expect(allowed).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length - 1);
   });
 });

@@ -42,6 +42,7 @@ import {
   V2_TOPICS,
   type V2RoundMetadataFields,
 } from "./v2-card-metadata";
+import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
 import type { V13ExpansionCard, V13MainlineCard } from "./v2-types";
 import { getV2ContentAdapter } from "./v2-content-adapter";
 
@@ -82,7 +83,10 @@ let overrides: ReadonlyMap<string, V2RoundMetadataFields> = new Map();
  * （内容审查/入库侧另有 `validateFixedCardMetadataStrict` 的 fail-closed 门禁，
  * 职责是「该不该入库」，与本模块「本轮算不算有效轮」互不替代。）
  */
-function projectFromSsot(card: V13MainlineCard | V13ExpansionCard): V2RoundMetadataFields {
+/** 侧车索引的卡来源：SSOT 主线 + 扩圈 + 第一包正式内容（质量字段同一条读取路径）。 */
+type QualityIndexSourceCard = V13MainlineCard | V13ExpansionCard | FormalTruthCard;
+
+function projectFromSsot(card: QualityIndexSourceCard): V2RoundMetadataFields {
   const record = card as unknown as Record<string, unknown>;
   const rawGain = record.informationGain;
   const rawTopic = record.topic;
@@ -94,12 +98,17 @@ function projectFromSsot(card: V13MainlineCard | V13ExpansionCard): V2RoundMetad
   return Object.freeze({ informationGain, topic });
 }
 
-/** 冻结 SSOT 原始卡（主线 + 扩圈）——与 `v2-card-bridge` 同一个单例 adapter 出口，不另开第二条真源。 */
-function ssotRawCards(): readonly (V13MainlineCard | V13ExpansionCard)[] {
+/**
+ * 内容卡（主线 + 扩圈 + 第一包正式内容）——与 `v2-card-bridge` 同一个单例 adapter 出口 + 同一份
+ * 第一包内容源，不另开第二条真源。第一包卡自带 `topic` / `informationGain`，故其侧车行**非 null**，
+ * 运行期 §7.2 有效轮判定对新卡真正生效；旧 SSOT 卡仍投影为双 `null`（未补标 = 不计数）。
+ */
+function ssotRawCards(): readonly QualityIndexSourceCard[] {
   const adapter = getV2ContentAdapter();
   return [
     ...(adapter.mainlineCards as readonly V13MainlineCard[]),
     ...(adapter.expansionCards as readonly V13ExpansionCard[]),
+    ...(FORMAL_TRUTH_CARDS as readonly FormalTruthCard[]),
   ];
 }
 

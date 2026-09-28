@@ -12,8 +12,9 @@
 
 - canonical input 唯一实现：`lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput`，四类消费方共用：
   audit 本脚本 / manifest `fixed-content-manifest-build.ts` / CI `build-fixed-content-manifest.ts` + 单测 / Human export 本产物。
-- **逐 cardId 对账（fail-closed）**：manifest provenance 与本脚本 canonical 重算
-  相比 **390** 张，一致 **390**，不一致 **0**。
+- **逐 cardId 对账（fail-closed）**（manifest provenance 与本脚本 canonical 重算）：
+  - **冻结固定库全量 414 ↔ manifest**：相比 **414** / 一致 **414** / 不一致 **0**（当前 manifest 口径，含第一包 24 张）。
+  - 冻结 SSOT 快照 390 ↔ manifest：相比 390 / 一致 390 / 不一致 0（历史冻结口径，`sets.frozenFixed390` 同集合）。
 - **text-only 只作 forensic**：`textOnlyForensic` 集 `forensic: true` / `admissionEligible: false`，
   **不参与 admission**。
 
@@ -21,42 +22,46 @@
 
 | 数据源 | 口径 | forensic | 题数 | PASS | SUSPECT＝复核池 | HARD_FAIL_PATTERN＝候选 |
 |---|---|---|--:|---:|---:|---:|
-| 冻结固定库 390（`PN-*`） | canonical（正文+instruction） | 否 | 390 | 164 | 222 | 4 |
-| 内置种子 350（`seed-*`） | canonical，非快照内 | 否 | 350 | 146 | 194 | 10 |
-| 冻结固定库 390（text-only） | **forensic，不参与 admission** | **是** | 390 | 271 | 115 | 4 |
+| 冻结固定库 414（主线 374 + 扩圈 40）（`PN-*`） | canonical（正文+instruction） | 否 | 414 | 188 | 222 | 4 |
+| 冻结 SSOT 快照 390（主线 350 + 扩圈 40）（`PN-*`） | canonical，历史冻结口径 | 否 | 390 | 164 | 222 | 4 |
+| 内置种子 350（built-in-seeds，非固定库快照内）（`seed-*`） | canonical，非快照内 | 否 | 350 | 146 | 194 | 10 |
+| 冻结 SSOT 快照 390（text-only） | **forensic，不参与 admission** | **是** | 390 | 271 | 115 | 4 |
 
-> 冻结固定库 390 的 canonical 数字是**唯一正式口径**（与 manifest 逐卡对账一致）；
+> 冻结固定库全量 414 的 canonical 数字是**当前 manifest 口径**（与 manifest 逐卡对账一致）；
+> 冻结 SSOT 快照 390 为历史冻结口径，两者差集＝第一包正式内容 24 张（`PN-TRUTH-201~224`，全部机器 PASS）。
 > text-only 行仅历史对照，**作废、不得用于 admission**。
 
 ## 二、逐卡对账（audit ↔ manifest）
 
 - manifest 来源：`lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance`
-- 相比 390 / 一致 390 / 不一致 0
-- 仅 manifest 有 0 / 仅 audit 有 0
+- 冻结固定库全量 414：相比 414 / 一致 414 / 不一致 0
+  - 仅 manifest 有 0 / 仅 audit 有 0
+- 冻结 SSOT 快照 390：相比 390 / 一致 390 / 不一致 0
+  - 仅 manifest 有 0 / 仅 audit 有 0
 - 无差异
 
-## 三、冻结固定库 390（canonical）
+## 三、冻结固定库 414（主线 374 + 扩圈 40）（canonical，当前 manifest 口径）
 
-来源：`lib/v2-content/v2-card-bridge.ts → mainlineSsotCards() + expansionSsotCards()`
+来源：`lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（SSOT 350 + 第一包 24）+ expansionSsotCards()`
 
 ### 3.1 机器结论分布
 
 | 机器结论 | 题数 | 占比 | 说明 |
 |---|---:|---:|---|
-| PASS | 164 | 42.1% | 无任何机器信号 |
-| SUSPECT | 222 | 56.9% | **进入人工复核池**（不等于「题目有问题」） |
+| PASS | 188 | 45.4% | 无任何机器信号 |
+| SUSPECT | 222 | 53.6% | **进入人工复核池**（不等于「题目有问题」） |
 | HARD_FAIL_PATTERN | 4 | 1.0% | 命中硬失败类型 → **hard-fail 候选**（待人工定档） |
-| **合计** | **390** | 100.0% | — |
+| **合计** | **414** | 100.0% | — |
 
 ### 3.2 人工定档分布（本批无人工审查）
 
 | 人工定档 | 题数 | 占比 |
 |---|---:|---:|
-| UNREVIEWED | 390 | 100.0% |
+| UNREVIEWED | 414 | 100.0% |
 | PASS | 0 | 0.0% |
 | BORDERLINE | 0 | 0.0% |
 | FAIL | 0 | 0.0% |
-| **合计** | **390** | 100.0% |
+| **合计** | **414** | 100.0% |
 
 ### 3.3 按玩法分布
 
@@ -67,7 +72,7 @@
 | expansion | 40 | 1 | 38 | 1 |
 | pointing | 50 | 41 | 9 | 0 |
 | statement | 50 | 34 | 16 | 0 |
-| truth | 50 | 16 | 34 | 0 |
+| truth | 74 | 40 | 34 | 0 |
 | vote | 50 | 34 | 16 | 0 |
 | would-you-rather | 50 | 27 | 23 | 0 |
 
@@ -105,7 +110,18 @@
 | 19 | PN-TRUTH-033 | truth | 今晚有没有一位异性让你怀疑过：“TA刚才是不是也在注意我？”如果有，是谁？ | CF-READ-TIME-SOFT |
 | 20 | PN-TRUTH-034 | truth | 在场异性里，你现在最想知道谁到底是怎么看你的？先说一句你最担心 TA 误会你的地方。 | CF-READ-TIME-SOFT |
 
-## 四、内置种子 350（`seed-*`，非固定库快照内，仅参考）
+### 3.6 冻结 SSOT 快照 390（历史冻结口径，`PN-*`）
+
+来源：`lib/v2-content/v2-content-adapter.ts → mainlineCards + expansionCards（冻结 SSOT 真源）`
+
+| 机器结论 | 题数 | 占比 | 说明 |
+|---|---:|---:|---|
+| PASS | 164 | 42.1% | 无任何机器信号 |
+| SUSPECT | 222 | 56.9% | **进入人工复核池**（不等于「题目有问题」） |
+| HARD_FAIL_PATTERN | 4 | 1.0% | 命中硬失败类型 → **hard-fail 候选**（待人工定档） |
+| **合计** | **390** | 100.0% | — |
+
+## 四、内置种子 350（built-in-seeds，非固定库快照内）（`seed-*`，仅参考）
 
 来源：`lib/game-packs/built-in-seeds/index.ts → BUILTIN_SEED_CARDS`
 

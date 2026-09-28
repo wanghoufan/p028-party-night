@@ -12,15 +12,25 @@
  * 映射口径（逐条可在 tests/unit/v2-b7-content-switch.test.ts 复核）：
  * - gameType → packId/cardType：接回既有 pack 与 renderer（pointing/binary-choice/compatibility）。
  * - targetMode → participantMode：谁是本题的参与者（全桌/单人/一对）。
- * - boundaryTags：SSOT 标签 → App 既有 BoundaryTag 枚举；口径是「宁可多过滤」，
- *   SSOT 的每个标签都必须映射到某条至少同等严格的 App 雷区，否则抛错（fail closed）。
+ * - boundaryTags：内容标签 → App 既有 `BoundaryTag` 枚举。Plan §3.1 的**精确 10 项**与 App 用户
+ *   开关同名同义，1:1 直映；泛安全元数据（`relationship-sensitive` / `proximity`）**不自动**
+ *   冒充精确开关（映射为「无对应开关」），只有题面真实命中精确开关才产出过滤标签；
+ *   未登记标签一律抛错（fail closed），防止真源漂移后静默放行。
  * - consentMode → instruction：把 SSOT 的同意口径渲染成卡面说明，不靠玩家脑补。
+ *
+ * ## 第一包正式内容（CONTENT-01 / C1-3）：与 SSOT 同一条路，不另开第二条
+ * `mainlineSsotCards()` 在既有 350 张**之后追加** `FORMAL_TRUTH_CARDS`（`PN-TRUTH-201~224`），
+ * 保 `[0]` 稳定、不改既有取卡顺序。第一包卡自带的 Plan §3 质量字段由 `toMainlineGameCard`
+ * 一并转发到运行期 `GameCard` 侧车（`GameCard` 的冻结 schema 没有这些键，故作为额外属性挂上，
+ * 与 manifest 构建 / 质量侧车同一条读取路径；旧 SSOT 卡没有这些键 ⇒ 行为逐字不变）。
  */
 
 import type { BoundaryTag, GameCard, Intensity } from "@/lib/domain/schemas";
 import { getGamePack } from "@/lib/game-packs/registry";
 import { CONSENT_INSTRUCTION } from "./bar-fit-input";
+import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
 import { getV2ContentAdapter } from "./v2-content-adapter";
+import { findUnknownBoundaryTags, type V2CardQualityMetadata } from "./v2-card-metadata";
 import {
   V2_GAME_TYPES,
   type V13ExpansionCard,
@@ -72,27 +82,61 @@ export const PARTICIPANT_MODE_BY_TARGET_MODE: Record<
 };
 
 /**
- * SSOT 边界标签 → App 既有雷区标签（reject-by-default：只许映射到「不比原标签更宽松」的 App 雷区）。
- * - proximity（贴近/对视/坐旁边）→ physical-contact：勾了「身体接触」的人连贴近题也一起避开。
- * - relationship-sensitive（好感/暧昧向关系话题）→ ex-partner：勾了「前任相关」的人一起避开，
- *   宁可多过滤；App 侧暂无更贴合的雷区枚举，未来若新增另走变更。
- * - photo-optional → photo-video；external-participant（邀请邻桌）→ stranger-contact。
- * 未登记的新标签一律抛错（fail closed），防止真源漂移后静默放行。
+ * 内容边界标签 → App 既有雷区标签（`BoundaryTag`）。取值三态：
+ * - `BoundaryTag`：产出该 App 雷区标签（命中即过滤）；
+ * - `null`：**泛安全元数据**，没有对应的 App 用户开关，只作风险/能力提示，不产出过滤标签；
+ * - 未登记（键不存在）：抛错（fail closed），防真源漂移后静默放行。
+ *
+ * 口径（Plan §3.1:79 明文）：
+ * - **精确 10 项**就是现有 App 的 10 个用户雷区开关，**同名同义 1:1 直映**
+ *   （`V2_PRECISE_BOUNDARY_TAGS` ↔ `lib/domain/schemas.ts` 的 `BoundaryTag`）；
+ * - 泛标签 `proximity`（贴近/对视/坐旁边）**不自动**等于 `physical-contact`；
+ *   `relationship-sensitive`（关系敏感）**不自动**等于 `ex-partner` —— 只有题面真实命中
+ *   精确开关才写对应过滤标签（Plan §3.1 反例断言：仅贴近/对视不接触、仅关系敏感不涉及前任，
+ *   关闭相应精确开关时都不得被误过滤）；
+ * - `photo-optional` → `photo-video`、`external-participant` → `stranger-contact` 保留：
+ *   这两项泛标签的语义本身就是「会拍摄」「会引入桌外参与者」，映射到相应用户开关是保守方向
+ *   （缩圈卡整包依赖 `stranger-contact` 过滤，见 `tests/unit/v2-b7-content-switch.test.ts`）。
  */
-export const SSOT_BOUNDARY_TAG_MAP: Record<string, BoundaryTag> = {
+export const SSOT_BOUNDARY_TAG_MAP: Record<string, BoundaryTag | null> = {
+  // ── 精确 10 项（Plan §3.1，与 App BoundaryTag 同名同义）──────────────────
   "physical-contact": "physical-contact",
-  proximity: "physical-contact",
-  "relationship-sensitive": "ex-partner",
+  alcohol: "alcohol",
+  "ex-partner": "ex-partner",
+  "sexual-history": "sexual-history",
+  money: "money",
+  "phone-privacy": "phone-privacy",
+  "public-posting": "public-posting",
+  "stranger-contact": "stranger-contact",
+  "photo-video": "photo-video",
+  "social-account": "social-account",
+  // ── 泛安全元数据（无直连用户开关；不冒充精确开关）────────────────────────
+  "relationship-sensitive": null,
+  proximity: null,
   "photo-optional": "photo-video",
   "external-participant": "stranger-contact",
 };
 
-/** SSOT 边界标签 → App 雷区标签数组（未登记标签抛错，不去重不猜）。 */
+/**
+ * 内容边界标签 → App 雷区标签数组。
+ *
+ * fail-closed 两道：
+ * 1. `findUnknownBoundaryTags`（全集真源 = `V2_BOUNDARY_TAG_CATALOG`）检出未登记标签即抛错；
+ * 2. 已登记但 `SSOT_BOUNDARY_TAG_MAP` 没给取值（真源漂移漏补）也抛错——不允许静默跳过。
+ * `null` 取值是**显式的「无对应 App 开关」**，只跳过、不产出过滤标签，且去重并按输入序去重。
+ */
 export function mapSsotBoundaryTags(tags: readonly string[]): BoundaryTag[] {
+  const unknown = findUnknownBoundaryTags(tags);
+  if (unknown.length > 0) {
+    throw new Error(`V2 边界标签未登记（fail closed）：${unknown.join(",")}`);
+  }
   const mapped: BoundaryTag[] = [];
   for (const tag of tags) {
+    if (!Object.prototype.hasOwnProperty.call(SSOT_BOUNDARY_TAG_MAP, tag)) {
+      throw new Error(`V2 边界标签无映射（fail closed）：${tag}`);
+    }
     const boundary = SSOT_BOUNDARY_TAG_MAP[tag];
-    if (!boundary) throw new Error(`V2 SSOT 边界标签无映射（fail closed）：${tag}`);
+    if (!boundary) continue; // 泛标签：无对应 App 用户开关，只作风险/能力提示
     if (!mapped.includes(boundary)) mapped.push(boundary);
   }
   return mapped;
@@ -104,23 +148,64 @@ const mainlineMinPlayers = (packId: string): number => {
   return pack.minPlayers;
 };
 
-function toMainlineGameCard(card: V13MainlineCard): GameCard {
+/**
+ * 桥接输入的主线卡形状：SSOT 主线卡，或第一包正式卡（`FormalTruthCard`）。
+ * 第一包的 `boundaryTags` 用的是 Plan §3.1 精确全集（比 SSOT 泛 5 项宽），
+ * 且自带 Plan §3 质量字段；此处只**放宽输入类型**，两个真源文件一个字未动。
+ */
+type BridgeMainlineCard = Omit<V13MainlineCard, "boundaryTags"> & {
+  readonly boundaryTags: readonly string[];
+} & Partial<V2CardQualityMetadata>;
+
+/**
+ * Plan §3 质量字段（转发到运行期 `GameCard` 侧车的全部 9 项；`secondaryTopics` 可选，其余 8 项必填）。
+ * `GameCard` 的冻结 schema（`lib/domain/schemas.ts`）不含这些键，故作为额外属性挂上——
+ * manifest 构建（`hasAuditedMetadata` / `fixedCardPayload`）与质量侧车都按「卡上有没有这些键」读取，
+ * **旧 SSOT 卡没有这些键 ⇒ 逐字不变**。
+ */
+const QUALITY_METADATA_FIELDS = [
+  "topic",
+  "barFit",
+  "informationGain",
+  "informationGoal",
+  "socialEnergy",
+  "relationshipProgression",
+  "intimacyClass",
+  "informationGoalType",
+  "secondaryTopics",
+] as const;
+
+/** 把内容卡上**实际存在**的 Plan §3 质量字段原样挂到 `GameCard` 侧车（不造默认值）。 */
+function withQualityMetadata(card: GameCard, source: Partial<V2CardQualityMetadata>): GameCard {
+  const target = card as unknown as Record<string, unknown>;
+  const record = source as Record<string, unknown>;
+  for (const field of QUALITY_METADATA_FIELDS) {
+    const value = record[field];
+    if (value !== undefined) target[field] = value;
+  }
+  return card;
+}
+
+function toMainlineGameCard(card: BridgeMainlineCard): GameCard {
   const mapping = V2_MAINLINE_PACK_BY_GAME_TYPE[card.gameType];
   if (!mapping) throw new Error(`V2 SSOT gameType 无映射：${card.gameType}`);
-  return {
-    // ID 命名空间唯一：PN-*（迁移 policy NONE —— 旧 seed-* 不做等价翻译）。
-    id: card.cardId,
-    packId: mapping.packId,
-    type: mapping.cardType,
-    content: card.text,
-    instruction: CONSENT_INSTRUCTION[card.consentMode],
-    intensity: card.intensity as Intensity,
-    tags: [],
-    boundaryTags: mapSsotBoundaryTags(card.boundaryTags),
-    minPlayers: mainlineMinPlayers(mapping.packId),
-    participantMode: PARTICIPANT_MODE_BY_TARGET_MODE[card.targetMode],
-    source: "builtin",
-  };
+  return withQualityMetadata(
+    {
+      // ID 命名空间唯一：PN-*（迁移 policy NONE —— 旧 seed-* 不做等价翻译）。
+      id: card.cardId,
+      packId: mapping.packId,
+      type: mapping.cardType,
+      content: card.text,
+      instruction: CONSENT_INSTRUCTION[card.consentMode],
+      intensity: card.intensity as Intensity,
+      tags: [],
+      boundaryTags: mapSsotBoundaryTags(card.boundaryTags),
+      minPlayers: mainlineMinPlayers(mapping.packId),
+      participantMode: PARTICIPANT_MODE_BY_TARGET_MODE[card.targetMode],
+      source: "builtin",
+    },
+    card,
+  );
 }
 
 function toExpansionGameCard(card: V13ExpansionCard): GameCard {
@@ -142,12 +227,21 @@ function toExpansionGameCard(card: V13ExpansionCard): GameCard {
 let mainlineCache: readonly GameCard[] | null = null;
 let expansionCache: readonly GameCard[] | null = null;
 
-/** 主线 350 张（PN-*，7 类）；生产牌堆的唯一内容来源。 */
+/**
+ * 主线卡（冻结 SSOT 350 张 + 第一包正式内容 24 张 `PN-TRUTH-201~224`）；
+ * 生产牌堆的唯一内容来源，也是 manifest 构建与质量侧车的共同入口。
+ *
+ * **追加、不前置、不改排序**：第一包卡一律排在既有 350 张之后，保 `[0]` 稳定，
+ * 既有取卡顺序语义逐字不变（`mainlineSsotCardsByPack(...)[0]` 仍是 `PN-TRUTH-001`）。
+ */
 export function mainlineSsotCards(): readonly GameCard[] {
   if (!mainlineCache) {
-    mainlineCache = getV2ContentAdapter().mainlineCards.map((card) =>
-      toMainlineGameCard(card as V13MainlineCard),
-    );
+    mainlineCache = [
+      ...getV2ContentAdapter().mainlineCards.map((card) =>
+        toMainlineGameCard(card as V13MainlineCard),
+      ),
+      ...FORMAL_TRUTH_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
+    ];
   }
   return mainlineCache;
 }
@@ -165,6 +259,57 @@ export function expansionSsotCards(): readonly GameCard[] {
 /** 某个玩法的主线卡（pack-specific 补位用）。 */
 export function mainlineSsotCardsByPack(packId: string): readonly GameCard[] {
   return mainlineSsotCards().filter((card) => card.packId === packId);
+}
+
+/**
+ * `cardId` → 主线卡运行期元数据（SSOT adapter 优先，第一包正式内容兜底）。
+ *
+ * 为什么需要：运行期 gating（`lib/engine/v2-deal.ts` 的 Heat 档 / Pair 目标 / MATCH 门）
+ * 依 `cardId` 取卡元数据，而冻结 SSOT adapter 里**没有**第一包卡（第一包走 sidecar，不改 SSOT）。
+ * 本函数是桥接模块（内容真源出口）的同一份视图：SSOT 卡返回 adapter 原值，第一包卡返回内容源原值，
+ * 两条来源在此**合流为一条读取路径**，避免「新卡在 guard 下漏放行」这类静默缺口。
+ */
+const formalPackMetaById: ReadonlyMap<string, FormalTruthCard> = new Map(
+  FORMAL_TRUTH_CARDS.map((card) => [card.cardId, card]),
+);
+
+export function mainlineCardMetaById(
+  cardId: string,
+): V13MainlineCard | V13ExpansionCard | FormalTruthCard | undefined {
+  const ssot = getV2ContentAdapter().cardById(cardId) as
+    | V13MainlineCard
+    | V13ExpansionCard
+    | undefined;
+  if (ssot) return ssot;
+  return formalPackMetaById.get(cardId);
+}
+
+/**
+ * 主线卡**运行期元数据视图**（V13 形状）：SSOT 冻结主线 350 张 + 第一包正式内容 24 张
+ * （`PN-TRUTH-201~224`）。这是两个 Router 的**唯一共同卡源**：
+ *
+ * - 生产 `/game` 链：`createDeckRouter` 的牌堆来自 `mainlineSsotCards()`（GameCard 投影）；
+ * - 审计 / MC 链：`createV2MainlineRouter`（`lib/v2-relationship/v2-router.ts`）直接消费本视图。
+ *
+ * 两者是**同一份内容**的两种投影（`GameCard` ↔ V13 卡），卡集逐 id 一致。
+ * 追加、不前置、不改排序：`[0]` 恒为 SSOT 首卡，既有取卡顺序语义逐字不变。
+ *
+ * 为什么要统一到本视图（C1-8）：上一版 `createV2MainlineRouter` 直读 adapter ⇒ 看不到第一包
+ * 24 张 Formal 卡 ⇒ 审计 / MC 的候选集小于生产牌堆，两 Router 卡源漂移。本视图把桥接模块
+ * 的同一份内容源开放给审计 Router，Card 侧 `mainlineSsotCards()` 侧一个字不改。
+ *
+ * 形状说明：`FormalTruthCard.boundaryTags` 用的是 Plan §3.1 精确全集（比 SSOT 泛 5 项宽），
+ * 故这里只放宽 `boundaryTags` 的读视图类型，**不改** `V13MainlineCard` 真源；Router 不读该字段。
+ */
+export type MainlineRuntimeCard = Omit<V13MainlineCard, "boundaryTags"> & {
+  readonly boundaryTags: readonly string[];
+};
+
+export function mainlineRuntimeCards(): readonly MainlineRuntimeCard[] {
+  return [
+    ...(getV2ContentAdapter().mainlineCards as readonly V13MainlineCard[]),
+    ...FORMAL_TRUTH_CARDS,
+  ];
 }
 
 /** 主线 pack id 集合（去重、稳定顺序）：relationship-aware 路由只认这些玩法。 */

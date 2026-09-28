@@ -221,3 +221,17 @@
 {"date":"2026-09-28","task":"B3-17 final Mutual 两尾巴","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"HEAT/TIMING 继续TBD"}
 {"date":"2026-09-28","task":"CR-2 code-reviewer 复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
 {"date":"2026-09-28","task":"QA-4 全量门禁+专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
+{"date":"2026-09-28","task":"C1-1 内容管线只读设计","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"零代码改动"}
+{"date":"2026-09-28","task":"C1-2 新内容源24张","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"heatMin全1"}
+{"date":"2026-09-28","task":"C1-3 接入运行时管线","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"audited 0->24"}
+{"date":"2026-09-28","task":"C1-4 BAR-FIT机器审查+空骨架","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"未代填人工结论"}
+{"date":"2026-09-28","task":"内容审查第一轮24张","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"PASS20/BORDERLINE4"}
+{"date":"2026-09-28","task":"C1-5 重写4张","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"formal 20->23"}
+{"date":"2026-09-28","task":"内容复判第二轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"formal 23"}
+{"date":"2026-09-28","task":"C1-6 重写223+修测试","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"保留fail-closed"}
+{"date":"2026-09-28","task":"内容复判第三轮","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"formal 24 全量PASS"}
+{"date":"2026-09-28","task":"C1-7 断言按人审输入派生","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"零硬编码数量"}
+{"date":"2026-09-28","task":"C1-8 双Router+单包MC+生产链验证","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"Heat逐档可达"}
+{"date":"2026-09-28","task":"CR-3 code-reviewer 复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
+{"date":"2026-09-28","task":"QA-5 第一包门禁与专项","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
+{"date":"2026-09-28","task":"C1-4 BAR-FIT机器审查+空人工骨架(通道更正)","role":"builder","model":"codebuddy/glm-5.3-flash","used":"备用","runtime":"codebuddy","result":"PASS","note":"CORRECTION：原行记 deepseek-v4.1-flash 有误——该次实调返回429限频(2026-09-29 14:00 重置)，随后按 USER_MODEL_OVERRIDE 备用通道改派 glm-5.3-flash 成功；补记本行以保账实一致，used 如实标备用"}

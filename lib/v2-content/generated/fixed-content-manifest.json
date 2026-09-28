@@ -6,7 +6,7 @@
       "isFormalFixedContent": false,
       "purpose": "旧局读取 / 恢复 / 迁移；可缺 Plan §3 新 metadata；明确不是正式 Fixed Content",
       "admission": "legacy-compatibility",
-      "snapshotHash": "f0c43814872b7f03f9d2752b3cd995c385b792a883c428dda7936c9f6d4281a3",
+      "snapshotHash": "65f09f31c5c948157f08630c93e0d1332a497ac7c9c480ce1ed4ca83dde14279",
       "allowedCardIds": [
         "PN-CHEM-001",
         "PN-CHEM-002",
@@ -397,7 +397,31 @@
         "PN-TRUTH-047",
         "PN-TRUTH-048",
         "PN-TRUTH-049",
-        "PN-TRUTH-050"
+        "PN-TRUTH-050",
+        "PN-TRUTH-201",
+        "PN-TRUTH-202",
+        "PN-TRUTH-203",
+        "PN-TRUTH-204",
+        "PN-TRUTH-205",
+        "PN-TRUTH-206",
+        "PN-TRUTH-207",
+        "PN-TRUTH-208",
+        "PN-TRUTH-209",
+        "PN-TRUTH-210",
+        "PN-TRUTH-211",
+        "PN-TRUTH-212",
+        "PN-TRUTH-213",
+        "PN-TRUTH-214",
+        "PN-TRUTH-215",
+        "PN-TRUTH-216",
+        "PN-TRUTH-217",
+        "PN-TRUTH-218",
+        "PN-TRUTH-219",
+        "PN-TRUTH-220",
+        "PN-TRUTH-221",
+        "PN-TRUTH-222",
+        "PN-TRUTH-223",
+        "PN-TRUTH-224"
       ],
       "provenance": {
         "PN-TRUTH-001": {
@@ -677,7 +701,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "0f20e461ef13d3ba56a1dfac61417ab04f94dfe26ef9a68ae46ab8a66f7e8c10"
+          "payloadHash": "8b90991709375f1c5247a6c401a4f0b52d5f07716852a3eca083d4fa2f6d5019"
         },
         "PN-TRUTH-032": {
           "cardId": "PN-TRUTH-032",
@@ -686,7 +710,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "09f9a31895cb47bfd230703fd1ea53221e5b7b41cbb37559e9cb1e2504090991"
+          "payloadHash": "bd51b681c848d215c4ddf7d7535c605a0e7c3c48987dceeb2cf2e13309dc374f"
         },
         "PN-TRUTH-033": {
           "cardId": "PN-TRUTH-033",
@@ -695,7 +719,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "2b8d690b1a2c4f5420190bd0d54300ffda5018e4bd26987168dc5a03a20ceee4"
+          "payloadHash": "86a417dbeb49cdf7881e3768c251dc6257ffc8ac72737e710f712f1d0ecbf6e4"
         },
         "PN-TRUTH-034": {
           "cardId": "PN-TRUTH-034",
@@ -704,7 +728,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e2fdc6b70ef1b97a75242983c330a1f0d18884e0d2742943d127af3592ffbe12"
+          "payloadHash": "6a6ef700092391c8ef16dfcf3b98929fb3483536d561a323832cb0af1144496f"
         },
         "PN-TRUTH-035": {
           "cardId": "PN-TRUTH-035",
@@ -713,7 +737,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "806f1d15332511e81c06d337fdb94e59e721092d26225f3750042ca612e783b7"
+          "payloadHash": "aead13301c03d2c6164383a123a3e497dee6952add7d540e6618773f570c6e9f"
         },
         "PN-TRUTH-036": {
           "cardId": "PN-TRUTH-036",
@@ -722,7 +746,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "6c887796051f246d1a9349ed7700467e63ac3c0001295b29e5676f034b727570"
+          "payloadHash": "69ea42caa178d7298fc160a1d7b485909666f79ef0d1aa5e59c4a1e29b9da7f9"
         },
         "PN-TRUTH-037": {
           "cardId": "PN-TRUTH-037",
@@ -731,7 +755,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "959871693534b08ac3697738438b74eaced2655aa0b3f7f82b4a521d82761e9d"
+          "payloadHash": "c2d785ed30c8c2fc8b1b6d01de01ffcaa6205eb9dc8b9e35f6707262ea82ebb3"
         },
         "PN-TRUTH-038": {
           "cardId": "PN-TRUTH-038",
@@ -740,7 +764,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "a45fe479feece5c6519d518a2b600dbc45ac511fedbc52c236f308050968351e"
+          "payloadHash": "ebe6261ada974ec4cc2d460087ec65085bb94caae81d071caa7551c3a89670e7"
         },
         "PN-TRUTH-039": {
           "cardId": "PN-TRUTH-039",
@@ -749,7 +773,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "45bc49ee5e6ae5e2f6973408a8beaf088b12e1efa5ea1711bedae6bd020e3587"
+          "payloadHash": "33016f32f6a20197c4b0da6e0971ae611fb9aa5b97e73891518d5c2cac9e6ea6"
         },
         "PN-TRUTH-040": {
           "cardId": "PN-TRUTH-040",
@@ -758,7 +782,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "6c79e5246907ecdc428e21a7ad0ef0f97a8685fe23b4c7e5332bbf17240a85f5"
+          "payloadHash": "38917084970670840e167697db429fd4331c9530dcbb20e01c454d5788ddbf71"
         },
         "PN-TRUTH-041": {
           "cardId": "PN-TRUTH-041",
@@ -767,7 +791,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "8c8827f8a175ab77cf7de1fa526410a5d01d7f6e42cf0ada7996ac81523647d6"
+          "payloadHash": "9f4faebf4fba001a1bc60d71fa01c4a168b313efa25dbb17a9ebd6102de6adce"
         },
         "PN-TRUTH-042": {
           "cardId": "PN-TRUTH-042",
@@ -776,7 +800,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b9d665ae12528334801d35e4790e4ab2effa4209378029bfccd9205dfcc36b02"
+          "payloadHash": "270c865265c2d95c540e278f133963a1dcec71000eef35074469a41f2f047365"
         },
         "PN-TRUTH-043": {
           "cardId": "PN-TRUTH-043",
@@ -785,7 +809,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "3c5ac9f16fe2b92183c21644aeb11acfab9167ad76abe3cd19c716ab26b6224f"
+          "payloadHash": "0c7dbc0c458ae12c766ad8ff6f72228ad7ef9f0d96a5a3a9d05f41f5c3457029"
         },
         "PN-TRUTH-044": {
           "cardId": "PN-TRUTH-044",
@@ -794,7 +818,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "67e7bc643e86ee346a5974ffc11c8ca57b594cab0e72b2670cbfdbb0e4f11d1e"
+          "payloadHash": "7be5928f500a878d397f4ccc195815fc596928c444fa1a79d8e5b2071dd08982"
         },
         "PN-TRUTH-045": {
           "cardId": "PN-TRUTH-045",
@@ -803,7 +827,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e5daff42eea167e7554a177e4a7a08dbf35e47647a69632c0061cd267ffd4b2b"
+          "payloadHash": "182563643acd873c22a4f9309272b09eac46974489524a796960468d9058dcbd"
         },
         "PN-TRUTH-046": {
           "cardId": "PN-TRUTH-046",
@@ -812,7 +836,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "3256d6bd8ae059732bd8ef00c3601b48adc001d5a865f9ed0ecb0615f63e8f24"
+          "payloadHash": "94ad867bcc578d1946cb10c1a1b8b994a4fa08969213969d6fc5ba324a1cea5a"
         },
         "PN-TRUTH-047": {
           "cardId": "PN-TRUTH-047",
@@ -821,7 +845,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "53d182b21c357384abad9434f2390b731f6bcf646740d31fe48ca2453cbf57f5"
+          "payloadHash": "656922cafb177788a3da75ffe940df7abbd23110c52f948c8c39ebfa56118611"
         },
         "PN-TRUTH-048": {
           "cardId": "PN-TRUTH-048",
@@ -830,7 +854,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5ddc437cc78f4e6d7510dddc87fa42f7a470294245a0d16813de26794b86233d"
+          "payloadHash": "edf43d96665a8323bf85a8121475b1ee3133e84b765175fdd22a7998df0a1fb1"
         },
         "PN-TRUTH-049": {
           "cardId": "PN-TRUTH-049",
@@ -839,7 +863,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7c4767dff41da7dea88ac8bba0be5db290a44aba29df70e006059c707b0e9cff"
+          "payloadHash": "27ea538efe9cda9bd695290a5721b0bbd4bf4ef1ca9b41d4148df50f3e1eff83"
         },
         "PN-TRUTH-050": {
           "cardId": "PN-TRUTH-050",
@@ -848,7 +872,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "55f41c569ee7e98761146b039fb47eaeb4d22dd5b83640282c70af61536c00e1"
+          "payloadHash": "905c94725be7947619144c5bff37958da1d82d8599fc2e048ad808984ec56cf5"
         },
         "PN-DARE-001": {
           "cardId": "PN-DARE-001",
@@ -1019,7 +1043,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "f6cc2bc9ca714d6e69827cc40043879cf9a2865f3af7784828b68d762c003d43"
+          "payloadHash": "27aa0f688677e5da07ebe81ad2b9e5597f6d9cf1a7334cfa37b882cd787116ce"
         },
         "PN-DARE-020": {
           "cardId": "PN-DARE-020",
@@ -1028,7 +1052,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "caff09bd3b828f0ae8fe22caf475bfd3a9a9195de4ef41b83cc3f1eab4cb02b6"
+          "payloadHash": "19c1c769bc46246edcbfe96f82deafb456f5bbeb598ca656ffa1753bb9521eae"
         },
         "PN-DARE-021": {
           "cardId": "PN-DARE-021",
@@ -1055,7 +1079,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "16798b237dd313f87ef947f950702d4aa936fae33a614f018fed5e9a85134cfb"
+          "payloadHash": "f94fb827a84ace68b502e6e8e23f433fc56d9815cab87b6d65e4346927eb5ec8"
         },
         "PN-DARE-024": {
           "cardId": "PN-DARE-024",
@@ -1064,7 +1088,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "170f70e8f6c0cef4e35dacc3d667e46d2d9d54b6b3e68f669ac52ad675b92dcc"
+          "payloadHash": "48eb77869761a2425be8aa74ad04183d1af3d254302abb07d8f4fb057de08de8"
         },
         "PN-DARE-025": {
           "cardId": "PN-DARE-025",
@@ -1109,7 +1133,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "11668dfe9569e43a50f52e6c393236d5edb5c9f9f83fe7ae3417130ed890e22e"
+          "payloadHash": "f561bc3d5582bcd00b365f30889ae5499ebdb32b1aa3c000e13ef9939688a32d"
         },
         "PN-DARE-030": {
           "cardId": "PN-DARE-030",
@@ -1118,7 +1142,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "2f51fd8f18d2f6bf1ff68ab04be8f0a1a54555e3047e7d484169a4803f83dee1"
+          "payloadHash": "1f18cb3af7d06e13c8a5980f3d3c4450ea61fc52e9617bea03c18f8775577213"
         },
         "PN-DARE-031": {
           "cardId": "PN-DARE-031",
@@ -1127,7 +1151,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c4546a7cc30214dd5fb478a4968c59369953c3b04bd0628062504ee7cb0f41af"
+          "payloadHash": "868cd970c05a779aafbbf1ea74ed87e89553141117dfca5ad055ac8aa60f9cc2"
         },
         "PN-DARE-032": {
           "cardId": "PN-DARE-032",
@@ -1136,7 +1160,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "202ba60a0b3bc68301590753ab7fa99a1ef33a7de2cc3fd0024d15e748e4404c"
+          "payloadHash": "da152b7b8f1088fc375712f4a8bf84173a16032dd09e554bb21e738d5c0b88e1"
         },
         "PN-DARE-033": {
           "cardId": "PN-DARE-033",
@@ -1145,7 +1169,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5708480b524733dbe596f26203423179a0ba3c3d6c09d3fd8a84e4cda82c869c"
+          "payloadHash": "5f8cf4f19fef6a1a35dc3f972a9eeb3edcb31880c903186fa28061e43765ba9f"
         },
         "PN-DARE-034": {
           "cardId": "PN-DARE-034",
@@ -1154,7 +1178,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c44aa5d4eea887e547650df5f6ef947b5ec0c4fe44f5fc47b5789b9a573bc065"
+          "payloadHash": "4c79d6abff6fa2b309722a54b0647e4d2db7b40a76624d7c733c04413f5bc690"
         },
         "PN-DARE-035": {
           "cardId": "PN-DARE-035",
@@ -1163,7 +1187,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "27570a26bdca989a91226bfd4d5bc70dbe7929b0af6952fe493951d8c50fe75f"
+          "payloadHash": "d1b08262391b824fd07e279d392e6cc12482b4f6b487980cfd1426ba1a4f5928"
         },
         "PN-DARE-036": {
           "cardId": "PN-DARE-036",
@@ -1172,7 +1196,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "d7dc54513c67c2b3f4e9a0c356ea5aaa92385a64b333dc77d4e90d2277cbdafe"
+          "payloadHash": "ae939d62f34c928ad5f80773eb52c38db213762e1912df3d38b13a72c486d409"
         },
         "PN-DARE-037": {
           "cardId": "PN-DARE-037",
@@ -1181,7 +1205,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "cd7c3969393478214744b15cbe9e33504d7f2a4a92792c770dc274ab54db0050"
+          "payloadHash": "ece327cfab43c35dc85813336ed52ce2812887071b13301ca2f819de061daf2e"
         },
         "PN-DARE-038": {
           "cardId": "PN-DARE-038",
@@ -1199,7 +1223,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "9a60521cb2cf63c895e102c890b62a9effc29d5fd801ec58f27e580e3c28bbfd"
+          "payloadHash": "48b986a5a1e8523b52bc0b8a73f2623f508842ba6120697958539c88a90f6461"
         },
         "PN-DARE-040": {
           "cardId": "PN-DARE-040",
@@ -1217,7 +1241,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e1c0273914321e909d8833cc4cd3c24a2a174bb7836242afa589b896d0917195"
+          "payloadHash": "62e6088baea3846b6963202c7db49eff8584de22c3b0bf099aab1d5eed3db8ef"
         },
         "PN-DARE-042": {
           "cardId": "PN-DARE-042",
@@ -1244,7 +1268,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "ca7919704d1a8c1e451457ed059263fb9577d100a36ac59e8f212583d33bd12b"
+          "payloadHash": "2f0408c3a2346d7ce4700954103e5dd7fd3a056fdc9deba335e13142f3e3604f"
         },
         "PN-DARE-045": {
           "cardId": "PN-DARE-045",
@@ -1253,7 +1277,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "cae7047c2ee9ed3301022c7c21fbee3efff7e3404a2031549786b5c55a30af94"
+          "payloadHash": "0ba9474f6180c3610ad115302db4ca30fbad3ffce528e83a111f1816262056ab"
         },
         "PN-DARE-046": {
           "cardId": "PN-DARE-046",
@@ -1262,7 +1286,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "15960311dc5138a0a390e5715925910dbd772f18bd82ad56905dc91873f3ed99"
+          "payloadHash": "debf87f3b266541fc52516618da011195ce7fd571662094439cf5ab08b6e99ea"
         },
         "PN-DARE-047": {
           "cardId": "PN-DARE-047",
@@ -1280,7 +1304,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "6b399a9297562afa6e92b2d2893cbd76ca237367c2ec03230b6b26c120f41034"
+          "payloadHash": "8c2dd6bb9dfb4e3539edfe4879da6dea830f599ff2b6c682f30dd09517607b19"
         },
         "PN-DARE-049": {
           "cardId": "PN-DARE-049",
@@ -1577,7 +1601,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "2f91c09dca677e263204ee3b9956635e8642e4fa0d05de5d14fd299c0f86de65"
+          "payloadHash": "0f47976314960d04b6e44a105ba8f52d54d2d5e1aa4d5f9df54b68af8ddbe9f8"
         },
         "PN-MOST-032": {
           "cardId": "PN-MOST-032",
@@ -1586,7 +1610,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "da8da8102b78c55a07fa3b85e97bf495c1f78aae1aa727c8e5429defa9da57c8"
+          "payloadHash": "daf2d3ccc4e641da455b29e376a663c1a0d663ffa0a564c18d433f373eb1fede"
         },
         "PN-MOST-033": {
           "cardId": "PN-MOST-033",
@@ -1595,7 +1619,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "a61240b98e06254f1fecc357bce1e739d9c61041593a5548c91c77c027c52153"
+          "payloadHash": "600da65901102937175cdb37efbf2a5453d676ffcc51112a18042fee5a949783"
         },
         "PN-MOST-034": {
           "cardId": "PN-MOST-034",
@@ -1604,7 +1628,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5a1f98d61737c84bac3468500304b85091177b11fed86e084af3b7c7c06907d0"
+          "payloadHash": "54abede517733fb35419bb0badbc6d04adde64666cca8ab23adc1f6fce1a17c6"
         },
         "PN-MOST-035": {
           "cardId": "PN-MOST-035",
@@ -1613,7 +1637,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b04a45ed92592c09cce326cd74f087188eb66bbd67070dc14271171a728fe9c6"
+          "payloadHash": "05b1267cb289c365b41546378435e76003eb43006b95b155e8280c802d11eb89"
         },
         "PN-MOST-036": {
           "cardId": "PN-MOST-036",
@@ -1622,7 +1646,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c66d0392c0f39dbdda4ad10127823893d8160e8bf0dffae6f8c12d5ad570b376"
+          "payloadHash": "6887eef2331335882a9ebacf89af2e9e1fd5c20db76dca8f42c1c93e604c71de"
         },
         "PN-MOST-037": {
           "cardId": "PN-MOST-037",
@@ -1631,7 +1655,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "49db872c5495a886ba5999b7a8f8af659ebdab3dc2335f474e80edc95902c045"
+          "payloadHash": "01ebddf219d7c59818e61183a5f3258baf358266f0ac7e8574af8578950bd7e8"
         },
         "PN-MOST-038": {
           "cardId": "PN-MOST-038",
@@ -1640,7 +1664,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c6d97d785bd2761717dd5b4ab4e4ef3a230933d435ee6476e157a05a979361e9"
+          "payloadHash": "fc01c13ddc25b8024166baa5448ae66e4bfd8ff3d0cb1e42bfc4eac45e96632d"
         },
         "PN-MOST-039": {
           "cardId": "PN-MOST-039",
@@ -1649,7 +1673,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "0214a0d6b9eaab82aa48cb219397c1bddb8dfbed06a751b7d21b9a576756d187"
+          "payloadHash": "382fbb28ee0892e888c415993512aa415f23464040251059a97f876f773c5ea6"
         },
         "PN-MOST-040": {
           "cardId": "PN-MOST-040",
@@ -1658,7 +1682,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "d924c6d845484bf5cf005df5852b3cfdd431595b7e7d4b87a6ebd4f5038b9fb3"
+          "payloadHash": "a5757c139a7a9b3f309a6bca15e9c4c00216b138f32caeb5c5864c32bbba7367"
         },
         "PN-MOST-041": {
           "cardId": "PN-MOST-041",
@@ -1667,7 +1691,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "3fe3108eff6ba8731495c8f77c224fa0113fdf5008eb948715fb17426aa464e6"
+          "payloadHash": "5c4055a02767ec87c72099855ddbde5a2023386a70647c9c3bd2d628fa62d224"
         },
         "PN-MOST-042": {
           "cardId": "PN-MOST-042",
@@ -1676,7 +1700,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5f9be76d84b809f700e497daaf84f70d1fad77e99772b5551c3969f6345473a4"
+          "payloadHash": "c3652fb7de9e7c76aec30de16ddc88155f1444bffd0a59ad4ab1e14e8dd3e9ef"
         },
         "PN-MOST-043": {
           "cardId": "PN-MOST-043",
@@ -1685,7 +1709,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "04968b4a0dfc074f986f6d160a1ef6219cb4faffc07e877a59f86f89258ca7a7"
+          "payloadHash": "b69936afefc692c507ff6cc47397be549e1b154bfc8ed1d939c8809a0b65dcdf"
         },
         "PN-MOST-044": {
           "cardId": "PN-MOST-044",
@@ -1694,7 +1718,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "02ea1b589c0093e8c2f7675852c5fbb4c399b7598d4b8ae2eb1ed6cf8107516f"
+          "payloadHash": "15232b7774898dc69ea361bdf6e12a7754755753b8fea985640351a97059589b"
         },
         "PN-MOST-045": {
           "cardId": "PN-MOST-045",
@@ -1703,7 +1727,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "90f16514138e5ec3af0fc928f8cd3056bd7adaec39d96bf3220cec6f3290ddb3"
+          "payloadHash": "df842aa58df0c2d8c5d9276877eea5ed0b9428e52e2a418a5fe340c64cf15ba8"
         },
         "PN-MOST-046": {
           "cardId": "PN-MOST-046",
@@ -1712,7 +1736,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "d879db11437250caa4f256765a215b7e6a8d1c445ce2e12dd43f5f84fb421512"
+          "payloadHash": "4d2808c9a7447915097043a2b8c4ede0e66de3bdcb7e367f135e433a104466fd"
         },
         "PN-MOST-047": {
           "cardId": "PN-MOST-047",
@@ -1721,7 +1745,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c3974ab3fc310a6aa96127018af6fc1784611b289581a8b10bd2d5ca0233ab62"
+          "payloadHash": "b93902e34777536e4ef1c383ef0c8f23ab5c2f6bdad6f6b16cf26993fdc27eb6"
         },
         "PN-MOST-048": {
           "cardId": "PN-MOST-048",
@@ -1730,7 +1754,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "79557fb0b16e68d4d9c71bf8928b3536b65ac36ef366e4c0efa90037f58a4584"
+          "payloadHash": "2bf9a0e5986e5d86f1804d1b048d2d03b42c413adbd83069ee8723486d9e40a1"
         },
         "PN-MOST-049": {
           "cardId": "PN-MOST-049",
@@ -1739,7 +1763,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "1809294e57668c601397aaac996210a3d7565c4fbd29c65aad2e04d502784675"
+          "payloadHash": "3cc9c8e17ec9ae9fda0295dd84d0b670ee5347b02c60bf7d3a8a76e139e4556b"
         },
         "PN-MOST-050": {
           "cardId": "PN-MOST-050",
@@ -1748,7 +1772,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "a7131c38f8c52db610afac7857b865a8e03d8dc6fa7eb1518d23408cd25d829a"
+          "payloadHash": "9355dc0a5752098e04d0eedff58203adaeafa8001754450aa4a2115364948fb5"
         },
         "PN-NHIE-001": {
           "cardId": "PN-NHIE-001",
@@ -2027,7 +2051,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "1f5b5cfb6501494c238d506be728dee92b92ee4917c05f62a4c78182f4db1f16"
+          "payloadHash": "bfb574289bb357e4ae096c9f75926e7a368a33d9a7254c7d826438f46c0756bc"
         },
         "PN-NHIE-032": {
           "cardId": "PN-NHIE-032",
@@ -2036,7 +2060,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b65e48f9c4741af466ade40c488ffac62deceeeed5b5eacd749da338009cd304"
+          "payloadHash": "0b309dbbae136d0cae08e7ff704f0603d61505f67f01d3579c8969d5696ff399"
         },
         "PN-NHIE-033": {
           "cardId": "PN-NHIE-033",
@@ -2045,7 +2069,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "706856f4ee0dcd746d6bf0ddf1d304f892fc9aee4c2f783eb134f3c3323cf2f0"
+          "payloadHash": "32025bded870a4a21e47939154505f937abac1373f6fd86eb3ca1bfb2c0afc99"
         },
         "PN-NHIE-034": {
           "cardId": "PN-NHIE-034",
@@ -2054,7 +2078,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b531c46081eabe58dc84d144faa652cbff07caa7a8567d07b84aa056419718a3"
+          "payloadHash": "0ef10b1c973b27f04942ae07feba1fee1e705cb27057d3120af4254d5e61408d"
         },
         "PN-NHIE-035": {
           "cardId": "PN-NHIE-035",
@@ -2063,7 +2087,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "dfd8299c3c58c7070a9d7d27950f70bb5d8359659c9c983f0d1655a89904ef89"
+          "payloadHash": "3d3abf27798c002245697899d70116283c4dbcb78fdc3878e0c25ce95d1af844"
         },
         "PN-NHIE-036": {
           "cardId": "PN-NHIE-036",
@@ -2072,7 +2096,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5a10c61ff18b182f605151d8fdd6f76b5b87980495264d4dc210146c18d03dcd"
+          "payloadHash": "a3941bd47ee7ba1e5342f6eb40f69642c888d6948053af13b615e8cf53cc7afe"
         },
         "PN-NHIE-037": {
           "cardId": "PN-NHIE-037",
@@ -2081,7 +2105,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "98e33f438ee34dce20dd7bdb23fe92bd8256c30d29842cdc1930ca2a477417e2"
+          "payloadHash": "b5dd21d5f74355221a2965d69da6b59a1a815478ba401f612a1d40aa0d2f0cf3"
         },
         "PN-NHIE-038": {
           "cardId": "PN-NHIE-038",
@@ -2090,7 +2114,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "fc9534a28b63decc5fd21b0cec43a87b9c913ae5c1550b132a3ae04c1d444c59"
+          "payloadHash": "8fc979bffbc5ee2523c7feb73dfe6634b7a7c5f101e15951ce75e2f23932965b"
         },
         "PN-NHIE-039": {
           "cardId": "PN-NHIE-039",
@@ -2099,7 +2123,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "297cc8706e10090588c297f53c17ae011f647f0fec1f72855ad84c1d299a7da7"
+          "payloadHash": "2bf7868fb808f480b7f204d1886250732860465af7a7e7ff8423ddb5bf2c102f"
         },
         "PN-NHIE-040": {
           "cardId": "PN-NHIE-040",
@@ -2108,7 +2132,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "1c07eb2b759d3e5284bf467b6e90ed92d74e870e7f9c57f2faf6ac7c5ecb38d2"
+          "payloadHash": "03d330fd98507977db726c96ce312125d248423e3df9ade0bdbe94cbba37af4c"
         },
         "PN-NHIE-041": {
           "cardId": "PN-NHIE-041",
@@ -2117,7 +2141,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "910cd42949e99bcc6a845ca458bc429b4916d6fb239cf8b523534e8d88d7c033"
+          "payloadHash": "2726f7fb11c6e53c57c544b73415a4e85bbb3b1ba43cc165488d003045890ebe"
         },
         "PN-NHIE-042": {
           "cardId": "PN-NHIE-042",
@@ -2126,7 +2150,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "30bbc485db04cfcda1b4f91256829b6cad4f2f26d17bcd933e5cc00ac25f1406"
+          "payloadHash": "f94b7a38a6df66e98312344e77eec8deefa4ea6075062fa157eb8c519df88ffa"
         },
         "PN-NHIE-043": {
           "cardId": "PN-NHIE-043",
@@ -2135,7 +2159,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "2b90ab6d4fdfe3ceb6ee325810eb1ab288f08b36396aaa4ee4f8d9a60738e192"
+          "payloadHash": "e76e072ccf537d73042b31c577137fb3802ce93aeaafe9310acb48cc3d295d4f"
         },
         "PN-NHIE-044": {
           "cardId": "PN-NHIE-044",
@@ -2144,7 +2168,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7f448c9513620d735c5002085701d761273c8f14c4b8e0ad036a5a66033ef027"
+          "payloadHash": "8192daff6006dfdf1178d97480f2f5130e5d74ffefff037737900f15c8fdf366"
         },
         "PN-NHIE-045": {
           "cardId": "PN-NHIE-045",
@@ -2153,7 +2177,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "0e36cee1b377b3188b89a1626043456aa6a92625a06e8899771324c40060f597"
+          "payloadHash": "adc44ee184786b98a54bc0482e36825c057933ef869e7b34cf012c66b7edbbc1"
         },
         "PN-NHIE-046": {
           "cardId": "PN-NHIE-046",
@@ -2162,7 +2186,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e4bbae4d8387fa69546b34346ef128be4533ad50222488b959b921b0f844c5b2"
+          "payloadHash": "1d8611bcb6580f9a0b94078281b079c87ca5396a6e8cb10ece50b381563179a8"
         },
         "PN-NHIE-047": {
           "cardId": "PN-NHIE-047",
@@ -2171,7 +2195,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5be92513634a370eca62a0e67afcf71c7fad6fcfc307bb6aedbe3a67fa1a644c"
+          "payloadHash": "89f2f9588f38bfcf591b8e76c6f60d26dd8f18c2e4ffd89202c16a3651d2f8db"
         },
         "PN-NHIE-048": {
           "cardId": "PN-NHIE-048",
@@ -2180,7 +2204,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "f0cb3fdde21a28f9b0bae4792db1ae6814d54a4f355ecc5a19abd6c82f81a5ea"
+          "payloadHash": "d358a0e67266e42aa9b6e7b4104c8ac09043b6b3326be26fa7beb654171fa93f"
         },
         "PN-NHIE-049": {
           "cardId": "PN-NHIE-049",
@@ -2189,7 +2213,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "95d2f57e708b1f08bf03d95c0055fc07280f676a54ebe12fe6ed2e61b1fe8121"
+          "payloadHash": "7552b5e1ec7472cbf82f69a0baf89cba4bf0a074337775dcbc48c5d35472574e"
         },
         "PN-NHIE-050": {
           "cardId": "PN-NHIE-050",
@@ -2198,7 +2222,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "18a87e9c3355f1c3b4f0d0431d0686ff0eaf3134620405d27cddec64201775e0"
+          "payloadHash": "21d2614af58186984557863e6b91c2a034f6fa02e451a61f3381f33a7f5aeaea"
         },
         "PN-EITHER-001": {
           "cardId": "PN-EITHER-001",
@@ -2477,7 +2501,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "1797b1d90fe9c497117228a3d7bf0ce373f788b0e3efa1bf77632eb3dcc91c6a"
+          "payloadHash": "49b5f7f04bfcd8fe055526e6af0ebfd032a3cbef25eac855de65b0abe6bf9f4b"
         },
         "PN-EITHER-032": {
           "cardId": "PN-EITHER-032",
@@ -2486,7 +2510,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "ec2f33d228ff0fd65a90b44d58a001436ad3331a2c67831a1a602c0b8893bab3"
+          "payloadHash": "7f3382bf033fa3e772600eed5609b37cdf81758058c4aaa130cdde1068dc672e"
         },
         "PN-EITHER-033": {
           "cardId": "PN-EITHER-033",
@@ -2495,7 +2519,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "86a61302dc8e13a7332cf0931f8c06c633d2e4bbed23ba6d8f1345c5cb8a1acf"
+          "payloadHash": "46802420a49f2d81a08965aa87de4bacdc7026dd1fb58418759d307bac4d160c"
         },
         "PN-EITHER-034": {
           "cardId": "PN-EITHER-034",
@@ -2504,7 +2528,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "23f22525342439eab715d7aab47cff99c19b4d53040d30162380bdfb3bf0b7e3"
+          "payloadHash": "8d07f0e78d1c3322f9f52a4b12eb14910678b500a80f155ebe000667f8e02eed"
         },
         "PN-EITHER-035": {
           "cardId": "PN-EITHER-035",
@@ -2513,7 +2537,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "3746da60f09c88eb922b10fe75312fad862679f21ae69919958dcc66724a920a"
+          "payloadHash": "6f36fc2f5c6c376e31ebdf04d65a9ae1385f905078e6b51b301c586c2e542d8b"
         },
         "PN-EITHER-036": {
           "cardId": "PN-EITHER-036",
@@ -2522,7 +2546,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7ef6066afc5ffae88a4412091978d1fcc7bb9456f7b0e2e14843f86d9089896b"
+          "payloadHash": "9faa5b4e07b8972cc117df9660a97af967c4b75af2a39f6f57de654e00b044ae"
         },
         "PN-EITHER-037": {
           "cardId": "PN-EITHER-037",
@@ -2531,7 +2555,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "36e41b8deb48928dc88b32486fdeae690766302ae83d144a6b6d73b5226b59ef"
+          "payloadHash": "cc85e3a7a3ca6722f28ef8349d4d1cbc32d2bd64a99908a22653b586f9823df6"
         },
         "PN-EITHER-038": {
           "cardId": "PN-EITHER-038",
@@ -2540,7 +2564,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "1449326d0cd636734c1afc54f165b59b4c31f7e5737e71546a6e638511462c01"
+          "payloadHash": "b711fcf661ee06b98940490ea89e4ba2e3841dc4b230beef9c1d47cf11109e5d"
         },
         "PN-EITHER-039": {
           "cardId": "PN-EITHER-039",
@@ -2549,7 +2573,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "ebffa1ad0366585414e8ab1f923337a5212144ac5facf13a14d5422ca869a311"
+          "payloadHash": "6930d70205394577513fd895438a635b2da33576712b7c987436f2597c8a4187"
         },
         "PN-EITHER-040": {
           "cardId": "PN-EITHER-040",
@@ -2558,7 +2582,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "ff60aa054a0af932b64c9f573453da3ff4a6375ab2e6fe357c0e61628a4c998e"
+          "payloadHash": "d3b07d5f407c0947af27f3c5b58f99317b6e315a0bd95f14ac427216c2f02272"
         },
         "PN-EITHER-041": {
           "cardId": "PN-EITHER-041",
@@ -2567,7 +2591,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "75efce5aa6cbd8db3987084af6e969568f56db627ee621621a0f459be43e406f"
+          "payloadHash": "5bfe430129c620fdc60e7d6f0fdcd897e47ff41872aa2937a0f18dcfae5d5e5f"
         },
         "PN-EITHER-042": {
           "cardId": "PN-EITHER-042",
@@ -2576,7 +2600,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c250249008df2e5d5bf21965987d1262ed989023b08612d120e2d17e6867300c"
+          "payloadHash": "4fbc887af51e13fd9ac0707eaf6f27de213e6640709fc66fff53e2b423616d7e"
         },
         "PN-EITHER-043": {
           "cardId": "PN-EITHER-043",
@@ -2585,7 +2609,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "c279c9a425fa44283d3a343af8a78ae85da86a1c4e4ffcfe32960225db7bff7d"
+          "payloadHash": "71310cafa14c9ee1aa647d5a37f79b145aab26d4edb0e11b8b59f6de2ad36c48"
         },
         "PN-EITHER-044": {
           "cardId": "PN-EITHER-044",
@@ -2594,7 +2618,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "a20e4cd41fe59d636a0d3685d0f8132214f8fb0eabdb26f8260aa7a6abe20d7c"
+          "payloadHash": "9be3d45554194314238a86500bd646451cc53b6c4dc578ac3192a55739f067b0"
         },
         "PN-EITHER-045": {
           "cardId": "PN-EITHER-045",
@@ -2603,7 +2627,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "edfed81d628f9a59e1a0effff67389048963c2e4228e44ddd893d4d0b9e856d7"
+          "payloadHash": "a5aff08589460fecb1d37bed738a2bad72f97221bb8f3c3cac09bdec1e1b1c27"
         },
         "PN-EITHER-046": {
           "cardId": "PN-EITHER-046",
@@ -2612,7 +2636,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e683918840983ade29a501a353aa16115eea7567fea413e4058750f69f2f4064"
+          "payloadHash": "b132f525677da8fc7e18191a116bbadb96a6a5579f056fb5ea315e9ce8013b5b"
         },
         "PN-EITHER-047": {
           "cardId": "PN-EITHER-047",
@@ -2621,7 +2645,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "cbb7a7abb2d33a33f81ecb0dd72bda84b7cc89dacb27ffce7402c42a4c10bb52"
+          "payloadHash": "9eac60e4b2b865baa28936e3441e212aa19bbc40123b821c8124b68e20932972"
         },
         "PN-EITHER-048": {
           "cardId": "PN-EITHER-048",
@@ -2630,7 +2654,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "bc1a983e74d778c27a3767cfed2497aa8dca9293127b32b314f590c1b29f9a63"
+          "payloadHash": "8f2242a7624b1b41e2486ae71a16bfef28782907a7a14d81567b2289ff048eee"
         },
         "PN-EITHER-049": {
           "cardId": "PN-EITHER-049",
@@ -2639,7 +2663,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "6bd19001a59f44dd57253af6cba9145588ffd639ee23445ac6be7133c1a5059e"
+          "payloadHash": "3dc47095626dc820b53e8f3cddba7c1f332d28d6b7be3c06270115d0145ee1d8"
         },
         "PN-EITHER-050": {
           "cardId": "PN-EITHER-050",
@@ -2648,7 +2672,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "20a6f951e46ccfcfb2b121d5ce0351c60bed165482a9467b9edcd71c02b681e5"
+          "payloadHash": "fbc51aea05e8d8f44728011789bb242846a7a082c48013d20e075444bc57e8e1"
         },
         "PN-POINT-001": {
           "cardId": "PN-POINT-001",
@@ -2927,7 +2951,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "91c6aaf04e0d749d38f462647beb7c0cf0951d44760a7a585feae786607eab79"
+          "payloadHash": "6f78ea3a850f1c483ab9e7c2cf3b75c652e2a04386fb8e7893b5c2344f2f0885"
         },
         "PN-POINT-032": {
           "cardId": "PN-POINT-032",
@@ -2936,7 +2960,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "08bc4fb2e40c3b538dbfd0570afb03bd91de527a1d711a02085099276d519861"
+          "payloadHash": "f81e710861671fe403aa5e89136acae61a2267c295db13a6c5a36b64411525e2"
         },
         "PN-POINT-033": {
           "cardId": "PN-POINT-033",
@@ -2945,7 +2969,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7e0e2e81ea78b77b7b712adc7d7bae0c0c9759ec30d3f22e1537bf4b2be2fbb3"
+          "payloadHash": "d233fbfd458eb5d71100efe4cf2b805e89175bd54a12e77a5f5c86903a022247"
         },
         "PN-POINT-034": {
           "cardId": "PN-POINT-034",
@@ -2954,7 +2978,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "0dc524a1ad5d5a5b1e1bb582c8eab149640298cd6479df951902442f5b44ca53"
+          "payloadHash": "7718fd7ccdd6c99f239b49df6ceb338576ba9dafa6987fb4f9edbb8ac995c82a"
         },
         "PN-POINT-035": {
           "cardId": "PN-POINT-035",
@@ -2963,7 +2987,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "75d67a0f04c6bca706311c8e1734b523d75bdb0f851c8d1cda95c25864b63258"
+          "payloadHash": "b2f261e5d9f6172c37a00c07f7a8891f441e5950dc13ffcd84e4f3e5256ec520"
         },
         "PN-POINT-036": {
           "cardId": "PN-POINT-036",
@@ -2972,7 +2996,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "9da4feaa8a377cd37a2666f717c0874bed3ebc63bd7ef329128f1ea232fbb204"
+          "payloadHash": "6d71de4d1157aaf12ba55b50c6740d5c566b56f269f6fbab565200a78f489edc"
         },
         "PN-POINT-037": {
           "cardId": "PN-POINT-037",
@@ -2981,7 +3005,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "07c4fa67c850cc0f1d95143e2b104fe0eec644e15d69ef366a2fa2ff522f9369"
+          "payloadHash": "ab17b6fc9d977a5fadfea69c67400d154622e995bc410fc50b95423e58dbada5"
         },
         "PN-POINT-038": {
           "cardId": "PN-POINT-038",
@@ -2990,7 +3014,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b593e998fbdae98c3019b7b0823f38e20947057a62b5274b5a714e0cc52c5642"
+          "payloadHash": "80a8e32a2ca19df488512ad2ce431b9c77d36fdf1409fe4cbaf4528312f44412"
         },
         "PN-POINT-039": {
           "cardId": "PN-POINT-039",
@@ -2999,7 +3023,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7e39b650117ef3d70bbb95293b46328379eb63991f81b2f986a7467449c3e3e7"
+          "payloadHash": "4418f93d028b89f6c7bec55cd2af75048df9f7f269375c48acd5718d70eb808e"
         },
         "PN-POINT-040": {
           "cardId": "PN-POINT-040",
@@ -3008,7 +3032,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "9fe07b4667a704ff2ae57ef35f39b9c12d2f70f9eb928e90c100295c361361ba"
+          "payloadHash": "b3637bfb3ff769422eebd40278e66154fd8461cec148f7dfabba193472dd1bc7"
         },
         "PN-POINT-041": {
           "cardId": "PN-POINT-041",
@@ -3017,7 +3041,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b02a67ad87c3ea3c0d0d27a56e74a55b250634a178345dccf6a111bc92d9eed2"
+          "payloadHash": "ffe1a442c2b7525ffbb2a1194c1bd83d4adc16982b59dd21f64098e697f4c835"
         },
         "PN-POINT-042": {
           "cardId": "PN-POINT-042",
@@ -3026,7 +3050,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "b7906f1e65ff62d503cb043b16ee4695c321ff24df7ac4400aa7bf31f1e50f46"
+          "payloadHash": "7e8ad1600ffc9e9452ff674ec62e3d3b3deaf6a2c5e4d7a92b386576cd4b1c33"
         },
         "PN-POINT-043": {
           "cardId": "PN-POINT-043",
@@ -3035,7 +3059,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "7d8f7e0b891234725139b9a10c8ca07ab874ad8f87291dc699e97deb9db3c300"
+          "payloadHash": "ee06c7fa459efad0c92258ec1035f4180ace283b9f195c8822527a2d77cfacf7"
         },
         "PN-POINT-044": {
           "cardId": "PN-POINT-044",
@@ -3044,7 +3068,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "919338933874b7dbf50c197b6c52daede8d7eb2b14195a8f7adb54dace6659ea"
+          "payloadHash": "8f55169146f26e619e07d19e58a6ede9de82e1fed75758a76e9b3822428fadd0"
         },
         "PN-POINT-045": {
           "cardId": "PN-POINT-045",
@@ -3053,7 +3077,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "cffd00f1c859c47e69e5d119892b0c507dd8aa2fd38ec7b0cdaf320ab2513fdc"
+          "payloadHash": "4eb9a53d471f423c1610d3e594ab3d40afd3216c67f88cc6acd0c7e184dfa961"
         },
         "PN-POINT-046": {
           "cardId": "PN-POINT-046",
@@ -3062,7 +3086,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "dadf5fbb0a23c75cfa1c91d266d7a8b640d3f1296209c3839ddb94e29c8c91eb"
+          "payloadHash": "bc92719682f9708f442e74f81d0aaa7256dbb75b6bd86c717757895a3053ef83"
         },
         "PN-POINT-047": {
           "cardId": "PN-POINT-047",
@@ -3071,7 +3095,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "786e859c05bd596d146c3ef11be71eab34f01f59760f3e7821e097129e5b8cee"
+          "payloadHash": "a03e915e2ca5a8cca53ada56f5afd6dfb9f4e5b336e442b7ddf9a772a711b6bb"
         },
         "PN-POINT-048": {
           "cardId": "PN-POINT-048",
@@ -3080,7 +3104,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "326031a3a70b6c2eb8c5f1aadf27b9d04e8f3b6ae0dccca444d8f333efba5dff"
+          "payloadHash": "f1b5a1a75c28bd3303dcdac10cb6862cb40ec0fc2f1fffabe4beeadee41c7143"
         },
         "PN-POINT-049": {
           "cardId": "PN-POINT-049",
@@ -3089,7 +3113,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "62b16f6bc97eab9b59efe4e2178b668cd1d8882bec0c53d03e0ae2ffd0950505"
+          "payloadHash": "e97b47e1b2f86971a4fa2014a5ac7681a665bdb6d1434c9f8008d88da3d22dc7"
         },
         "PN-POINT-050": {
           "cardId": "PN-POINT-050",
@@ -3098,7 +3122,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "f3c752ad24499788b317e7c452e3db8d652a1501f356adcfefb455ab2649810d"
+          "payloadHash": "2b692c78a120801e8b2a3bbafd4891aaedd31b5bdc4a819bdc2f096b3622da95"
         },
         "PN-CHEM-001": {
           "cardId": "PN-CHEM-001",
@@ -3377,7 +3401,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "4056e344d5a2163c6f514eadf6e555ddba58371588fe016a66902f04d76ff8f6"
+          "payloadHash": "fc4ba84790398e8bfe60d970099066f37eb92b0e452428ea6fc247662736306f"
         },
         "PN-CHEM-032": {
           "cardId": "PN-CHEM-032",
@@ -3386,7 +3410,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "073d5c9d7b6530994b4c3bcea6dd86667f635c4586c7b2a1a49649e71e09982d"
+          "payloadHash": "72eefbbbb923543652c22be545673214c607e384cae0df4e375fcdcd87a86b11"
         },
         "PN-CHEM-033": {
           "cardId": "PN-CHEM-033",
@@ -3395,7 +3419,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "497360e1364695e3a4f54032825f7e817317417f1904fd4c52a9bad84d84db44"
+          "payloadHash": "b10ed620eb27555f6fa37f4747a92f5783851916598c10da2cae58bb097cff18"
         },
         "PN-CHEM-034": {
           "cardId": "PN-CHEM-034",
@@ -3404,7 +3428,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "6ff2fef987b110cbcb40aefa9e4bb49c9a561dfb1b7fd70bc8fbb3e7e9986126"
+          "payloadHash": "ec8e7a391f60f8741fccaf7be330b8d40457083360eb7e94f21a28fa454e06e3"
         },
         "PN-CHEM-035": {
           "cardId": "PN-CHEM-035",
@@ -3413,7 +3437,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "045a63095d144d1a4f929ffae5916598df9ec2c73188b8facad8f23e52860c1d"
+          "payloadHash": "5ce1a75e19445403fa0143df6e4c3931b26bdc6bee370700e842810551df9472"
         },
         "PN-CHEM-036": {
           "cardId": "PN-CHEM-036",
@@ -3422,7 +3446,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "eff903b2efd52e6e2c10066ff57a8dbe98a3b72dc95eff4c31a0861c7358f6ac"
+          "payloadHash": "444512bd0b7aee8cd6c06f88e494c6f417fb82f52b8336c0ebaf432e920896ec"
         },
         "PN-CHEM-037": {
           "cardId": "PN-CHEM-037",
@@ -3431,7 +3455,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "562f586e6584d1acc129c18b67cbff678c9e4c428b383b1f4e56e1163d594644"
+          "payloadHash": "5eddcbc1e63c32d5d36d66ad247043f0b87915f748a8cc33ccecec3d813893bd"
         },
         "PN-CHEM-038": {
           "cardId": "PN-CHEM-038",
@@ -3440,7 +3464,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "e822122fb69d2bbe035d2d6d99ac32e96bc865212befc92cd2eefae8713243d0"
+          "payloadHash": "6c757047a68c4250812850ef51fd1535d4e097a37f063ff29e1a7b89c8f5666e"
         },
         "PN-CHEM-039": {
           "cardId": "PN-CHEM-039",
@@ -3449,7 +3473,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "5f279e01751e27aee1cf4517cbf57fe84aa8fe4382b65cc42f3eee405067100a"
+          "payloadHash": "c116285d1df6820bf909b821e7cbb72d590e4d9981f1b0a36522ba29bb6261d2"
         },
         "PN-CHEM-040": {
           "cardId": "PN-CHEM-040",
@@ -3458,7 +3482,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "81094e35d70a3788ab7bf7999d4169c733eb967e207e43167a04b280810ebfe3"
+          "payloadHash": "4342ae30faf1cf5a77239656bee2a9cac4fe8698f3d124fc4de83ea00bc68549"
         },
         "PN-CHEM-041": {
           "cardId": "PN-CHEM-041",
@@ -3467,7 +3491,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "dae20ec3440418c180fa59268399d9a7e4c6ed36844ffe5f04b3f977522a9149"
+          "payloadHash": "f01535c5727728d039f355a09fae2307f9221ba4a28438d266601eafafc3ce09"
         },
         "PN-CHEM-042": {
           "cardId": "PN-CHEM-042",
@@ -3476,7 +3500,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "8fc2ce19c6ec7428bd3f57144266c4dbae0bf0d466752ec81d179580b031ea4e"
+          "payloadHash": "042b954759a0d7943f4b4830e9359bc43476fcbb1b7b4ee07ddc46c012f863ea"
         },
         "PN-CHEM-043": {
           "cardId": "PN-CHEM-043",
@@ -3485,7 +3509,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "d9b60e94b15c0c3d2f77bda76334cbeca04c6d17a3295b4b7041f767bae7dc0c"
+          "payloadHash": "0e143e2e84691a880cbae2d9199c6d4efba8093ff9b47b579f1f35f933779a59"
         },
         "PN-CHEM-044": {
           "cardId": "PN-CHEM-044",
@@ -3494,7 +3518,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "eabe00b69bf5f4d28ccdcf81c5b465ab2f55d17aed65a94c84ad3a660d603dc0"
+          "payloadHash": "fec5575b312bd7e8f11c2ba6d8305f1ae47ebfb91aff86988fbcdf374b97f8b1"
         },
         "PN-CHEM-045": {
           "cardId": "PN-CHEM-045",
@@ -3503,7 +3527,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "76da230d2dbd63144925888a94cf74f0acc6398912ce5ecdcb3133f73c43ee3f"
+          "payloadHash": "446be6c63bc980ea6262b07bfd1186c30068778d6d924b4dd852c0dcf2a10451"
         },
         "PN-CHEM-046": {
           "cardId": "PN-CHEM-046",
@@ -3512,7 +3536,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "03590dfb22f6b2426262e8cea76743894de7dd54358e63ccd64806043e8a5927"
+          "payloadHash": "575703e6837dc73c96e267a828d1429bb1913bec191ccd04ef6eff2b581f0ca4"
         },
         "PN-CHEM-047": {
           "cardId": "PN-CHEM-047",
@@ -3521,7 +3545,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "00609375f8fc4cf5937cf10f36bc39414f3cf26d0ff1efd8cb21b34359de1f26"
+          "payloadHash": "9b00e995f9bef52616be9d7a082519bced92e441f976e513a2f63341da499502"
         },
         "PN-CHEM-048": {
           "cardId": "PN-CHEM-048",
@@ -3530,7 +3554,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "772ccd8fb1b61d8fc3406217a18b3d3647e05b4df330cee31471520df1987461"
+          "payloadHash": "0a4b0a6b6103642c6c5c845db2c565f75883069c46adc03161edbd923d74188b"
         },
         "PN-CHEM-049": {
           "cardId": "PN-CHEM-049",
@@ -3539,7 +3563,7 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "2fc01fa46927a48e515a399f76a53a95ec38cd1b7a139ed88f32a8ce4208ebc1"
+          "payloadHash": "f0582776edf6dd68a0f73af90fffd6270061ceb8bbfd9f772efd622145399164"
         },
         "PN-CHEM-050": {
           "cardId": "PN-CHEM-050",
@@ -3548,7 +3572,223 @@
           "machineVerdict": "SUSPECT",
           "humanBarFit": "UNREVIEWED",
           "metadataStatus": "legacy",
-          "payloadHash": "bd451e023e7b944991c6de57bc63798dd483af37b22d41dea9637b08a303bfca"
+          "payloadHash": "00ba0965bf1f65817bdd249507d111f424cd56663f4c244690a559bbf7b95a27"
+        },
+        "PN-TRUTH-201": {
+          "cardId": "PN-TRUTH-201",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "1d8f178c35f0ce9323830c970ea1551bae76bb97bf936d83d8521211240ddf8f"
+        },
+        "PN-TRUTH-202": {
+          "cardId": "PN-TRUTH-202",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "bef8eeb059f64c935ef20e84ae2dad6d04ae90fd90188dc6a6166daaed6f7290"
+        },
+        "PN-TRUTH-203": {
+          "cardId": "PN-TRUTH-203",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0d17da2616bb9991c15d5467e4fb18ca8e0e20247215f4c3ffa2537a23f71299"
+        },
+        "PN-TRUTH-204": {
+          "cardId": "PN-TRUTH-204",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0c7807e5c53d91176fa662e150bd0ec13683b804c0afbb80aad216522b368cee"
+        },
+        "PN-TRUTH-205": {
+          "cardId": "PN-TRUTH-205",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0430deb9adfc36c482e573c1b13fbf4261b1cb76aae18b189f45149fb5e894ac"
+        },
+        "PN-TRUTH-206": {
+          "cardId": "PN-TRUTH-206",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "4bdc378fd1230424a9ce81b4bde8898a70884e1499f51f6b3c0c7aa0db0cc239"
+        },
+        "PN-TRUTH-207": {
+          "cardId": "PN-TRUTH-207",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "01ac87b1960ffe87af5b95ffe9b24b32a251e03e71cfa823ea2b5b28b8e5301f"
+        },
+        "PN-TRUTH-208": {
+          "cardId": "PN-TRUTH-208",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0e200ccd7b5770d8910405edc64fb0af071f144464c0c64e83b361766c34cc51"
+        },
+        "PN-TRUTH-209": {
+          "cardId": "PN-TRUTH-209",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "ba5703f946d7080f5db9d8a350bc214cc996a4a9b4942917b9c95304b68dee07"
+        },
+        "PN-TRUTH-210": {
+          "cardId": "PN-TRUTH-210",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a37b89f97e7d939a8fbf19380da05935a607294f4682b3e36e825e1e485e6daa"
+        },
+        "PN-TRUTH-211": {
+          "cardId": "PN-TRUTH-211",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "05d72f0aa1596cd28f26e459959b0f92d4aaaa43ba2f1d3f0276fb80426a80a2"
+        },
+        "PN-TRUTH-212": {
+          "cardId": "PN-TRUTH-212",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "8c8210d7dffca41e79ecbdd9786ffa53bd7c5965c1dc7228c716908d1131b8a5"
+        },
+        "PN-TRUTH-213": {
+          "cardId": "PN-TRUTH-213",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "ea6876a5d3d49011bb07aafa240362521a9bce339f7b4e1b58a4c6a91294d570"
+        },
+        "PN-TRUTH-214": {
+          "cardId": "PN-TRUTH-214",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "33b258caf89938e1c6656b139fcf60c285f7c2fa0e234f44fe470ce05d66d714"
+        },
+        "PN-TRUTH-215": {
+          "cardId": "PN-TRUTH-215",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "790c4b7cd2b3edefa885e08e1335e3aa33329b9b28ff75debadd4e65b6bfc764"
+        },
+        "PN-TRUTH-216": {
+          "cardId": "PN-TRUTH-216",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6d9e69ead9bdee9f5e6a5e0f2dae7de8c8c91913041c886ddf53bcdb4a54b1a7"
+        },
+        "PN-TRUTH-217": {
+          "cardId": "PN-TRUTH-217",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "28521d660da4c3856af0bea448092e2986fac146f307881949480bc4dea36f18"
+        },
+        "PN-TRUTH-218": {
+          "cardId": "PN-TRUTH-218",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "32127f08fca68ddc2371a64dfcd5295135eab2248c75d81bff32d428967ed614"
+        },
+        "PN-TRUTH-219": {
+          "cardId": "PN-TRUTH-219",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "703bf87e5c599f4e9ce2bf6354885c6aae4c54b998d30f4f6cb5b09cf51b724b"
+        },
+        "PN-TRUTH-220": {
+          "cardId": "PN-TRUTH-220",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6f05a7b72e6217a238d1481ca9fb7154f31c381e469a974b773394f8c07eae14"
+        },
+        "PN-TRUTH-221": {
+          "cardId": "PN-TRUTH-221",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "4cc423a72fa196cbbbc44a9611f9f260d5ae05a880b698da1572646c684f7bbf"
+        },
+        "PN-TRUTH-222": {
+          "cardId": "PN-TRUTH-222",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "75c280b21a2b03c3843ca03568aef6c64945e7dfc29219f00442c52a3e527e59"
+        },
+        "PN-TRUTH-223": {
+          "cardId": "PN-TRUTH-223",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "f9dfabe1c595aaf164a7e5fd73cf0d3f1e5e4f0a9fc09683ffbfdc028e130b5c"
+        },
+        "PN-TRUTH-224": {
+          "cardId": "PN-TRUTH-224",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "2030b66546fdf69f643dab3c4e2d3cd7af175ab70eafc9bd54c783876701affe"
         },
         "PN-EXPAND-001": {
           "cardId": "PN-EXPAND-001",
@@ -3912,11 +4152,11 @@
         }
       },
       "counts": {
-        "total": 390,
-        "mainline": 350,
+        "total": 414,
+        "mainline": 374,
         "expansion": 40,
         "legacyMetadata": 390,
-        "auditedMetadata": 0
+        "auditedMetadata": 24
       }
     },
     "formalFixed": {
@@ -3930,14 +4170,39 @@
         "reviewed = true（真实人工审查完成，不得由 metadata 齐全或 machineVerdict 推高）",
         "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）"
       ],
-      "snapshotHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "allowedCardIds": [],
+      "snapshotHash": "bc129ccdc74ee80d7c3c9ea8c05f9575898585074b244ff011558d89fc472cc0",
+      "allowedCardIds": [
+        "PN-TRUTH-201",
+        "PN-TRUTH-202",
+        "PN-TRUTH-203",
+        "PN-TRUTH-204",
+        "PN-TRUTH-205",
+        "PN-TRUTH-206",
+        "PN-TRUTH-207",
+        "PN-TRUTH-208",
+        "PN-TRUTH-209",
+        "PN-TRUTH-210",
+        "PN-TRUTH-211",
+        "PN-TRUTH-212",
+        "PN-TRUTH-213",
+        "PN-TRUTH-214",
+        "PN-TRUTH-215",
+        "PN-TRUTH-216",
+        "PN-TRUTH-217",
+        "PN-TRUTH-218",
+        "PN-TRUTH-219",
+        "PN-TRUTH-220",
+        "PN-TRUTH-221",
+        "PN-TRUTH-222",
+        "PN-TRUTH-223",
+        "PN-TRUTH-224"
+      ],
       "counts": {
-        "total": 0,
-        "mainline": 0,
+        "total": 24,
+        "mainline": 24,
         "expansion": 0,
         "legacyMetadata": 0,
-        "auditedMetadata": 0
+        "auditedMetadata": 24
       },
       "rejectedFromFormal": {
         "total": 390,
@@ -3955,8 +4220,8 @@
     "contentVersion": "content-v2.3",
     "legacyReviewStage": "machine-prescreen",
     "barFitSource": "lib/v2-content/bar-fit-input.ts lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput（正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染））→ bar-fit.ts judgeBarFit → provenance.machineVerdict（机器预筛，非双人模拟噪声计时）；provenance.humanBarFit 机器阶段恒 UNREVIEWED；text-only 扫描为 forensic，不参与 admission",
-    "humanReviewSource": "(none：尚无人工审查产物输入)",
-    "humanReviewedAt": "(none)",
+    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变）",
+    "humanReviewedAt": "2026-09-28T15:10:00Z",
     "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（真实人工审查）∧ provenance/hash 完整；无任何宽松开关",
     "ssotMainlineSha256": "6b6c43f870fe22a86c98423db483cc99734090b1f70c48c31dc3fc6b47c75f33",
     "ssotExpansionSha256": "01ff77acd8eb2f53166a9da84aa403c6a49902e3a6e7a0104f4ea83d9f4c5b8d",

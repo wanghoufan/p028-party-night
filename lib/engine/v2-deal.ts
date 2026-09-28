@@ -7,16 +7,16 @@
  * 关系态喂给编排器，并把结果写回 Session：
  * - `bucket/pack/global` 三层全部从**本局牌堆**（SSOT 主线 + AI/自定义补位卡）算，保证抽到的卡
  *   一定能在 `deckSnapshot` 里渲染（离线可玩、AI/自定义卡不被丢弃）。
- * - 卡面的 Heat 档 / Pair 目标 gating 来自 V1.3 Frozen SSOT 元数据（`getV2ContentAdapter().cardById`）；
- *   非 SSOT 卡（旧 seed / AI / 自定义）没有 Heat 与 Pair 元数据，不做这两项 gating。
+ * - 卡面的 Heat 档 / Pair 目标 gating 来自主线卡运行期元数据
+ *   （`v2-card-bridge.ts` 的 `mainlineCardMetaById`：SSOT adapter 优先，第一包正式内容兜底）；
+ *   非主线卡（旧 seed / AI / 自定义）没有 Heat 与 Pair 元数据，不做这两项 gating。
  * - 这里不 import、也不调用 `lib/engine/card-selector`（旧加权 selector）——V1.6 出卡路径生产不可达。
  */
 
 import type { GameCard, GameSession, Player, RoundDisclosureSignal, RoundHistory } from "@/lib/domain/schemas";
 import { ROUND_DISCLOSURE_RESULT_KEY, roundDisclosureSignalSchema } from "@/lib/domain/schemas";
-import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { isFormalFixedCard } from "@/lib/v2-content/fixed-content-manifest";
-import { EXPANSION_PACK_ID, isV2MainlinePack } from "@/lib/v2-content/v2-card-bridge";
+import { EXPANSION_PACK_ID, isV2MainlinePack, mainlineCardMetaById } from "@/lib/v2-content/v2-card-bridge";
 import { metadataForCard } from "@/lib/v2-content/v2-card-quality-index";
 import { isRecentlyRejected } from "./card-eligibility";
 import { diffPlayerRoster, normalizeParticipants } from "@/lib/v2-relationship/v2-participants";
@@ -69,9 +69,17 @@ const heatRank = (heat: RelationshipState["heat"]): number => HEAT_ORDER.indexOf
 /** 只认「全桌」目标模式的卡：Guard 的非定向轮与无合法 pair 的降级局都只出这类卡。 */
 const ALL_PLAYERS_TARGET_MODE = "all-players";
 
-/** SSOT 主线卡的 Heat 档/Pair 目标元数据；非 SSOT 卡返回 undefined（不做这两项 gating）。 */
+/**
+ * 主线卡的 Heat 档 / Pair 目标元数据；非主线卡（旧 seed / AI / 自定义）返回 undefined
+ * （不做这两项 gating）。
+ *
+ * 取数走 `mainlineCardMetaById`（桥接内容真源出口）：SSOT adapter 优先，第一包正式内容
+ * （`formal-truth-pack`，走 sidecar 不进冻结 SSOT）兜底 —— 保证第一包卡的 `targetMode` /
+ * `matchRequired` / `heatMin` 与 SSOT 卡**同口径生效**，Single-Anchor Guard 的非定向轮
+ * 不会因为 adapter 查不到而漏放行定向卡。
+ */
 function ssotMeta(cardId: string) {
-  return getV2ContentAdapter().cardById(cardId);
+  return mainlineCardMetaById(cardId);
 }
 
 function heatEligible(card: GameCard, input: V2RouterInput): boolean {
