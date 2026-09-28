@@ -76,8 +76,11 @@ export const RECOGNITION_MIN_PERSON_TOPICS = 3 as const;
 export const RECOGNITION_MIN_DISCLOSED_CANDIDATES = 2 as const;
 
 /**
- * 中途/最终互选的最低 Heat（Plan §7.2「Heat≥H3」）。
+ * **中途（常规）互选**的最低 Heat（Plan §7.2「Heat≥H3」）。
  * 窗口 12–14 天然落在 H3/H4，仍显式校验，避免换成别的窗口时漏门。
+ *
+ * 仅约束中途互选；**最终互选**的最低 Heat **尚未冻结**（继续留空，见
+ * `mutualFinalCheckTrigger` 的 `HEAT / TIMING` 占位），不得由本常量推断最终互选门槛。
  */
 export const MUTUAL_MIN_HEAT: Heat = "H3" as const;
 

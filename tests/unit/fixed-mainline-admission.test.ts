@@ -164,9 +164,16 @@ describe("新牌堆（快照创建 / 每轮补位）只收当前冻结固定库�
     expect(seeded.map((card) => card.id)).toEqual([seedCard.id]);
   });
 
-  it("自定义卡仍能进新牌堆（第二条路不被准入门打死）", () => {
-    const deck = buildPlayableDeck({ cards: [] }, config({ enabledPackIds: ["truth-dare"] }), 20, [customCard]);
-    expect(deck.some((card) => card.id === customCard.id && card.source === "custom")).toBe(true);
+  it("自定义卡只在 Custom self-mode 进新牌堆；内置玩法局不被 custom 混入（Plan A）", () => {
+    // Custom self-mode：本局只请求自定义玩法（enabledPackIds 全是自定义包）⇒ 只出 custom 卡。
+    const selfModeCard = { ...customCard, packId: "custom-pack" };
+    const customDeck = buildPlayableDeck({ cards: [] }, config({ enabledPackIds: ["custom-pack"] }), 20, [selfModeCard]);
+    expect(customDeck.some((card) => card.id === selfModeCard.id && card.source === "custom")).toBe(true);
+    expect(customDeck.some((card) => card.source === "builtin")).toBe(false);
+    // 内置玩法局：即便 caller 传了带自己 packId 的 customCards，也不得混进正式 snapshot 池。
+    const builtinDeck = buildPlayableDeck({ cards: [] }, config({ enabledPackIds: ["truth-dare"] }), 20, [selfModeCard]);
+    expect(builtinDeck.some((card) => card.source === "custom")).toBe(false);
+    expect(builtinDeck.every((card) => card.source === "builtin")).toBe(true);
   });
 });
 

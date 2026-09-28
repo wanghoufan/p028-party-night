@@ -53,13 +53,15 @@ describe("pack enablement", () => {
     expect(preference?.disabledPackIds).toEqual(["spin-bottle"]);
   });
 
-  it("自定义玩法按自身 enabled 参与混合候选", async () => {
+  it("自定义玩法按自身 enabled 独立可用，但不进 AI 组局候选（Plan A）", async () => {
     await gamePackRepository.save(customPack("custom-on", true));
     await gamePackRepository.save(customPack("custom-off", false));
 
     const mixed = await loadMixedCandidatePackIds();
 
-    expect(mixed).toContain("custom-on");
+    // 自定义包退出 Mixed 正式组局：无论 enabled 与否都不出现在混合候选里
+    expect(mixed).toEqual(realBuiltinIds);
+    expect(mixed).not.toContain("custom-on");
     expect(mixed).not.toContain("custom-off");
   });
 
@@ -83,15 +85,19 @@ describe("强制留一（R-054 / R-055）", () => {
     expect(LAST_PACK_MESSAGE).toContain("至少保留一个玩法");
   });
 
-  it("关掉最后一个自定义候选同样被拒绝，enabled 保持 true", async () => {
+  it("自定义玩法不能给 AI 组局续命：关掉最后一个内置候选仍被拒绝，自定义自己可关", async () => {
     await gamePackRepository.save(customPack("custom-only", true));
-    for (const id of realBuiltinIds) expect((await setPackPlayability(id, false)).ok).toBe(true);
+    for (const id of realBuiltinIds.slice(0, -1)) expect((await setPackPlayability(id, false)).ok).toBe(true);
 
-    const rejected = await setPackPlayability("custom-only", false);
+    // Plan A：只剩最后一个内置玩法时，自定义开着也不能把它关掉（自定义已退出 AI 组局）
+    const rejected = await setPackPlayability(realBuiltinIds.at(-1)!, false);
+    expect(rejected).toEqual({ ok: false, reason: "last-pack", disabledPackIds: realBuiltinIds.slice(0, -1) });
+    expect(await loadMixedCandidatePackIds()).toEqual([realBuiltinIds.at(-1)]);
 
-    expect(rejected.ok).toBe(false);
-    expect((await gamePackRepository.get("custom-only"))?.enabled).toBe(true);
-    expect(await loadMixedCandidatePackIds()).toEqual(["custom-only"]);
+    // 自定义自己可以关：它不参与 AI 组局，关掉不影响混合候选
+    expect((await setPackPlayability("custom-only", false)).ok).toBe(true);
+    expect((await gamePackRepository.get("custom-only"))?.enabled).toBe(false);
+    expect(await loadMixedCandidatePackIds()).toEqual([realBuiltinIds.at(-1)]);
   });
 
   it("快速连点/并发关闭不会短暂落成零候选", async () => {
@@ -104,14 +110,12 @@ describe("强制留一（R-054 / R-055）", () => {
     expect(await loadMixedCandidatePackIds()).toEqual([last]);
   });
 
-  it("内置与自定义合并计数：还有一个自定义开着就能继续关内置", async () => {
+  it("内置与自定义不合并计数：自定义开着也不能关掉最后一个内置玩法（Plan A）", async () => {
     await gamePackRepository.save(customPack("custom-last", true));
-    for (const id of realBuiltinIds) {
-      const result = await setPackPlayability(id, false);
-      expect(result.ok).toBe(true);
-    }
+    for (const id of realBuiltinIds.slice(0, -1)) expect((await setPackPlayability(id, false)).ok).toBe(true);
 
-    expect(await loadMixedCandidatePackIds()).toEqual(["custom-last"]);
-    expect((await setPackPlayability("custom-last", false)).ok).toBe(false);
+    const rejected = await setPackPlayability(realBuiltinIds.at(-1)!, false);
+    expect(rejected.ok).toBe(false);
+    expect(await loadMixedCandidatePackIds()).toEqual([realBuiltinIds.at(-1)]);
   });
 });

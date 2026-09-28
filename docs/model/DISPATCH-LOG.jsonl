@@ -217,3 +217,7 @@
 {"date":"2026-09-28","task":"QA-2 复验(未落盘)","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"FAIL","note":"流程误读停等supervisor"}
 {"date":"2026-09-28","task":"QA-3 复验收尾并落盘","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
 {"date":"2026-09-28","task":"NF-1 neat-freak 残留清理+文档事实对齐","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"Human授权：残留清理不用问，自行判定"}
+{"date":"2026-09-28","task":"B3-16 关闭 buildPlayableDeck Custom 混轨","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"Human 方案A，不讨论B/C"}
+{"date":"2026-09-28","task":"B3-17 final Mutual 两尾巴","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"HEAT/TIMING 继续TBD"}
+{"date":"2026-09-28","task":"CR-2 code-reviewer 复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
+{"date":"2026-09-28","task":"QA-4 全量门禁+专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}

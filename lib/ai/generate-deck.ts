@@ -25,6 +25,10 @@ export interface GeneratedDeckRequest {
   sessionConfig: SessionConfig;
   sessionId: string;
   targetCardCount?: number;
+  /**
+   * 主持人已启用的自定义题卡。**只在 Custom self-mode（本局只请求自定义玩法、无任何内置/AI 卡）
+   * 时才会进堆**；正式 / Local / Fixed 路径一律不并入（Plan A，见 `buildPlayableDeck`）。
+   */
   customCards?: GameCard[];
   /** 分块进度回调（仅自包含直连链使用；服务器 /api 模式忽略）。 */
   onProgress?: (progress: DeckBatchProgress) => void;
@@ -48,7 +52,20 @@ export function buildPlayableDeck(raw: unknown, config: SessionConfig, targetCou
   // 都无法只凭「不是 AI」把快照外 ID 混进正式快照。
   const local = playable(fixedContentCards(localMainlineCards()).filter((card) => config.enabledPackIds.includes(card.packId)), config);
   const allowedCustom = playable(customCards.filter((card) => config.enabledPackIds.includes(card.packId)), config);
-  const pool = filterMainlineCards(dedupeCards([...allowedAI, ...allowedCustom, ...local]));
+  // Plan A（Human 2026-09-28 已定）：自定义包是**独立玩法**，不得与正式 snapshot（及 AI）同堆混装。
+  // 先判定本局是不是「只请求自定义玩法」（Custom self-mode）：启用集合非空且**全部**是自定义包。
+  // 不看 `mode`——自定义单玩 / 随机启动器落到自定义包时可能是 single，历史落库数据也可能是 mixed。
+  const customPackIds = new Set(customCards.map((card) => card.packId));
+  const customSelfMode = config.enabledPackIds.length > 0
+    && config.enabledPackIds.every((id) => customPackIds.has(id));
+  // 两条轨各自成池，建堆**二选一**，绝不并堆：
+  // - `builtinPool`：内置固定库快照 + 允许的 AI —— 正式 / Local / Fixed 路径唯一的取卡池；
+  // - `customPool`：只认 `source === "custom"`（AI 卡即便混进 customCards 也不认，Plan §13）；
+  // - Custom self-mode ⇒ 只取 `customPool`：不自动混入 PN-* / snapshot / AI；
+  // - 其余（正式 / Local / Fixed 路径）⇒ 只取 `builtinPool`：customCards 一张不进。
+  const builtinPool = filterMainlineCards(dedupeCards([...allowedAI, ...local]));
+  const customPool = filterMainlineCards(dedupeCards(allowedCustom)).filter((card) => card.source === "custom");
+  const pool = customSelfMode ? customPool : builtinPool;
   // 按启用玩法 round-robin 轮流取牌：每轮每个玩法各取一张，先保证 7 个玩法都有份，再轮到第二轮；
   // 避免单玩法（或 AI 一整包）把 targetCount 填满、其余玩法一张都进不来。总量仍为 targetCount。
   const byPack = new Map<string, GameCard[]>();

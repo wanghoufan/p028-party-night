@@ -22,6 +22,8 @@ const customPack = (id: string, enabled: boolean, minPlayers = 2): CustomGamePac
 });
 
 const builtinIds = BUILTIN_GAME_PACKS.map((pack) => pack.id);
+/** 内置真实玩法（启动器不出题卡，不算候选）。 */
+const realBuiltinIds = builtinIds.filter((id) => id !== "ai-improv");
 
 describe("main-session pack switcher candidates", () => {
   it("offers every registered pack the active players can support", () => {
@@ -64,8 +66,9 @@ describe("main-session pack switcher candidates", () => {
   });
 
   it("returns the mixed candidates AI dealing may use (launcher itself excluded)", () => {
-    expect(mixedCandidatePackIds([])).toEqual(builtinIds.filter((id) => id !== "ai-improv"));
-    expect(mixedCandidatePackIds([customPack("custom-on", true), customPack("custom-off", false)])).toEqual([...builtinIds.filter((id) => id !== "ai-improv"), "custom-on"]);
+    expect(mixedCandidatePackIds([])).toEqual(realBuiltinIds);
+    // Plan A：自定义玩法退出 Mixed 正式组局，即便 enabled 也不进候选（快照卡不会被自定义卡混装）。
+    expect(mixedCandidatePackIds([customPack("custom-on", true), customPack("custom-off", false)])).toEqual(realBuiltinIds);
   });
 
   it("开关只圈混合候选：主局 switcher 与主动切换照样能选到被关闭的玩法（R-057）", () => {
@@ -110,12 +113,13 @@ describe("混合候选与直选拦截按在场人数过滤", () => {
     expect(mixedCandidatePackIds([])).toContain("most-likely");
   });
 
-  it("自定义玩法同样按人数收口，且仍受关闭名单影响", () => {
+  it("自定义玩法退出 Mixed 候选：无论人数 / 关闭名单都不进 AI 组局池（Plan A）", () => {
     const custom = [customPack("custom-big", true, 5), customPack("custom-small", true, 2)];
     const ids = mixedCandidatePackIds(custom, [], 2);
     expect(ids).not.toContain("custom-big");
-    expect(ids).toContain("custom-small");
-    expect(mixedCandidatePackIds(custom, ["custom-small"], 2)).not.toContain("custom-small");
+    expect(ids).not.toContain("custom-small");
+    // 逐个走各自单玩 / 切换入口时仍可用（独立的可玩集合），只是不进混合组局。
+    expect(listSwitchablePacks(createSession(config(), BUILTIN_SEED_CARDS), custom).map((pack) => pack.id)).toContain("custom-small");
   });
 
   it("packMinPlayersNotice：人数不够给一句「至少需要 N 人」拦截文案", () => {

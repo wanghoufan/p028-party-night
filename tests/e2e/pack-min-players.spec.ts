@@ -60,7 +60,7 @@ test("2 人局的 AI 组局候选不再包含 3 人玩法（人数回收到 3 �
   await page.getByLabel("减少玩家").click();
   await page.getByLabel("减少玩家").click();
   await page.getByLabel("减少玩家").click();
-  // 2 人：7 个真实玩法里的 pointing-game / most-likely 被剔除（含自定义在内共 5 个内置候选）。
+  // 2 人：7 个内置真实玩法里的 pointing-game / most-likely 被剔除，剩 5 个内置候选（自定义玩法不参与 AI 组局）。
   await expect(page.locator(".setup-mixed-count")).toContainText("5 个玩法");
 
   // 加回 1 人（3 人局）即恢复 7 个候选——门槛只跟在场人数走，不是永久禁用。

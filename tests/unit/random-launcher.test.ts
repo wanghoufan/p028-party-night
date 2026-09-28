@@ -36,11 +36,12 @@ describe("random launcher candidates", () => {
     expect(listLauncherTargets()).not.toContain(LAUNCHER);
   });
 
-  it("收纳已启用自定义玩法、忽略未启用自定义；开关只圈混合候选，不缩随机池（R-057）", () => {
+  it("收纳已启用自定义玩法、忽略未启用自定义；随机池与 AI 组局候选分家（R-057 + Plan A）", () => {
     const custom = [customPack("custom-on", true, 2, "2026-01-01T00:00:00.000Z"), customPack("custom-off", false)];
+    // 随机启动器照旧收纳已启用自定义（自定义＝独立玩法入口）
     expect(listLauncherTargets(custom)).toEqual([...REAL_PACK_IDS, "custom-on"]);
-    // 「随机玩一个」不吃开关：禁用名单只影响 mixedCandidatePackIds
-    expect(mixedCandidatePackIds(custom, ["truth-dare"])).toEqual([...REAL_PACK_IDS.filter((id) => id !== "truth-dare"), "custom-on"]);
+    // Plan A：自定义包退出 AI 组局候选；禁用名单只影响 mixedCandidatePackIds，不缩随机池
+    expect(mixedCandidatePackIds(custom, ["truth-dare"])).toEqual(REAL_PACK_IDS.filter((id) => id !== "truth-dare"));
     expect(listLauncherTargets(custom)).toContain("truth-dare");
   });
 

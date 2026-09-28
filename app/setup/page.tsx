@@ -55,11 +55,11 @@ function SetupPageContent() {
     void gamePackRepository.list().then(setCustomPacks);
   }, []);
 
-  // 最终混合候选（R-059）：内置真实玩法（未关闭）+ 已启用自定义，去重、规范顺序——UI 的 N 与落库的 config 同源。
+  // 最终混合候选（R-059）：内置真实玩法（未关闭），去重、规范顺序——UI 的 N 与落库的 config 同源。
+  // Plan A：自定义包是独立玩法，不参与 AI 组局（见 mixedCandidatePackIds），因此这里不再计入自定义。
   // 再按在场人数收口（AI-MATRIX-PLAN §1）：人数不够的玩法不进 AI 组局候选，否则会生成 0 张卡（卡被 safety-filter 按 minPlayers 全滤掉）。
   const activePlayerCount = players.filter((player) => player.active).length;
   const mixedPackIds = mixedCandidatePackIds(customPacks, disabledPackIds, activePlayerCount);
-  const mixedCustomCount = mixedPackIds.filter((id) => customPacks.some((pack) => pack.definition.id === id)).length;
   const playablePackIds = listManualPlayablePacks(customPacks).map((pack) => pack.id);
   // 直选玩法的人数门槛（首页玩法卡 → `/setup?pack=…` 这条路径也走这里）：人数不够就只提示、绝不进生成页。
   const targetPackNotice = targetPack ? packMinPlayersNotice(targetPack, activePlayerCount, customPacks) : undefined;
@@ -114,7 +114,7 @@ function SetupPageContent() {
         <RelationshipSelector value={relationship} onChange={setRelationship} />
         <VibeSelector value={vibes} onChange={setVibes} />
         <IntensitySelector value={intensity} onChange={setIntensity} />
-        {!targetPack && <p className="setup-mixed-count">本局 AI 组局候选：<strong>{mixedPackIds.length}</strong> 个玩法{mixedCustomCount ? `（含自定义 ${mixedCustomCount} 个）` : ""}</p>}
+        {!targetPack && <p className="setup-mixed-count">本局 AI 组局候选：<strong>{mixedPackIds.length}</strong> 个玩法</p>}
         <Button className="sticky-cta" type="button" onClick={next} disabled={Boolean(startBlockedNotice)}>下一步：雷区设置 →</Button>
       </main>
       <BottomTabBar />

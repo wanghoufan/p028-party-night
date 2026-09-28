@@ -103,7 +103,7 @@ test("至少保留一个玩法：关掉最后一个被拒绝、开关保持开�
   expect(await countSessions(page)).toBe(0);
 });
 
-test("setup 显示最终 mixed 候选 N（含自定义玩法）", async ({ page }) => {
+test("setup 显示最终 mixed 候选 N（自定义玩法退出 AI 组局，不计入 N）", async ({ page }) => {
   // 先在游戏包里关掉一个内置玩法：N 应当跟着 AI 组局候选走
   await disablePack(page, "转瓶子");
 
@@ -115,6 +115,6 @@ test("setup 显示最终 mixed 候选 N（含自定义玩法）", async ({ page 
   await expect(page.getByRole("heading", { name: "我的游戏包" })).toBeVisible();
 
   await page.goto("/setup");
-  // 7 个内置真实玩法 - 1 个被关闭 + 1 个自定义
-  await expect(page.locator(".setup-mixed-count")).toHaveText("本局 AI 组局候选：7 个玩法（含自定义 1 个）");
+  // 7 个内置真实玩法 - 1 个被关闭 = 6；自定义玩法是独立玩法，不进 AI 组局候选
+  await expect(page.locator(".setup-mixed-count")).toHaveText("本局 AI 组局候选：6 个玩法");
 });

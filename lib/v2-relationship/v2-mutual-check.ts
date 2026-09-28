@@ -87,6 +87,8 @@ export interface MutualCheckTriggerInput {
   /**
    * D8=A+｜是否处于 Host 耗尽决策等待态（`v2Orchestration.awaitingHostDecision`）。
    * true = 实时阻断本次弹窗（不弹、不空转）；属「暂时被挡」，不写永久放弃标志。
+   * 中途（`mutualCheckTrigger`）与最终（`mutualFinalCheckTrigger`）**共用本输入与同一 reason**
+   * （`awaiting-host-decision`），两者都为 true 时实时阻断。
    * 缺省 `undefined` = 与加该输入前逐条一致（非等待态）。
    */
   awaitingHostDecision?: boolean;
@@ -153,6 +155,10 @@ export function mutualCheckTrigger(input: MutualCheckTriggerInput): MutualCheckT
  * 但同样要求 Session RUNNING、有合法候选 pair，且认识阈值已达
  * （「至少两名实际候选各有本人披露」按**此刻合法候选**判定）。
  *
+ * D8=A+｜与中途互选同一口径：`awaitingHostDecision === true` 时实时阻断（`due=false`，
+ * reason=`awaiting-host-decision`），属「暂时被挡」而非永久放弃——本函数是纯判定，
+ * 不写任何 abandoned 标志。
+ *
  * Step 3（2026-09-28 Human 决策）：最终互选当前**只做技术能力**，不替 Human 冻结 Heat。
  * - 原写死的 `Heat>=H3`（`MUTUAL_MIN_HEAT`）已**移除**，Heat **不参与**最终互选判定；
  * - 最终互选 Heat / 最终时点**继续留空**，等后续 Monte Carlo + Human Gate 冻结
@@ -163,6 +169,11 @@ export function mutualFinalCheckTrigger(input: MutualCheckTriggerInput): MutualC
   const pairMode = pairModeFor(input.participants);
   if (pairMode !== "ACTIVE") {
     return { due: false, checkpoint: null, pairMode, reason: "no-eligible-pair" };
+  }
+  /* D8=A+｜Host 耗尽决策等待态 → 实时阻断（与中途互选同 reason；纯判定，不写 abandoned）。
+   * 顺序与 `mutualCheckTrigger` 一致：awaiting 先于 sessionStatus，pairMode 先于两者。 */
+  if (input.awaitingHostDecision === true) {
+    return { due: false, checkpoint: null, pairMode, reason: "awaiting-host-decision" };
   }
   if (input.sessionStatus !== "active" || input.privateFlowRunning === true) {
     return { due: false, checkpoint: null, pairMode, reason: "session-not-running" };

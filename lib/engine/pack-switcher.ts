@@ -25,13 +25,19 @@ export function listManualPlayablePacks(customPacks: CustomGamePack[] = []): Gam
 }
 
 /**
- * 混合候选（AI 组局出题池）：手工可玩集合去掉被关闭的玩法。
+ * 混合候选（AI 组局出题池）：手工可玩集合去掉被关闭的玩法，**并剔除自定义包**。
  * 游戏包里的开关只圈这一层——「关闭则不加入 AI 组局」，不影响首页单玩、随机启动器与主局切换（R-051/R-054）。
  * playerCount 给定时再按在场人数收口（AI-MATRIX-PLAN §1 同口径）：人数不够的玩法不进候选，
  * 否则选它会生成 0 张卡（卡被 `filterCards` 按 minPlayers 全滤掉）。缺省＝不按人数过滤（保留全局开关口径）。
+ *
+ * Plan A（Human 2026-09-28 已定）：**自定义包退出 Mixed 正式组局**，只保留独立 Custom / self-mode。
+ * 自定义包的 `enabled` 只决定它是否作为一个独立玩法被单玩 / 主局切换 / 随机启动器选中
+ * （见 `listManualPlayablePacks`），不再进入 AI 组局的取卡池——否则 `buildPlayableDeck` 会把
+ * 自定义卡与内置 snapshot 卡混进同一副牌堆（B3-14 实测 mixed 40 张 = snapshot 39 + custom 1）。
  */
 export function mixedCandidatePackIds(customPacks: CustomGamePack[] = [], disabledPackIds: string[] = [], playerCount?: number): string[] {
   return listManualPlayablePacks(customPacks)
+    .filter((definition) => definition.source !== "custom")
     .filter((definition) => playerCount === undefined || resolvePackCapability(definition).minPlayers <= playerCount)
     .map((definition) => definition.id)
     .filter((id) => !disabledPackIds.includes(id));

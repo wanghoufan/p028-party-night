@@ -49,6 +49,7 @@ import {
   mutualCandidateIds,
   mutualCheckFinalEvents,
   mutualCheckTrigger,
+  mutualFinalCheckTrigger,
   submitMutualChoice,
 } from "@/lib/v2-relationship/v2-mutual-check";
 import { normalizeParticipants } from "@/lib/v2-relationship/v2-participants";
@@ -192,6 +193,17 @@ const triggerOf = (
   extra: Partial<Parameters<typeof mutualCheckTrigger>[0]> = {},
 ) =>
   mutualCheckTrigger({
+    relationship: relationshipOf(session),
+    participants: normalizeParticipants(session.participants, session.config.players),
+    sessionStatus: session.status,
+    ...extra,
+  });
+
+const finalTriggerOf = (
+  session: GameSession,
+  extra: Partial<Parameters<typeof mutualFinalCheckTrigger>[0]> = {},
+) =>
+  mutualFinalCheckTrigger({
     relationship: relationshipOf(session),
     participants: normalizeParticipants(session.participants, session.config.players),
     sessionStatus: session.status,
@@ -508,5 +520,75 @@ describe("B3-8｜count=14 midMutualCheckAbandoned 完整前置条件覆盖", () 
     }
     injectAuditedMetadata();
     expect(metadataForCard(DECK[0]!.id)).toEqual(auditedFieldsAt(0));
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* B3-17｜final Mutual 的 awaiting 实时阻断（Step 3 尾巴，Human 7.1）         */
+/* ------------------------------------------------------------------ */
+
+describe("B3-17｜final Mutual awaiting 实时阻断（同 reason、不置 abandoned）", () => {
+  it("① awaiting=false 且资格满足 → final due=true（技术能力仍在，未接 App 结束流程）", () => {
+    injectAuditedMetadata();
+    const session = driveEffectiveRounds(newSession(), 14);
+    expect(countOf(session)).toBe(14);
+    expect(abandonedOf(session)).toBeFalsy();
+
+    // 显式 awaiting=false 与缺省 undefined 都不得阻断（加输入前逐条一致）。
+    expect(finalTriggerOf(session, { awaitingHostDecision: false })).toMatchObject({
+      due: true,
+      checkpoint: null,
+      pairMode: "ACTIVE",
+      reason: "ok",
+    });
+    expect(finalTriggerOf(session)).toMatchObject({ due: true, reason: "ok" });
+  });
+
+  it("② awaiting=true → final due=false 且 reason=awaiting-host-decision（真实 AWAITING 态）", () => {
+    injectAuditedMetadata();
+    // 14 张牌走满 14 个 effective 轮 → startRound 进入真实 AWAITING（D8=A+ 等待态）。
+    const windowed = driveEffectiveRounds(newSession(DECK.slice(0, 14)), 14);
+    const awaiting = startRound(windowed, () => 0, { drawSeed: FIXED_DRAW_SEED });
+    expect(awaitingHostDecision(awaiting), "应进入 AWAITING_HOST_EXHAUSTION_DECISION").toBeDefined();
+
+    expect(finalTriggerOf(awaiting, { awaitingHostDecision: true })).toMatchObject({
+      due: false,
+      checkpoint: null,
+      pairMode: "ACTIVE",
+      reason: "awaiting-host-decision",
+    });
+    // 对照：同一等待态不传 awaiting → 仍 due：证明阻断确来自 awaiting 这一实时前置条件。
+    expect(finalTriggerOf(awaiting)).toMatchObject({ due: true, reason: "ok" });
+  });
+
+  it("③ awaiting=true 不产生 abandoned（纯判定、不改状态：abandoned 仍 false、无 MATCH）", () => {
+    injectAuditedMetadata();
+    const windowed = driveEffectiveRounds(newSession(DECK.slice(0, 14)), 14);
+    const awaiting = startRound(windowed, () => 0, { drawSeed: FIXED_DRAW_SEED });
+
+    const before = relationshipOf(awaiting);
+    expect(abandonedOf(awaiting)).toBeFalsy();
+
+    expect(finalTriggerOf(awaiting, { awaitingHostDecision: true }).due).toBe(false);
+
+    // 阻断是「暂时被挡」不是「永久放弃」：判定前后 relationship 未变（无 abandoned、无 MATCH）。
+    expect(relationshipOf(awaiting)).toEqual(before);
+    expect(abandonedOf(awaiting)).toBeFalsy();
+    expect(relationshipOf(awaiting).regularMutualCheckRuns).toBe(0);
+    expect(Object.keys(relationshipOf(awaiting).matches)).toEqual([]);
+  });
+
+  it("④ 回归：同一 AWAITING 态下中途 Mutual 的 awaiting-host-decision 阻断不变（同 reason）", () => {
+    injectAuditedMetadata();
+    const windowed = driveEffectiveRounds(newSession(DECK.slice(0, 14)), 14);
+    const awaiting = startRound(windowed, () => 0, { drawSeed: FIXED_DRAW_SEED });
+    expect(countOf(awaiting)).toBe(14);
+
+    // 中途：awaiting 阻断（checkpoint 仍在窗口内）——与 final 同一个 reason 字面量。
+    const midBlocked = triggerOf(awaiting, { awaitingHostDecision: true });
+    expect(midBlocked).toMatchObject({ due: false, checkpoint: 14, reason: "awaiting-host-decision" });
+    expect(midBlocked.reason).toBe(finalTriggerOf(awaiting, { awaitingHostDecision: true }).reason);
+    // 对照：不传 awaiting 时中途仍 due（阻断只来自 awaiting，行为未变）。
+    expect(triggerOf(awaiting)).toMatchObject({ due: true, checkpoint: 14, reason: "ok" });
   });
 });
