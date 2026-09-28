@@ -1,11 +1,20 @@
 /**
- * CONTENT-01｜第一包「Formal Fixed 真心话」正式内容源（C1-2，**纯数据、零引用**）。
+ * CONTENT-01｜第一包「Formal Fixed 真心话」正式内容源（C1-2 产出；**已接入生产链路，非「零引用」**）。
  *
- * ## 本文件的范围（C1-2 只做这一件事）
- * 只产出**内容**：一批带完整 Plan §3 质量字段的真心话卡（`PN-TRUTH-2xx`）。
- * 本文件**不被任何文件 import**——桥接（C1-3）、质量侧车（C1-4）、人审输入（C1-5）、
- * 审查脚本（C1-6）、单包 Monte Carlo（C1-7）都是后续单，落地后本源才真正生效。
- * 因此本单的业务行为变化为 **0**，既有 390 张卡与冻结 SSOT 零改动。
+ * ## 现状（C1-2 之后各单已落地，本源已真正生效）
+ * 本文件导出 `FORMAL_TRUTH_CARDS`（24 张 `PN-TRUTH-201~224`），当前被以下位置 import：
+ * - `lib/v2-content/v2-card-bridge.ts`（C1-3 桥接）：`mainlineSsotCards()` 在既有 350 张**之后
+ *   追加**本包，`mainlineRuntimeCards()` / `mainlineCardMetaById()` 共用同一份卡源；
+ * - `lib/v2-content/v2-card-quality-index.ts`（C1-4 质量侧车）；
+ * - `scripts/audit-bar-fit-human-review-skeleton.ts` / `scripts/audit-formal-truth-selfcheck.ts`（C1-6）；
+ * - `tests/unit/*`（formal-truth-pipeline / fixed-content-manifest / v2-b7-content-switch 等）。
+ * 经构建期准入（`pnpm build:fixed-manifest`）后进入 `tracks.formalFixed`；当前值见产物。
+ *
+ * ## C1-2 当时范围说明（历史注记，非现状）
+ * 本单只产出**内容**：一批带完整 Plan §3 质量字段的真心话卡（`PN-TRUTH-2xx`）。当时本文件
+ * **不被任何文件 import**——桥接（C1-3）、质量侧车（C1-4）、人审输入（C1-5）、审查脚本（C1-6）、
+ * 单包 Monte Carlo（C1-7）都是后续单，落地后本源才真正生效；故当时业务行为变化为 **0**，
+ * 既有 390 张卡与冻结 SSOT 零改动（至今 SSOT 仍零改动）。
  *
  * ## 为什么另起内容源，而不是改既有 390 卡（C1-1 设计稿 §2.2/§9 的结论）
  * - 冻结 SSOT（`generated/v2-ssot.generated.json`，两个硬编码 SHA256）是唯一真源，不得就地改；

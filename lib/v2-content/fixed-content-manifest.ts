@@ -10,13 +10,16 @@
  *
  * | 轨 | 内容 | 用途 | 准入 |
  * |---|---|---|---|
- * | **Legacy Compatibility**（`tracks.legacyCompatibility`） | 当前冻结快照 390 张 `PN-*` | **只**用于旧局读取 / 恢复 / 迁移 | 可缺 Plan §3 新 metadata；**明确不是正式 Fixed Content** |
- * | **Formal Fixed**（`tracks.formalFixed`） | 同时满足严格准入的卡（当前 **0 张**） | 正式主线准入唯一允许清单 | strict metadata 全字段 ∧ `humanBarFit=PASS` ∧ `reviewed=true`（真实人工审查）∧ provenance/hash 完整 |
+ * | **Legacy Compatibility**（`tracks.legacyCompatibility`） | 冻结快照的全部 builtin 卡（数量由冻结快照决定，**不是写死值**） | **只**用于旧局读取 / 恢复 / 迁移 | 可缺 Plan §3 新 metadata；**明确不是正式 Fixed Content** |
+ * | **Formal Fixed**（`tracks.formalFixed`） | 同时满足严格准入的卡（数量由**当前人工审查输入**与 strict admission 动态决定，**不是写死值**） | 正式主线准入唯一允许清单 | strict metadata 全字段 ∧ `humanBarFit=PASS` ∧ `reviewed=true`（真实人工审查）∧ provenance/hash 完整 |
  *
- * Human Step 4 原文：**「正式 manifest 当前可以是 0 张。不要为了数字好看，把 390 张未审旧题
- * 伪装成正式固定库。删除 formal admission 里那个「旧冻结直通」折让开关的语义。
- * `formal fixed cards = 0` 是正确状态。同时修：`reviewed=true` 必须表示真实人工审查完成，
- * 不能只因为 metadata 字段齐全就设 true。」**
+ * Human Step 4 冻结原文（**当时口径，原样保留**）：**「正式 manifest 当前可以是 0 张。不要为了
+ * 数字好看，把 390 张未审旧题伪装成正式固定库。删除 formal admission 里那个「旧冻结直通」
+ * 折让开关的语义。`formal fixed cards = 0` 是正确状态。同时修：`reviewed=true` 必须表示真实
+ * 人工审查完成，不能只因为 metadata 字段齐全就设 true。」**
+ * —— 这段冻结的是**口径**（不许放宽准入、不许把未审旧题伪装成 Formal），**不是永久数量**：
+ * Formal 张数由当前人工审查输入动态决定；**第一包入库后当前值见产物**
+ * `lib/v2-content/generated/fixed-content-manifest.json` 的 `tracks.formalFixed.counts.total`。
  *
  * 因此本模块**没有任何宽松开关**：`formalFixedIdSet` 只认四条件齐全（见 `satisfiesFormalAdmission`），
  * 未审内容、机器预筛结论、以及「只补齐了 metadata 字段」的卡一律不入 Formal。
@@ -72,14 +75,14 @@ export type FixedHumanBarFit = "UNREVIEWED" | "PASS" | "BORDERLINE" | "FAIL";
 /** 固定库 metadata 完整度：`audited`＝已带 Plan §3 新质量字段并通过 strict；`legacy`＝V1.3 旧冻结（字段未回填）。 */
 export type FixedCardMetadataStatus = "legacy" | "audited";
 
-/** 卡在固定库里的归属集合：主线 350 / 扩圈 40。 */
+/** 卡在固定库里的归属集合：主线（`mainline`）/ 扩圈（`expansion`）；两者数量由冻结快照决定。 */
 export type FixedCardSet = "mainline" | "expansion";
 
 /**
  * 逐卡来源可追溯信息（Plan §3:41「每题用稳定 cardId 关联题面、审计记录与受控快照」）。
  *
  * 只放**逐卡各不相同**的字段：批次 / 内容版本 / 审查阶段 / BAR-FIT 判定来源都是整批同一值，
- * 统一放 `buildInfo`，避免 390 行重复字符串把产物撑大（会进客户端包）。
+ * 统一放 `buildInfo`，避免逐卡重复同一串来源字符串把产物撑大（会进客户端包）。
  *
  * BAR-FIT 走**两层口径**（P1-4），本记录两条都留、互不替代：
  * - `machineVerdict`：机器预筛结论（`judgeBarFit` 直出），只做分流，**不是**正式判据；
@@ -136,7 +139,7 @@ export interface LegacyCompatibilityTrack {
   counts: FixedCardTrackCounts;
 }
 
-/** Formal Fixed 轨被拒卡的按原因分布（供报告如实显示「为什么当前是 0 张」）。 */
+/** Formal Fixed 轨被拒卡的按原因分布（供报告如实显示「哪些卡为什么没进 Formal」）。 */
 export interface FormalRejectionCounts {
   /** 被拒卡总数（= legacy 轨 total − formal 轨 total）。 */
   total: number;
@@ -153,8 +156,9 @@ export interface FormalRejectionCounts {
 /**
  * Formal Fixed 轨（Human Step 4 B）：正式主线准入的**唯一**允许清单。
  *
- * 当前为 **0 张**——这是 Human 认可的正确状态（390 张旧题全是未审 legacy），
- * **不许**为了数字好看补默认 metadata、放宽准入或直接置 `reviewed=true`。
+ * 张数由**当前人工审查输入**与 strict admission 动态决定（不是写死值）：空输入 ⇒ 0 张；
+ * 第一包入库后随真实人工审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或
+ * 直接置 `reviewed=true`（Human Step 4 冻结口径）；当前值见产物 `tracks.formalFixed.counts.total`。
  */
 export interface FormalFixedTrack {
   track: "formalFixed";
@@ -167,7 +171,7 @@ export interface FormalFixedTrack {
   snapshotHash: string;
   allowedCardIds: readonly string[];
   counts: FixedCardTrackCounts;
-  /** 本批被 Formal 拒收的卡按原因分布（当前 390 张）。 */
+  /** 本批被 Formal 拒收的卡按原因分布（数量随 Formal 张数动态变化，不是写死值）。 */
   rejectedFromFormal: FormalRejectionCounts;
 }
 
@@ -316,8 +320,10 @@ export function satisfiesFormalAdmission(provenance: FixedCardProvenance | undef
  * 任何一项不满足都不入集 —— 未审内容、机器预筛结论、以及「只补齐了 metadata 字段」的卡
  * 都不算 Formal（Human Step 4 B：`reviewed=true` 必须表示真实人工审查完成）。
  *
- * 当前冻结快照 `counts.auditedMetadata = 0`、`reviewed` 全 false、`humanBarFit` 全
- * `UNREVIEWED` ⇒ 本集合为空。**这是正确状态**（Human 已接受 Formal = 0 张），不是 bug。
+ * 集合大小**完全由当前人工审查输入决定**，不是写死值：空输入（无人审）⇒ 集合为空；
+ * 第一包入库后随快照的实际 `counts.auditedMetadata` / `reviewed` / `humanBarFit` 取值变化。
+ * 当前值见产物 `lib/v2-content/generated/fixed-content-manifest.json` 的
+ * `tracks.formalFixed.counts.total`。
  */
 export function formalFixedIdSet(
   manifest: FixedContentManifest = FIXED_CONTENT_MANIFEST,
@@ -338,8 +344,9 @@ export function formalFixedIdSet(
  *
  * ⚠️ **禁止与 `classifyMainlineCard` 的 `"fixed"` 混用**：
  * `"fixed"` 只表示「`builtin` 且 ID ∈ 当前冻结快照」，即**在快照内**这层语义；
- * 当前快照 390 张 `PN-*` **全部** `metadataStatus === "legacy"`，它们都是 `"fixed"`，
- * 但**没有一张是 Formal**。把 `"fixed"` 当作 Formal 判据 ⇒ 谓词恒 true ⇒ 豁免完全不生效。
+ * 快照内的卡一律是 `"fixed"`，但**只有过了四条严格准入的才是 Formal**（快照内既有已入
+ * Formal 的 audited 卡，也有仍未审的 legacy 卡，具体分布见产物 `tracks.*.counts`）。
+ * 把 `"fixed"` 当作 Formal 判据 ⇒ 谓词恒 true ⇒ 豁免完全不生效。
  *
  * ⚠️ **只能从 manifest 读**：SSOT（`v2-ssot.generated.json`）里没有 `metadataStatus` /
  * `reviewed` / `humanBarFit`，从 SSOT 读会静默 fail-open（把未审卡当 Formal）。
@@ -397,9 +404,9 @@ export function countCardsOutsideFormalTrack(
  * 卡级内容轨（Human Step 5：Formal Fixed / Legacy Compatibility / Custom 三轨必须独立）。
  *
  * 与 `classifyMainlineCard` / `isFormalFixedCard` 同一份 manifest 真源，**不新写第二套判定**：
- * - `formal`：`builtin` ∧ 已在正式 Formal 轨（见 `formalFixedIdSet`，当前为空）；
- * - `snapshot`：`builtin` ∧ ID ∈ Legacy Compatibility 轨（即当前冻结快照的 390 张 PN-*，
- *   它们「在快照内」但不是 Formal——这两个概念不能混）；
+ * - `formal`：`builtin` ∧ 已在正式 Formal 轨（见 `formalFixedIdSet`，集合大小由人工审查输入决定）；
+ * - `snapshot`：`builtin` ∧ ID ∈ Legacy Compatibility 轨（即当前冻结快照内的 builtin 卡，
+ *   数量由冻结快照决定；它们「在快照内」但不等于 Formal——这两个概念不能混）；
  * - `seed`：`builtin` ∧ ID ∉ 当前冻结快照（旧 `seed-*` / 未知 / 混合旧缓存）；
  * - `custom` / `ai`：`source` 直接决定。
  */

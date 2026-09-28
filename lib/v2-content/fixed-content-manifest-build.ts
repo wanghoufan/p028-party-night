@@ -9,7 +9,7 @@
  * `buildFixedContentTracks()` 一次构建出**两条互不代读的轨**：
  *
  * 1. **Legacy Compatibility 轨**（`tracks.legacyCompatibility`）：冻结 SSOT 的全部 builtin 卡
- *    （当前 390 张）。准入只需「`source === "builtin"` + ID 唯一」——**可缺 Plan §3 新 metadata**。
+ *    （数量由冻结快照决定，**不是写死值**）。准入只需「`source === "builtin"` + ID 唯一」——**可缺 Plan §3 新 metadata**。
  *    它只服务旧局读取 / 恢复 / 迁移，**明确不是正式 Fixed Content**。
  * 2. **Formal Fixed 轨**（`tracks.formalFixed`）：**严格准入，无任何宽松开关**。逐卡四条全中才入：
  *
@@ -20,8 +20,9 @@
  *    | 3 | reviewed = true | **只**来自人工审查输入；metadata 齐全 / machineVerdict 好看都不算 |
  *    | 4 | provenance / payloadHash 完整 | ID 在快照内且 hash 为 64 位 sha256 |
  *
- *    当前无人审查输入 ⇒ Formal = **0 张**。**这是 Human 认可的正确状态**，
- *    不许为了数字好看补默认 metadata、放宽准入或直接置 `reviewed=true`。
+ *    Formal 张数由**当前人工审查输入**动态决定（不是写死值）：空输入 ⇒ 0 张；第一包入库后
+ *    随真实人工审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或直接置
+ *    `reviewed=true`（Human Step 4 冻结口径）；当前值见产物 `tracks.formalFixed.counts.total`。
  *
  * > 旧版有「显式开启旧冻结通道」的折让参数，会让未审旧卡以 `metadataStatus="legacy"` 蒙进
  * > 正式清单。Human Step 4 已冻结删除该语义，本模块**不再接受任何宽松开关**：
@@ -135,7 +136,7 @@ const EXPANSION_PACK_ID = "expansion";
 /**
  * 逐卡人工审查输入（Human Step 4：`reviewed=true` 与 `humanBarFit` 的唯一合法来源）。
  *
- * 构建期由脚本注入（当前无任何人工审查产物 ⇒ 空输入 ⇒ Formal = 0 张）。
+ * 构建期由脚本注入（无人工审查输入 ⇒ 空输入 ⇒ Formal = 0 张；存在人审输入则按结论入轨）。
  * **不接受**从卡面 metadata 或机器 `machineVerdict` 推导这两个字段。
  */
 export interface HumanFixedReviewEntry {
@@ -183,9 +184,9 @@ export interface BuildFixedContentTracksResult {
   manifest: FixedContentManifest;
   /** Legacy Compatibility 轨卡数（= 冻结 SSOT 的全部 builtin 卡）。 */
   legacyCount: number;
-  /** 其中已带 Plan §3 新质量字段的卡数（当前 0）。 */
+  /** 其中已带 Plan §3 新质量字段的卡数（随冻结内容变化，不是写死值）。 */
   auditedCount: number;
-  /** Formal Fixed 轨卡数（当前 0）。 */
+  /** Formal Fixed 轨卡数（由当前人工审查输入动态决定，不是写死值）。 */
   formalCount: number;
   /** Formal 被拒卡按原因分布。 */
   rejection: FormalRejectionCounts;
@@ -289,7 +290,7 @@ export function buildFixedContentTracks(
     if (audited) auditedCount += 1;
     else legacyCount += 1;
 
-    // ── Formal 准入（严格；逐条记录被拒原因，供报告如实显示为何是 0 张）────────────
+    // ── Formal 准入（严格；逐条记录被拒原因，供报告如实显示哪些卡为何被拒）────────────
     const strictPass = audited && strict.ok;
     const hashComplete = FIXED_PAYLOAD_HASH_PATTERN.test(payloadHash);
     let rejected = false;

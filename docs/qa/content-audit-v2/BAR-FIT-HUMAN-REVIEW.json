@@ -125,13 +125,23 @@
       "note": "「你会怎么开口谈？说一句」要的是实际会说出的话，指向真实沟通习惯与边界表达；I5 但只触及态度与节奏分歧，不越红线，可无惩罚跳过。"
     }
   },
-  "machineVerdictSummary": {
+  "packMachineVerdictSummary": {
+    "scope": "本包（第一包 24 张 PN-TRUTH-201~224）",
     "total": 24,
     "PASS": 24,
     "SUSPECT": 0,
+    "HARD_FAIL_PATTERN": 0,
+    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.rows 与 #sets.frozenFixed390.rows 差集（＝本包 24 张），逐卡 machineVerdict 实读",
+    "note": "本包 24 张机器档位实测全部 PASS（SUSPECT 0 / HARD_FAIL_PATTERN 0），与骨架原记录一致。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
+  },
+  "libraryMachineVerdictSummary": {
+    "scope": "整库（冻结固定库 414 张＝主线 374 + 扩圈 40）",
+    "total": 414,
+    "PASS": 188,
+    "SUSPECT": 222,
     "HARD_FAIL_PATTERN": 4,
-    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414",
-    "note": "注：本包 24 张机器档位实测全部 PASS（SUSPECT 0 / HARD_FAIL_PATTERN 0），与骨架原记录一致。上列 HARD_FAIL_PATTERN=4 是整份冻结库 414 张的分布（PN-DARE-005/016/027 + PN-EXPAND-036），与本包无关。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
+    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.machineVerdictDistribution（实读）",
+    "note": "整库真实分布（实读自 BAR-FIT-AUDIT.json，非估算）。HARD_FAIL_PATTERN=4 为整库口径（PN-DARE-005/016/027 + PN-EXPAND-036），与本包无关。此前把「本包 24 张」与「整库 HARD_FAIL_PATTERN=4」写进同一对象（24+0+4=28），会被误读为四项同属一个集合，故拆为 pack / library 两个各自自洽的并列对象。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
   },
   "generatedBy": "scripts/audit-bar-fit-human-review-skeleton.ts（骨架）＋ product-reviewer 逐卡填写（结论）"
 }

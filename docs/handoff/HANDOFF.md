@@ -108,11 +108,11 @@
 ---
 
 - Captured at（YYYY-MM-DD HH:MM）：2026-09-28 **【B2.2 收尾两单已 commit ＋ CONTENT-01 第一包 24 张 Formal Fixed 已入库，待 commit】**
-  - **现行门禁（编排者亲自复跑）**：`npx tsc --noEmit` 0 error｜`pnpm lint` 0 error（11 warning 既有）｜`npx vitest run --testTimeout=30000` **120 文件 / 1172 用例 / 0 failed**｜`npx playwright test` **106 passed / 0 failed / 6 skipped**｜`pnpm build` 通过｜`pnpm build:fixed-manifest` 通过（**legacy 414（主线 374 + 扩圈 40）/ audited 24 / reviewed 24 / `formal fixed = 24` / 逐卡对账 414:414、0 mismatch / 快照外 ID 0 / hash 可复现**）｜`check-ledger` = LEDGER-OK（TASK-MODEL-LOG 180 行 / DISPATCH-LOG 237 行）。HEAD `48850a4`（收尾两单已 commit），第一包 30 项工作区改动**未 commit**。
+  - **现行门禁（编排者亲自复跑）**：`npx tsc --noEmit` 0 error｜`pnpm lint` 0 error（11 warning 既有）｜`npx vitest run --testTimeout=30000` **120 文件 / 1172 用例 / 0 failed**｜`npx playwright test` **106 passed / 0 failed / 6 skipped**｜`pnpm build` 通过｜`pnpm build:fixed-manifest` 通过（**legacy 414（主线 374 + 扩圈 40）/ audited 24 / reviewed 24 / `formal fixed = 24` / 逐卡对账 414:414、0 mismatch / 快照外 ID 0 / hash 可复现**）｜`check-ledger` = LEDGER-OK（行数见大交接 2 段；收尾后又补记 NF-2，现 181/238）。**（2026-09-28 收尾补注：本段为第一包提交前快照，已过期 —— 现 HEAD `e49ee45` 已 push，与 origin/main `0 0`，工作树 clean；`fa6995b` 为大交接 2 收尾提交。冲突以「大交接 2」段为准。）**
   - **两批构成**（本窗口连续执行，均已过 reviewer/QA/supervisor 三链）：
     1. **收尾两单**（已 commit `48850a4`）：`docs/pm` 两份越权改动**恢复为 Human 批准的 locked baseline**（`git checkout`，非 commit 洗白，全程零改动）；B3-16 Custom 分轨（Human 方案 A）；B3-17 final Mutual `awaitingHostDecision` 阻断 + `MUTUAL_MIN_HEAT` 只改 JSDoc（**最终 Mutual 的 HEAT/TIMING 继续留空、未接 App**）。
-    2. **CONTENT-01 第一包**（未 commit）：**`formal fixed` 由 0 → 24**（`PN-TRUTH-201~224` 真心话）。
-  - **通道实况（如实记录）**：C1-4 首次实调 `codebuddy/deepseek-v4.1-flash` 返回 **429 限频**（提示 2026-09-29 14:00 重置），按 `USER_MODEL_OVERRIDE` 备用通道改派 `codebuddy/glm-5.3-flash` 成功；该更正已同步进两本账本（DISPATCH 补记 `used=备用` 行 + TASK CORRECTION 行）。（2026-09-28 傍晚本轮全部改动**未 commit、未 push**；技术 RC 仍 `RC_NEEDS_REFREEZE`；版本三处 `1.5.0` 未 bump；SSOT 零改动）
+    2. **CONTENT-01 第一包**：**`formal fixed` 由 0 → 24**（`PN-TRUTH-201~224` 真心话）。（**已随 `e49ee45` commit + push**）
+  - **通道实况（如实记录）**：C1-4 首次实调 `codebuddy/deepseek-v4.1-flash` 返回 **429 限频**（提示 2026-09-29 14:00 重置），按 `USER_MODEL_OVERRIDE` 备用通道改派 `codebuddy/glm-5.3-flash` 成功；该更正已同步进两本账本（DISPATCH 补记 `used=备用` 行 + TASK CORRECTION 行）。（⚠️ 2026-09-28 收尾补注：此句为提交前状态，**现已全部 commit 并 push**（`8bcef40`→`2fffafe`→`48850a4`→`e49ee45`→`fa6995b`，`0 0`、工作树 clean）；技术 RC 仍 `RC_NEEDS_REFREEZE`；版本三处 `1.5.0` 未 bump；SSOT 零改动）
   - **上一条描述已过期**（旧文称「tsc 1 错 / unit 9 文件失败 / 工作区是红的」）：2026-09-28 实测 `tsc` 0 error、unit 全绿。现行门禁（编排者亲自复跑）：`npx tsc --noEmit` 0 error｜`pnpm lint` 0 error（11 warning 既有）｜`npx vitest run --testTimeout=30000` **116 文件 / 1142 用例 / 0 failed**｜`npx playwright test` **106 passed / 0 failed / 6 skipped**｜`pnpm build` 通过｜`pnpm build:fixed-manifest` 通过（legacy 390 / **formal 0** / BAR-FIT 逐卡 390:390 一致、0 mismatch / 快照外 ID 0 / 两次构建 hash 一致）｜`node scripts/model/check-ledger.mjs` = LEDGER-OK（TASK-MODEL-LOG 161 行 / DISPATCH-LOG 218 行）
 - PROJECT_PHASE（**DEVELOP** —— Human 2026-09-27 已批准「第二阶段，开发」，正式进入 Phase B Fixed Content First 开发；不再开启新的 Planner / Research Review 循环）
 - PLAN_VERSION（`PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`）
@@ -150,7 +150,7 @@
   - **运行时验证（Human §十八）**：Formal 卡能被 Router 抽到 → metadata 进入 production event → effective count 推进 → **Heat 逐档可达**（仅 Formal 牌堆 H1→H2@4→H3@8→H4@13，effective 15）；legacy 负向对照 effective 恒 0、Heat 恒 H1（fail-closed 成立）。
   - **已如实登记的缺口（后续包要补，不得靠放宽门槛）**：ceiling=1 dead-end **67.2%**｜H3 仅 2.6%｜H4 = 0｜中途互选窗口 `count≥12` 不可达｜A.1 旧 MC 产物相对新 Router 已 stale｜结论只覆盖 truth-dare 单包，**不可外推**。
   - **等 Human 拍板的口径冲突**：`reviewed=true` 在代码/文档里被描述为「真实人工审查完成」，而第一包实际由 **AI 角色**（Research Reviewer）审查（人审 `source` 已如实标注 AI 身份）。是否改措辞或加 `reviewerKind` 字段，需 Human 决定（CR-3 P1-2）。
-- 当前 Task：**Phase B｜B2.2 技术收口批次 Step 1~6 已完成并过 code-reviewer（PASS，P0=0/blocking P1=0）与 QA（首判 FAIL 仅因覆盖不完整 → 补齐后复验 PASS）。⚠️ 工作区仍红、全部未 commit。**
+- 当前 Task（历史）：**Phase B｜B2.2 技术收口批次 Step 1~6 已完成并过 code-reviewer（PASS，P0=0/blocking P1=0）与 QA（首判 FAIL 仅因覆盖不完整 → 补齐后复验 PASS）。**（⚠️ 2026-09-28 收尾补注：原文「工作区仍红、全部未 commit」已过期，现全部已 commit 并 push；只作历史留痕，**不要**据此判断现状）
   - **本轮新 P0（已定位、已修、已过检）**：「Heat 永久 H1 → 每包仅 8~10 张 H1 卡 → 任何单玩法局第 9 轮 PACK_EXHAUSTED」。
     - 根因链（D1 fail-closed 的必然后果）：`app/game/page.tsx` `roundDisclosureForCurrentRound()` 恒 `undefined` ＋ SSOT schema 2.3 无 `informationGain/topic` → `isEffectiveInformationRound` 恒 false → `relationshipEffectiveCardCount` 恒 0 → `HEAT_THRESHOLDS` 使 Heat 恒 H1 → `v2-router.ts` / `v2-deal.ts` 对 Heat 硬过滤 ⇒ H1 桶耗尽。
     - 该根因同时卡死「中途 Mutual 窗口 `[12,14]` 不可达」，是 B2.2 Step 2 的前置阻塞。
