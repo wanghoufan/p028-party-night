@@ -216,3 +216,4 @@
 {"date":"2026-09-28","task":"B3-15 七玩法 legacy 20轮覆盖","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"8例新测"}
 {"date":"2026-09-28","task":"QA-2 复验(未落盘)","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"FAIL","note":"流程误读停等supervisor"}
 {"date":"2026-09-28","task":"QA-3 复验收尾并落盘","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
+{"date":"2026-09-28","task":"NF-1 neat-freak 残留清理+文档事实对齐","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"Human授权：残留清理不用问，自行判定"}
