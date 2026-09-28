@@ -6,6 +6,8 @@
 - 产出物：`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`（本单唯一被填写的人审输入）、本文件
 - 分流参考（**不作为任何一条结论依据**）：`docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414`
 
+> ⚠️（2026-09-28 收尾补注，neat-freak；未改写原结论）本单三轮审查期间工作区改动**未 commit**；该批已随 `e49ee45` 提交并 push `main`。原文「未 commit / 未 push」为该时点事实，保留留痕。
+
 ---
 
 ## 0. 审查口径

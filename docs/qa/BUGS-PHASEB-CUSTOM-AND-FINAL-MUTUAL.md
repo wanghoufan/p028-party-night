@@ -10,6 +10,8 @@
 - 日期/任务名：2026-09-28 / QA-4 收尾两单全量门禁 + 专项场景
 - QA_RESULT：**PASS**
 - HEAD：`2fffafe`（未 commit / 未 push）
+
+> ⚠️（2026-09-28 收尾补注，neat-freak；未改写原结论）本 QA 当时 HEAD `2fffafe` 未 commit；收尾两单已随 `48850a4` 提交并 push `main`。原文「未 commit / 未 push」（:12 / :71 / :97）为该时点事实，保留留痕。
 - P0：0；blocking P1：0；发现新增 P0/P1：无
 - 七项门禁：通过；Playwright 106 passed、6 skipped（逐条见下文，不计作通过）
 - 真机 QA：本任务明确不使用真机、不构建 APK；未执行真机预检，未宣称真机通过。

@@ -12,6 +12,7 @@
 > - **作废原因**：这些数字基于「Heat 硬过滤对全部卡生效」的**旧生产语义**；Phase B B2.2 引入 `isFormalFixedCard` / `formalFixedIdSet` 后，Heat 硬过滤改为**只对 Formal Fixed 卡生效**（当前 formal=0），旧运行时断粮已消失。
 > - **新真源**：`docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（2026-09-28 重跑）—— 4,000/4,000 跑满 20 轮、dead-end **0**、`heatAtDraw` **100% H1**、`matchesCreated` **0**。
 > - **作废范围仅限运行时数字**：§1.1 的**静态** SSOT intensity×Heat 对角分区与真空表（H1 58 / H2 128 / H3 160 / H4 222、H4×I1＝0）**不经 Router，仍有效**；方案 E（重做内容覆盖矩阵）的产品判断不受本次作废影响。
+> - **补注（2026-09-28 第二轮 neat-freak）**：CONTENT-01 第一包 24 张 Formal Fixed 入池（formal 0→24）后，连 `ROUTER-MONTE-CARLO.json` 亦属入池前（formal=0）快照；含 Formal 卡的现行运行时真源＝`docs/qa/content-audit/FORMAL-TRUTH-MC.json` / `FORMAL-TRUTH-PRODUCTION-CHAIN.json`（单包口径，ceiling=1 dead-end 67.2%、H3 2.6%、H4＝0）。
 > - 本节为**标注**，不重算、不重写原文结论；重算/改写属 builder/QA，需另行派工。
 
 ## 0. 为什么写在 `docs/qa/` 而不是 `docs/pm/`

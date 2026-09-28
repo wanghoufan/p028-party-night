@@ -15,6 +15,8 @@
 - 日期：2026-09-28；本轮仅运行自动化门禁及既有用例，不做真机、构建 APK、部署、版本升级、commit 或 push。
 - 端口预检：`lsof -nP -iTCP:3000 -sTCP:LISTEN` → 无输出，exit 1（3000 无监听）。`playwright.config.ts` 配置 `reuseExistingServer: !process.env.CI`，因此未改端口或配置；E2E 自启 `pnpm dev --hostname 127.0.0.1`。
 - 工作区原已存在大量未提交改动；HEAD 为 `57f5be3`，`git rev-list --left-right --count '@{u}...HEAD'` 输出 `0 0`。本轮未执行 Git 写操作。
+
+> ⚠️（2026-09-28 收尾补注，neat-freak；未改写原结论）B2.2 批次已随 `8bcef40` 提交并 push `main`；原文「未提交 / 未 commit/push」（:17 / :145 / :153）为该 QA 时点事实，保留留痕。另：上表部分遗留项已在收尾两单处理——P2-1（custom/snapshot 混轨，方案 A 分轨）、P2-4（final mutual awaiting 阻断）、P3-1（`MUTUAL_MIN_HEAT` JSDoc）详见 `docs/qa/BUGS-PHASEB-CUSTOM-AND-FINAL-MUTUAL.md`。
 - 本轮仅新增本报告。`pnpm build:fixed-manifest` 按命令生成 `lib/v2-content/generated/fixed-content-manifest.json`（当前显示为 untracked）；未手工编辑或清理它，以免覆盖原工作区状态。
 
 ## 门禁实跑

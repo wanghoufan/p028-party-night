@@ -5,6 +5,8 @@
 - Reviewer：code-reviewer（codebuddy/glm-5.3-flash）
 - Result：**PASS**（P0 = 0 ／ blocking P1 = 0 ／ 非 blocking P1 = 2 ／ P2 = 2 ／ P3 = 3）
 
+> ⚠️（2026-09-28 收尾补注，neat-freak；未改写原结论）本复检当时 30 项工作区改动**未 commit**；该批已随 `e49ee45` 提交并 push `main`，工作树 clean。原文「未 commit / 未 push」为该时点事实，保留留痕。另：P1-1（HANDOFF 未登记第一包）已由 TM 随 `e49ee45` 补齐 HANDOFF 第一包段落＋门禁新值，本项闭合。
+
 > 复检方法：全部结论基于实读与实测（`git diff`、`node` 逐卡复算 manifest、源码逐行核对），
 > 编排者门禁数字（tsc 0 / lint 0e11w / vitest 120 文件 1172 用例 0F / playwright 106P0F6S /
 > build / build:fixed-manifest 414:414 / LEDGER-OK）采信并抽查复核，未整体重跑。

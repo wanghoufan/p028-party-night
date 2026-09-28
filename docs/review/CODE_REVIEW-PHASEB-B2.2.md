@@ -5,6 +5,8 @@
 - Reviewer: code-reviewer（glm-5.3-flash）
 - Result: **过（PASS）** — P0 = 0，blocking P1 = 0；非 blocking P1 = 0；P2 × 4；P3 × 2
 
+> ⚠️（2026-09-28 收尾补注，neat-freak；未改写原结论）本评审当时「工作区未提交改动」（HEAD `57f5be3`）；B2.2 批次已随 `8bcef40` 提交并 push `main`。原文为该时点事实，保留留痕。
+
 > Dispatch / Evidence ID 系字段 2.0 已废弃，不填。
 
 ## 评审输入与复跑证据

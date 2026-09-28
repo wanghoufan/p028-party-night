@@ -2,6 +2,111 @@
 
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
+---
+---
+
+# ★ 大交接 2（2026-09-28 收尾，**接手先读这一段**）
+
+## 0. 三十秒定位
+
+- 仓库：`main`，HEAD **`e49ee45`**（`feat(content): CONTENT-01 第一包 24 张 Formal Fixed 真心话（formal 0 -> 24）`），**已 push，与 origin/main `0 0`，工作树 clean**。
+- 提交链：`57f5be3 → 8bcef40（B2.2 Step1~6 + 解除 Heat 断粮）→ 2fffafe（账本/HANDOFF 补记）→ 48850a4（Custom 分轨 + final Mutual 尾巴）→ e49ee45（第一包 24 张）`。
+- 阶段：`PROJECT_PHASE=DEVELOP`｜`DEV_BASELINE=PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`（**第一包已入，但 CONTENT-01 未关闭**）｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜**未部署**（红线：Release Gate 前不部署正式版）。
+- 本段之下是历史交接正文（Phase B 之前的过程与旧数字，**部分已过期**，凡与本段冲突以本段为准；历史段只作留痕与经验参考，不要当现状执行）。
+
+## 1. 当前的工作进展
+
+### 1.1 已完成并过三链（Builder → Code Reviewer → QA → Supervisor）
+| 批次 | 内容 | 结论 |
+|---|---|---|
+| B2.2 Step 1~6 | 技术收口批次（fail-closed 计数、双 Router 同口径、负向 E2E、count=14 abandoned、修 D1/D2、Step 3 去最终互选 `Heat>=H3`、Step 4 manifest 两轨+删 `allowLegacyMetadata`、Step 5 跨轨闸、Step 6 BAR-FIT canonical） | CR PASS / QA PASS（首判 FAIL 因覆盖不完整，补测后复验 PASS）/ SUP PASS |
+| 收尾两单 | `docs/pm` 越权**恢复** locked baseline；Custom 分轨（Human 方案 A）；final Mutual `awaitingHostDecision` 阻断 + `MUTUAL_MIN_HEAT` 只改 JSDoc | CR-2 PASS / QA-4 PASS / SUP-2 PASS |
+| **CONTENT-01 第一包** | **`formal fixed` 0 → 24**（`PN-TRUTH-201~224` 真心话） | CR-3 PASS / QA-5 PASS / SUP-3（代码内容 PASS，先因 2 项治理补正 FAIL，补正后放行） |
+
+### 1.2 已解决的两个产品级问题（接手务必知道，否则会重犯）
+1. **Heat 永久 H1 → 第 9 轮 PACK_EXHAUSTED（已解）**
+   根因链：`roundDisclosureForCurrentRound()` 恒 `undefined` ＋ SSOT 无 `informationGain/topic` ⇒ `isEffectiveInformationRound` 恒 false ⇒ `relationshipEffectiveCardCount` 恒 0 ⇒ `HEAT_THRESHOLDS` 使 Heat 恒 H1 ⇒ H1 桶每包仅 8~10 张 ⇒ 单玩法局第 9 轮断粮，且中途 Mutual 窗口 `[12,14]` 永不可达。
+   **修法（不放松任何冻结）**：新增 `isFormalFixedCard` / `formalFixedIdSet`（真源＝`fixed-content-manifest.json` 的 `provenance.metadataStatus/reviewed/humanBarFit`；**`classifyMainlineCard` 的 `"fixed"` 只表示在冻结快照内，不等于 Formal**），**Heat 硬过滤只对 Formal 卡生效**。`isEffectiveInformationRound` fail-closed 四项、认识阈值、窗口 `[12,14]`、D6 一字未改。
+2. **Custom 与正式内容混轨（已解）**：`buildPlayableDeck` 拆 `builtinPool`/`customPool` 建堆二选一；`mixedCandidatePackIds` 剔 custom；Custom self-mode 只用 custom；历史混装 Session 兼容读取、不静默迁 Formal。
+
+### 1.3 第一包交付物与真源
+- 内容源：`lib/v2-content/formal-truth-pack.ts`（24 张 `PN-TRUTH-201~224`，`heatMin` 全 1、`heatMax` 1~4、`intensity` 覆盖 I1~I5、8 项必填质量字段齐备）。**既有 390 张 SSOT `text` 零修改。**
+- 准入产物：`lib/v2-content/generated/fixed-content-manifest.json` —— `tracks.legacyCompatibility`（414 = 主线 374 + 扩圈 40）／`tracks.formalFixed`（**24**）；被拒 `missingStrictMetadata 390` / `humanBarFit≠PASS 390` / `未人工审 390`。
+- 人工级内容审查：`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`（`source` 已如实标注 **AI 角色** 身份）＋报告 `docs/review/RESEARCH_REVIEW-FORMAL-TRUTH-PACK-1.md`（三轮：PASS 20/4 → 重写 → 23 → 再重写 → **24 全量 PASS**）。
+- BAR-FIT 机器产物与 MC：`docs/qa/content-audit-v2/BAR-FIT-AUDIT.json`、运行时真源 `docs/qa/content-audit/FORMAL-TRUTH-MC.json` / `FORMAL-TRUTH-PRODUCTION-CHAIN.json`（**注意：A.1 旧 `ROUTER-MONTE-CARLO.json` 已是入池前快照，已标 stale**）。
+
+### 1.4 已验证的运行时事实
+- Formal 真心话 → Router 可出 → metadata 进 production event → effective count 推进 → **Heat 逐档可达**（仅 Formal 24 张牌堆 H1→H2@4→H3@8→H4@13，effective 15）。
+- legacy 负向对照：effective 恒 0、Heat 恒 H1、不弹 Mutual、无 MATCH（fail-closed 成立）。
+- 现行门禁（编排者亲跑）：`tsc` 0 error｜`lint` 0 error / 11 warning（既有）｜`vitest` **120 文件 / 1172 用例 / 0 failed**｜`playwright` **106 passed / 0 failed / 6 skipped**（skip 原因逐条记录，**无一写成 PASS**）｜`build` 通过｜`build:fixed-manifest` 通过（逐卡对账 414:414、0 mismatch、hash 可复现）｜`check-ledger` = **LEDGER-OK**（TASK-MODEL-LOG **180** 行 / DISPATCH-LOG **237** 行）。
+
+### 1.5 已知内容缺口（**下一批要补的活**；禁止靠放宽门槛解决）
+- **ceiling=1 dead-end 67.2%**（518/771 `global_exhausted`）：truth-dare 的 I1 Formal 库存只有 4 张。
+- **H3 仅 2.6%（106/4000）、H4 = 0**、中途互选窗口 `count≥12` **不可达（0 局）**。
+- 主因不是单卡信息量（24 张无 low/zero），而是**能计数的 Formal 卡太少**（24/124）。
+- 补卡方向（supervisor 与 QA 共同建议）：补到**全部 7 个玩法**；每玩法 ≥20 张 `intensity=1`（其中 `heatMax=4` ≥8 张）；每玩法 ≥8 张 `heatMax=4`；每玩法 Formal 覆盖 ≥5 个 topic，并继续补 A.1 的零维度。
+- 结论**只覆盖 truth-dare 单包，不可外推**。
+
+## 2. 下一步的任务（按优先级；每件都已有明确口径）
+
+**① 等 Human 拍板 2 项（未拍前不要动）**
+1. **`reviewed=true` 口径冲突**（属 Change C）：代码/文档写「真实人工审查完成」，而第一包实际由 **AI 角色**（Research Reviewer）审查，`source` 已如实标注。选项 A＝改文案 + 加 `reviewerKind: human | ai-role` 字段（需 planner + Human 批准）；选项 B＝保持文案、以 `source` 标注为透明度手段。风险：不改措辞则 `reviewed=true` 可能被误读为真人逐题审过。
+2. **第二包补卡方向与配额**：先补哪个玩法、目标张数、是否沿用「宁少勿滥不凑数」。
+
+**② 第二包内容开发（CONTENT-01 继续）**
+- 沿用第一包已跑通的链路：C1-1 只读设计 → C1-2 内容源 → C1-3 管线接入 → C1-4 BAR-FIT 机器审查＋空人审骨架 → **review 角色三轮审查** → 按意见重写 → 修锁旧态测试 → MC/最差 trace/生产链验证 → CR → QA → SUP。
+- 纪律（Human 明确）：机器档位不得当人工结论；审查者身份必须如实标注；**宁少勿滥、不凑数**；缺口靠补内容不靠放宽门槛；不改旧 350 题 text；不恢复 AI 主线；不为 quota 写垃圾题。
+- **新包必须先跑 Router MC 预估 Heat 可达性**：`heatMin` 一律 1（生产 Heat 恒 H1，`heatMin≥2` 的 Formal 卡永不可抽，会重演 H1 桶耗尽）；`heatMax` 要拉开以备将来 Heat 推进。
+
+**③ B2.2 尚未做的 Step（技术侧）**
+- 剩余轨道隔离：`buildPlayableDeck` 之外的 `buildPlayableDeck` 同类建堆路径已由 CR-2 确认无漏网；**未做的是 `custom`/`AI` 轨与 snapshot 轨在「新建牌堆」层面的彻底分离**（C 类，需 Human 拍 A/B/C，现状是 C 类缺口）。
+- `mutualFinalCheckTrigger` 仍未接 App（按 Human 冻结，**等第一包内容起量 + MC + Human Gate** 再定 HEAT/TIMING）。
+- Step 5/6 剩余细节：见 `docs/review/CODE_REVIEW-CONTENT-01-PACK-1.md` 的 P2/P3。
+
+**④ RG 与 Release（未到时间）**
+- `CONTENT-01` 未关闭前不执行 `RG-02`；`RG-01` 真人手点与 4/5 人真人局由用户排期；**不重冻 RC、不 bump、不部署**。
+
+## 3. 注意事项及相关规矩（踩过的坑，别再踩）
+
+**治理**
+- `docs/pm/**` owner ＝ **planner**，TM 只能写 `docs/handoff`。本轮曾越权改两份 Plan，已 `git checkout` **恢复**（**不用单独 commit 洗白、不与业务代码混 commit**）。
+- 记账：`docs/model/TASK-MODEL-LOG.jsonl` 11 必需键 + `note`；`DISPATCH-LOG.jsonl` 每派一行、`used` 恒填主；每次记账后立即 `node scripts/model/check-ledger.mjs` 并对照行数增量。**本轮教训：误重复执行旧记账脚本产生 21+19 重复行**（已去重 + CORRECTION 行）；supervisor 建议加 `(date,task,role)` 幂等键。
+- **dispatch 完成 ≠ 验收关闭**：C1/C3 的 `result=PASS` 只表示派工完成，已另追加 CORRECTION 行表达。
+- review/QA 报告里凡写「未 commit/未 push」的，后续 push 后要回填（否则历史件会与现状矛盾；本轮 neat-freak 已补 7 处收尾注）。
+- 通道实况：某次 `codebuddy/deepseek-v4.1-flash` 返回 **429 限频**，按 `USER_MODEL_OVERRIDE` 备用通道切 `glm-5.3-flash` 成功 —— 该更正已落账本（`used=备用` + CORRECTION 行）。**事实句写前先 grep 账本。**
+
+**代码/技术坑**
+- `classifyMainlineCard` 的 `"fixed"` **≠ Formal**；判 Formal 必须用 `isFormalFixedCard`（读 manifest `provenance`）。**从 SSOT 读会静默 fail-open**（SSOT 无 `metadataStatus`）。
+- 「只换取卡来源、不同步计数」是**半改无效**：`assessExhaustion` 的 `bucket:` 计数不同步 ⇒ `hard.bucket=0 ∧ widened=0 ∧ pack>0` ⇒ 仍然 `PACK_EXHAUSTED`。解耦必须下沉到 `bucket()` 内部。
+- Formal 卡一旦 `heatMin≥2`，在生产 Heat 恒 H1（disclosure 未落地）下**永不可抽**。
+- `roundDisclosureForCurrentRound()` 仍恒 `undefined`（Human 冻结本批不新增披露 UI）⇒ 生产 UI 无法形成认识证据 ⇒ 中途 Mutual 在生产仍不可达；**正向验证只能走 integration 的正式 disclosure 通道**，禁止手搓 state。
+- 测试断言不要硬编码数量（如 `formal=23`）：本轮已改为**按人审输入派生**，否则每轮人审都会变红。
+- 锁旧态的既有测试断言可以改，但必须给「原断言 → 新断言 → 作废原因」，且**保留/加强** fail-closed（空人审重建 ⇒ `formal=0`；PASS 全入 / 非 PASS 不入；`reviewed` 集合与人审非 `UNREVIEWED` 集合双向相等）。
+- `next-env.d.ts` 会被全量 E2E 自动改回 `.next/dev/types` 变体 —— **每次 commit 前 `git status` 复查并排除**。
+- E2E 必须 `--testTimeout=30000` 跑 vitest；跑前查 3000 端口，**不得 kill 别人的服务**。
+- 版本三处联动：`package.json` / `public/version.json` / `public/sw.js` 的 `CACHE_VERSION`，**同值**；本轮仍 `1.5.0`。
+- 内容安全三条红线永不进题库（露骨 / 强迫惩罚灌酒 / 隐私脱衣非自愿）；亲密类必须 `consentMode=skip-anytime` 且按 intensity 严格分档（I1 零亲密/性内容）。
+- 「至少两名当前合法候选各有本人披露」「窗口 `[12,14]`」「中途 `MUTUAL_MIN_HEAT=H3`」是 Human 冻结数值，**不得修改**。
+- 边界标签：泛标签（`relationship-sensitive`、`proximity`）**不再**冒充精确映射；精确 10 项才产过滤标签。
+- 真机规矩：只动 **11T Pro+（IN9LZTAY4UGU4JF）**；**12 Pro（indq5xfi6hovay4d）禁碰**。测试连接/开局验证**只能真人手点**。
+- 部署：Vercel Git 自动部署已断，走 CLI 手动 `vercel deploy --prod --scope houfan`；**但本项目在 Release Gate 前不部署**。
+- `temp/` 已被 `.gitignore` 覆盖不入仓；其中被 HANDOFF/review/QA 引用的文件**必须保留**。
+
+**流程教训（本轮新增）**
+- 派工**切碎**：19~30 单、每单 1~2 文件 + 明确验收命令，零超时零半成品（历史上大单超时留半成品两次）。
+- 派工单要写「**实测完立即落盘，不等 supervisor**」——本轮 QA-2 曾误读流程空转一轮。
+- 临时探针用完必须还原并给 `shasum -a 256`；`git status` 对比证明无你的改动。
+- 每张卡的审查/定档都要有「真实证据」（探针自证、逐卡输出），禁止「我以为」。
+
+## 4. 恢复读盘（全体系唯一顺序，别乱）
+
+1. `AGENTS.md` → 2. `docs/roles/<你的角色卡>.md` → 3. 根 `USER_MODEL_OVERRIDE.md`（软链指母版 T23）→ 4. **本文件的「大交接 2」段** → 5. 根 `经验一句话.md` → 6. 涉基础设施加 `docs/sop/` 对应规范 → 7. 任务目标放最后。
+   之后跑：`git status` / `git log --oneline -5` / `git rev-list --left-right --count @{u}...HEAD` 确认现场。
+   冲突才扩大读；历史交接正文（下方）只在需要追溯旧数字与决策时读。
+
+---
+---
+
 - Captured at（YYYY-MM-DD HH:MM）：2026-09-28 **【B2.2 收尾两单已 commit ＋ CONTENT-01 第一包 24 张 Formal Fixed 已入库，待 commit】**
   - **现行门禁（编排者亲自复跑）**：`npx tsc --noEmit` 0 error｜`pnpm lint` 0 error（11 warning 既有）｜`npx vitest run --testTimeout=30000` **120 文件 / 1172 用例 / 0 failed**｜`npx playwright test` **106 passed / 0 failed / 6 skipped**｜`pnpm build` 通过｜`pnpm build:fixed-manifest` 通过（**legacy 414（主线 374 + 扩圈 40）/ audited 24 / reviewed 24 / `formal fixed = 24` / 逐卡对账 414:414、0 mismatch / 快照外 ID 0 / hash 可复现**）｜`check-ledger` = LEDGER-OK（TASK-MODEL-LOG 180 行 / DISPATCH-LOG 237 行）。HEAD `48850a4`（收尾两单已 commit），第一包 30 项工作区改动**未 commit**。
   - **两批构成**（本窗口连续执行，均已过 reviewer/QA/supervisor 三链）：
