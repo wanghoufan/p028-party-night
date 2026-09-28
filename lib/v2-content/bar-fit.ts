@@ -46,8 +46,10 @@
 export type MachineVerdict = "PASS" | "SUSPECT" | "HARD_FAIL_PATTERN";
 
 /**
- * 人工 BAR-FIT 定档（双人模拟噪声计时 / 动作审查结论）。
- * 机器预筛阶段一律为 `UNREVIEWED`，只有人工审查后才写正式值。
+ * 独立审查的 BAR-FIT 定档（双人模拟噪声计时 / 动作审查结论）。
+ * 机器预筛阶段一律为 `UNREVIEWED`，只有独立审查后才写正式值。
+ * ⚠️ `humanBarFit` / `HumanBarFit` 为**历史兼容字段/类型名**，不代表 reviewer 必然是 Human
+ * （身份见 `FixedContentManifest.buildInfo.reviewerKind`）。
  */
 export type HumanBarFit = "UNREVIEWED" | "PASS" | "BORDERLINE" | "FAIL";
 
@@ -95,7 +97,7 @@ export interface BarFitMetrics {
 export interface BarFitResult {
   /** 机器预筛结论。只做分流，**不得**当正式 FAIL。 */
   machineVerdict: MachineVerdict;
-  /** 人工定档；机器预筛阶段恒为 `UNREVIEWED`。 */
+  /** 独立审查定档（`humanBarFit` 为历史兼容字段名）；机器预筛阶段恒为 `UNREVIEWED`。 */
   humanBarFit: HumanBarFit;
   /** 人读理由，顺序与 `ruleHits` 一一对应（硬失败候选在前，其次复核池）。 */
   reasons: string[];
@@ -409,7 +411,7 @@ export const COMPUTED_RULE_IDS = [
  * 3. `machineVerdict` 取最严重值：任一 HF-* 命中 → `HARD_FAIL_PATTERN`；
  *    否则任一疑似命中 → `SUSPECT`；否则 `PASS`。
  *
- * `humanBarFit` 恒为 `UNREVIEWED`：正式定档只能由人工双人模拟噪声计时给出，
+ * `humanBarFit` 恒为 `UNREVIEWED`：正式定档只能由独立审查给出，
  * 机器不得代写（Plan §2）。
  */
 export function judgeBarFit(card: BarFitCard): BarFitResult {

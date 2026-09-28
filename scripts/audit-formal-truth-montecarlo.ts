@@ -99,11 +99,13 @@ const staticHeatAvailability = HEAT_ORDER.map((heat, idx) => {
   const rank = idx + 1;
   const packCards = packRuntimeCards;
   const legal = packCards.filter((card) => (isFormal(card.cardId) ? rank >= card.heatMin && rank <= card.heatMax : true));
+  const formalLegalIds = legal.filter((c) => isFormal(c.cardId)).map((c) => c.cardId).sort();
   return {
     heat,
     packTotal: packCards.length,
     legalCount: legal.length,
-    formalLegal: legal.filter((c) => isFormal(c.cardId)).length,
+    formalLegal: formalLegalIds.length,
+    formalLegalIds,
     legacyLegal: legal.filter((c) => !isFormal(c.cardId)).length,
   };
 });
@@ -374,6 +376,7 @@ function summarize(stats: SessionStat[], mode: "A" | "B") {
     formalDraws,
     formalShare: +(formalDraws / (totalDraws || 1)).toFixed(4),
     formalExposedDistinct: formalExposed.size,
+    formalExposedIds: [...formalExposed].sort(),
     formalTotal,
     legacyTotal,
     heatAtDraw: orderHeat(heatAtDraw),
@@ -425,10 +428,11 @@ const modeA = entriesA.map((e) => e.stat);
 const modeB = entriesB.map((e) => e.stat);
 
 /* ceiling 断粮：从主扫描按 intensityLimit 分档（intensityLimit 在 [1,5] 均匀取样 ⇒ 每档约 1/5）。
-   与 A.1 的 cohortByIntensityLimit 同口径，不另起一套样本。 */
+   与 A.1 的 cohortByIntensityLimit 同口径，不另起一套样本；A5 起覆盖全部 5 档（1~5）。 */
+const CEILING_LIMITS = [1, 2, 3, 4, 5] as const;
 const ceilingCohorts = (["A", "B"] as const).flatMap((mode) => {
-  const stats = (mode === "A" ? modeA : modeB).filter((s) => s.intensityLimit <= 2);
-  return [1, 2].map((limit) => {
+  const stats = mode === "A" ? modeA : modeB;
+  return CEILING_LIMITS.map((limit) => {
     const cohort = stats.filter((s) => s.intensityLimit === limit);
     const finished = cohort.filter((s) => s.completedRounds >= TARGET_ROUNDS);
     return {

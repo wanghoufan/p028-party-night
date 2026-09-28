@@ -11,14 +11,14 @@
  * | 轨 | 内容 | 用途 | 准入 |
  * |---|---|---|---|
  * | **Legacy Compatibility**（`tracks.legacyCompatibility`） | 冻结快照的全部 builtin 卡（数量由冻结快照决定，**不是写死值**） | **只**用于旧局读取 / 恢复 / 迁移 | 可缺 Plan §3 新 metadata；**明确不是正式 Fixed Content** |
- * | **Formal Fixed**（`tracks.formalFixed`） | 同时满足严格准入的卡（数量由**当前人工审查输入**与 strict admission 动态决定，**不是写死值**） | 正式主线准入唯一允许清单 | strict metadata 全字段 ∧ `humanBarFit=PASS` ∧ `reviewed=true`（真实人工审查）∧ provenance/hash 完整 |
+ * | **Formal Fixed**（`tracks.formalFixed`） | 同时满足严格准入的卡（数量由**当前独立审查输入**与 strict admission 动态决定，**不是写死值**） | 正式主线准入唯一允许清单 | strict metadata 全字段 ∧ `humanBarFit=PASS` ∧ `reviewed=true`（独立审查；reviewer 身份见 `buildInfo.reviewerKind`）∧ provenance/hash 完整 |
  *
- * Human Step 4 冻结原文（**当时口径，原样保留**）：**「正式 manifest 当前可以是 0 张。不要为了
+ * Human Step 4 冻结原文（**历史冻结时状态，原样保留**）：**「正式 manifest 当前可以是 0 张。不要为了
  * 数字好看，把 390 张未审旧题伪装成正式固定库。删除 formal admission 里那个「旧冻结直通」
  * 折让开关的语义。`formal fixed cards = 0` 是正确状态。同时修：`reviewed=true` 必须表示真实
  * 人工审查完成，不能只因为 metadata 字段齐全就设 true。」**
  * —— 这段冻结的是**口径**（不许放宽准入、不许把未审旧题伪装成 Formal），**不是永久数量**：
- * Formal 张数由当前人工审查输入动态决定；**第一包入库后当前值见产物**
+ * Formal 张数由当前独立审查输入动态决定；**当前值见产物**
  * `lib/v2-content/generated/fixed-content-manifest.json` 的 `tracks.formalFixed.counts.total`。
  *
  * 因此本模块**没有任何宽松开关**：`formalFixedIdSet` 只认四条件齐全（见 `satisfiesFormalAdmission`），
@@ -67,10 +67,26 @@ import generatedManifest from "./generated/fixed-content-manifest.json";
 export type FixedMachineVerdict = "PASS" | "SUSPECT" | "HARD_FAIL_PATTERN";
 
 /**
- * 人工 BAR-FIT 定档（与 `lib/v2-content/bar-fit.ts` 的 `HumanBarFit` 同字面量）。
- * 正式值只由人工双人噪声计时/动作审查写入；机器阶段恒为 `UNREVIEWED`。
+ * 独立审查的 BAR-FIT 定档（与 `lib/v2-content/bar-fit.ts` 的 `HumanBarFit` 同字面量）。
+ * 正式值只由独立审查写入；机器阶段恒为 `UNREVIEWED`。
+ *
+ * ⚠️ **`humanBarFit` 为历史兼容字段名，不代表 reviewer 必然是 Human**（字段名本轮不做全仓 rename）：
+ * reviewer 的真实身份见 `FixedContentManifest.buildInfo.reviewerKind`（`"human" | "ai-role"`）。
  */
 export type FixedHumanBarFit = "UNREVIEWED" | "PASS" | "BORDERLINE" | "FAIL";
+
+/**
+ * 独立 reviewer 的身份类别（Change C 语义冻结）。**定义在运行期模块**，由构建期
+ * `fixed-content-manifest-build.ts` 再导出，供构建器与产物共同使用。
+ *
+ * - `human`：真人 reviewer 逐卡审查；
+ * - `ai-role`：AI 审查角色（如 product-reviewer / Research Reviewer）。
+ *
+ * `reviewed=true` 只表示「**有一个独立 reviewer 已逐卡审查并给出明确结论**」，
+ * **不再自动等价于「真人已逐卡审查」**；身份由本字段如实表达，AI 角色不得在文案上冒称 Human。
+ * 批次级值写入产物 `buildInfo.reviewerKind`（见 `fixed-content-manifest-build.ts`）。
+ */
+export type ReviewerKind = "human" | "ai-role";
 
 /** 固定库 metadata 完整度：`audited`＝已带 Plan §3 新质量字段并通过 strict；`legacy`＝V1.3 旧冻结（字段未回填）。 */
 export type FixedCardMetadataStatus = "legacy" | "audited";
@@ -86,21 +102,23 @@ export type FixedCardSet = "mainline" | "expansion";
  *
  * BAR-FIT 走**两层口径**（P1-4），本记录两条都留、互不替代：
  * - `machineVerdict`：机器预筛结论（`judgeBarFit` 直出），只做分流，**不是**正式判据；
- * - `humanBarFit`：人工双人模拟噪声计时/动作审查后的**正式**定档；当前无人工审查，
- *   故恒为 `UNREVIEWED`——本字段如实记录「审没审过」，不虚报人工已审。
+ * - `humanBarFit`：独立审查后的**正式** BAR-FIT 定档（字段名为历史兼容名，不代表 reviewer 必然是
+ *   Human，身份见 `buildInfo.reviewerKind`）；无审查输入时恒为 `UNREVIEWED`——本字段如实记录
+ *   「审没审过」，不虚报已审。
  */
 export interface FixedCardProvenance {
   cardId: string;
   cardSet: FixedCardSet;
   /**
-   * 是否已过**真实人工审查**（Human Step 4：`reviewed=true` 必须表示人工审查完成，
-   * **不得**因为 metadata 字段齐全或机器 `machineVerdict` 好看就置 true）。
-   * 唯一合法来源是构建期注入的人工审查输入（见 `fixed-content-manifest-build.ts` 的 `HumanFixedReview`）。
+   * 是否已由**一个独立 reviewer 逐卡审查并给出明确结论**（Change C 语义冻结：
+   * `reviewed=true` **不再自动等价于「真人已逐卡审查」**；reviewer 身份见 `buildInfo.reviewerKind`）。
+   * **不得**因为 metadata 字段齐全或机器 `machineVerdict` 好看就置 true。
+   * 唯一合法来源是构建期注入的独立审查输入（见 `fixed-content-manifest-build.ts` 的 `HumanFixedReview`）。
    */
   reviewed: boolean;
   /** 机器 BAR-FIT 预筛结论；判定来源见 `buildInfo.barFitSource`。 */
   machineVerdict: FixedMachineVerdict;
-  /** 人工 BAR-FIT 定档；机器预筛阶段恒为 `UNREVIEWED`。 */
+  /** 独立审查的 BAR-FIT 定档（`humanBarFit` 为历史兼容字段名）；机器预筛阶段恒为 `UNREVIEWED`。 */
   humanBarFit: FixedHumanBarFit;
   /** metadata 完整度（见 `FixedCardMetadataStatus`）。 */
   metadataStatus: FixedCardMetadataStatus;
@@ -115,7 +133,7 @@ export interface FixedCardTrackCounts {
   expansion: number;
   /** metadata 仍为 V1.3 旧冻结（未回填 Plan §3 新字段）的卡数。 */
   legacyMetadata: number;
-  /** 已带 Plan §3 新质量字段的卡数（不代表已人工审查）。 */
+  /** 已带 Plan §3 新质量字段的卡数（不代表已过独立审查）。 */
   auditedMetadata: number;
 }
 
@@ -147,7 +165,7 @@ export interface FormalRejectionCounts {
   missingStrictMetadata: number;
   /** `humanBarFit !== "PASS"`（含 `UNREVIEWED`）。 */
   humanBarFitNotPass: number;
-  /** `reviewed !== true`（未过真实人工审查）。 */
+  /** `reviewed !== true`（未过独立审查）。 */
   notHumanReviewed: number;
   /** provenance / payloadHash 不完整。 */
   provenanceIncomplete: number;
@@ -156,8 +174,8 @@ export interface FormalRejectionCounts {
 /**
  * Formal Fixed 轨（Human Step 4 B）：正式主线准入的**唯一**允许清单。
  *
- * 张数由**当前人工审查输入**与 strict admission 动态决定（不是写死值）：空输入 ⇒ 0 张；
- * 第一包入库后随真实人工审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或
+ * 张数由**当前独立审查输入**与 strict admission 动态决定（不是写死值）：空输入 ⇒ 0 张；
+ * 随独立审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或
  * 直接置 `reviewed=true`（Human Step 4 冻结口径）；当前值见产物 `tracks.formalFixed.counts.total`。
  */
 export interface FormalFixedTrack {
@@ -195,14 +213,20 @@ export interface FixedContentManifest {
     batchId: string;
     /** 内容版本，取自冻结 SSOT 的 schemaVersion（不另造版本号；整批同一值）。 */
     contentVersion: string;
-    /** 未过人工审查时的阶段标记（整批同一值）。 */
+    /** 未过独立审查时的阶段标记（整批同一值）。 */
     legacyReviewStage: string;
     /** BAR-FIT 判定来源（人读，便于复核）。 */
     barFitSource: string;
-    /** `reviewed` 的唯一合法来源：构建期注入的人工审查输入（空输入 ⇒ formal 恒 0）。 */
+    /** `reviewed` 的唯一合法来源：构建期注入的独立审查输入（空输入 ⇒ formal 恒 0）。 */
     humanReviewSource: string;
-    /** 人工审查输入日期（`YYYY-MM-DD`；空输入记 `(none)`）。 */
+    /** 独立审查输入日期（`YYYY-MM-DD`；空输入记 `(none)`）。 */
     humanReviewedAt: string;
+    /**
+     * 本批独立审查的 reviewer 身份（Change C 冻结；批次级记录，逐卡同值；不参与 snapshotHash）。
+     * `reviewed=true` 只表示「有一个独立 reviewer 已逐卡审查并给出明确结论」，身份靠本字段如实表达，
+     * AI 角色不得在文案上冒称 Human。
+     */
+    reviewerKind: ReviewerKind;
     /** Formal 准入口径声明（人读）。 */
     formalAdmission: string;
     /** 冻结 SSOT 的 archive sha256（与 `v2-ssot.generated.json` provenance 一致）。 */
@@ -218,8 +242,8 @@ export interface FixedContentManifest {
  */
 export const FORMAL_FIXED_ADMISSION_REQUIREMENTS = [
   "strict metadata 全字段通过（Plan §3 必填字段完整、枚举合法、卡面 barFit=PASS）",
-  "humanBarFit = PASS（人工双人模拟噪声计时定档）",
-  "reviewed = true（真实人工审查完成，不得由 metadata 齐全或 machineVerdict 推高）",
+  "humanBarFit = PASS（独立审查的 BAR-FIT 定档；字段名为历史兼容名，不代表 reviewer 必然是 Human）",
+  "reviewed = true（独立审查完成：有一个独立 reviewer 已逐卡审查并给出明确结论，身份见 buildInfo.reviewerKind；不得由 metadata 齐全或 machineVerdict 推高）",
   "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）",
 ] as const;
 
@@ -318,9 +342,9 @@ export function satisfiesFormalAdmission(provenance: FixedCardProvenance | undef
  * 入集四项**全部**满足：`metadataStatus === "audited"` ∧ `reviewed === true` ∧
  * `humanBarFit === "PASS"` ∧ 逐卡 provenance 存在且 `payloadHash` 完整（ID ∈ 快照内）。
  * 任何一项不满足都不入集 —— 未审内容、机器预筛结论、以及「只补齐了 metadata 字段」的卡
- * 都不算 Formal（Human Step 4 B：`reviewed=true` 必须表示真实人工审查完成）。
+ * 都不算 Formal（Human Step 4 B 口径更新：`reviewed=true` 表示「有一个独立 reviewer 已逐卡审查并给出明确结论」）。
  *
- * 集合大小**完全由当前人工审查输入决定**，不是写死值：空输入（无人审）⇒ 集合为空；
+ * 集合大小**完全由当前独立审查输入决定**，不是写死值：空输入（无独立审查）⇒ 集合为空；
  * 第一包入库后随快照的实际 `counts.auditedMetadata` / `reviewed` / `humanBarFit` 取值变化。
  * 当前值见产物 `lib/v2-content/generated/fixed-content-manifest.json` 的
  * `tracks.formalFixed.counts.total`。
@@ -390,7 +414,7 @@ export function cardsOutsideManifest(
 /**
  * **正式 Formal Fixed 轨**的越轨计数（Human Step 5：「正式 Fixed session 只能包含当前
  * formal manifest ID」）。与 `countCardsOutsideManifest` 的区别：后者只回答「在不在冻结快照里」，
- * 这里把「在快照内、但未过人工审查的 legacy」也一并算作越轨——正式轨里 legacy / seed /
+ * 这里把「在快照内、但未过独立审查的 legacy」也一并算作越轨——正式轨里 legacy / seed /
  * custom / AI / 快照外一个都不许有。
  */
 export function countCardsOutsideFormalTrack(
@@ -404,7 +428,7 @@ export function countCardsOutsideFormalTrack(
  * 卡级内容轨（Human Step 5：Formal Fixed / Legacy Compatibility / Custom 三轨必须独立）。
  *
  * 与 `classifyMainlineCard` / `isFormalFixedCard` 同一份 manifest 真源，**不新写第二套判定**：
- * - `formal`：`builtin` ∧ 已在正式 Formal 轨（见 `formalFixedIdSet`，集合大小由人工审查输入决定）；
+ * - `formal`：`builtin` ∧ 已在正式 Formal 轨（见 `formalFixedIdSet`，集合大小由独立审查输入决定）；
  * - `snapshot`：`builtin` ∧ ID ∈ Legacy Compatibility 轨（即当前冻结快照内的 builtin 卡，
  *   数量由冻结快照决定；它们「在快照内」但不等于 Formal——这两个概念不能混）；
  * - `seed`：`builtin` ∧ ID ∉ 当前冻结快照（旧 `seed-*` / 未知 / 混合旧缓存）；

@@ -30,10 +30,17 @@
 2. **Custom 与正式内容混轨（已解）**：`buildPlayableDeck` 拆 `builtinPool`/`customPool` 建堆二选一；`mixedCandidatePackIds` 剔 custom；Custom self-mode 只用 custom；历史混装 Session 兼容读取、不静默迁 Formal。
 
 ### 1.3 第一包交付物与真源
-- 内容源：`lib/v2-content/formal-truth-pack.ts`（24 张 `PN-TRUTH-201~224`，`heatMin` 全 1、`heatMax` 1~4、`intensity` 覆盖 I1~I5、8 项必填质量字段齐备）。**既有 390 张 SSOT `text` 零修改。**
+- 内容源：`lib/v2-content/formal-truth-pack.ts`（24 张 `PN-TRUTH-201~224`，`intensity` 覆盖 I1~I5，8 项必填质量字段齐备）。**Heat 已于 2026-09-28 由 reviewer 逐卡重标为诚实值**：`heatMin` H1=3 / H2=9 / H3=10 / H4=2，`heatMax` H2=1 / H3=4 / H4=19（逐卡表见 `temp/HEAT-REVIEW-PACK1.md`）。**既有 390 张 SSOT `text` 零修改。**
 - 准入产物：`lib/v2-content/generated/fixed-content-manifest.json` —— `tracks.legacyCompatibility`（414 = 主线 374 + 扩圈 40）／`tracks.formalFixed`（**24**）；被拒 `missingStrictMetadata 390` / `humanBarFit≠PASS 390` / `未人工审 390`。
 - 人工级内容审查：`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`（`source` 已如实标注 **AI 角色** 身份）＋报告 `docs/review/RESEARCH_REVIEW-FORMAL-TRUTH-PACK-1.md`（三轮：PASS 20/4 → 重写 → 23 → 再重写 → **24 全量 PASS**）。
 - BAR-FIT 机器产物与 MC：`docs/qa/content-audit-v2/BAR-FIT-AUDIT.json`、运行时真源 `docs/qa/content-audit/FORMAL-TRUTH-MC.json` / `FORMAL-TRUTH-PRODUCTION-CHAIN.json`（**注意：A.1 旧 `ROUTER-MONTE-CARLO.json` 已是入池前快照，已标 stale**）。
+
+### 1.4.0 报告口径纪律（2026-09-28 Human 冻结）
+
+所有 Heat / Mutual 相关结论**必须双口径分写**，禁止混成一句：
+- **Engine / explicit-disclosure model**：假设本轮真的收到合法 `roundDisclosureSignal`，可验证状态机 `H1→H2→H3→H4` 与 Mutual 触发能力。
+- **Current real UI**：`app/game/page.tsx` 的 `roundDisclosureForCurrentRound()` 仍恒 `undefined` ⇒ `effective information round` 不成立 ⇒ **Heat 仍 H1、mid Mutual 仍不可达**。
+- ⛔ **禁止**再写「生产 Heat 已正常推进」这类把 A 当 B 的表述。
 
 ### 1.4 已验证的运行时事实
 - Formal 真心话 → Router 可出 → metadata 进 production event → effective count 推进 → **Heat 逐档可达**（仅 Formal 24 张牌堆 H1→H2@4→H3@8→H4@13，effective 15）。
@@ -50,13 +57,17 @@
 ## 2. 下一步的任务（按优先级；每件都已有明确口径）
 
 **① 等 Human 拍板 2 项（未拍前不要动）**
-1. **`reviewed=true` 口径冲突**（属 Change C）：代码/文档写「真实人工审查完成」，而第一包实际由 **AI 角色**（Research Reviewer）审查，`source` 已如实标注。选项 A＝改文案 + 加 `reviewerKind: human | ai-role` 字段（需 planner + Human 批准）；选项 B＝保持文案、以 `source` 标注为透明度手段。风险：不改措辞则 `reviewed=true` 可能被误读为真人逐题审过。
+1. ~~**`reviewed=true` 口径冲突**（原属 Change C）~~ → **已于 2026-09-28 由 Human 拍板并落地**：`reviewed=true` = **独立内容审查完成**（不再等于真人）；新增 `reviewerKind: "human" | "ai-role"` 由构建器真实读取、参与 fail-closed 校验、写入产物 `buildInfo`（实测 `ai-role`）；`humanBarFit` 等仅保留为历史兼容名、**未** rename；**本轮不新增 `fieldReviewedByHuman`**（真人现场验证仍由 RG-02 独立把关）。
 2. **第二包补卡方向与配额**：先补哪个玩法、目标张数、是否沿用「宁少勿滥不凑数」。
 
 **② 第二包内容开发（CONTENT-01 继续）**
 - 沿用第一包已跑通的链路：C1-1 只读设计 → C1-2 内容源 → C1-3 管线接入 → C1-4 BAR-FIT 机器审查＋空人审骨架 → **review 角色三轮审查** → 按意见重写 → 修锁旧态测试 → MC/最差 trace/生产链验证 → CR → QA → SUP。
 - 纪律（Human 明确）：机器档位不得当人工结论；审查者身份必须如实标注；**宁少勿滥、不凑数**；缺口靠补内容不靠放宽门槛；不改旧 350 题 text；不恢复 AI 主线；不为 quota 写垃圾题。
-- **新包必须先跑 Router MC 预估 Heat 可达性**：`heatMin` 一律 1（生产 Heat 恒 H1，`heatMin≥2` 的 Formal 卡永不可抽，会重演 H1 桶耗尽）；`heatMax` 要拉开以备将来 Heat 推进。
+- **~~新包 `heatMin` 一律 1~~ —— ⛔ 已于 2026-09-28 被 Human 废除，禁止再照此执行。**
+  - 废止原因：`heatMin` 一律 1 等于**用 `Intensity` 代替 `Heat` 的关系推进作用**，与「Heat = 关系聊到多深、Intensity = 用户接受多大尺度、两者正交」的冻结定义冲突。
+  - **现行规则**：内容 Heat metadata **按真实关系阶段逐卡标注**（H1 刚认识自然／H2 聊过几轮／H3 需一定信任／H4 明显深层），`heatMax` 同样诚实，**禁止为了库存统一拉 4**、**禁止为了 runtime 能抽到压低 `heatMin`**。
+  - **Heat 必须逐卡判、由 reviewer 决定**：builder 不得自行决定 Heat，也不得改题面。
+  - **新包仍要先跑 Router MC**，但 MC 报告必须**双口径**（见下条），不得用「可抽到多少张」反向压 Heat。
 
 **③ B2.2 尚未做的 Step（技术侧）**
 - 剩余轨道隔离：`buildPlayableDeck` 之外的 `buildPlayableDeck` 同类建堆路径已由 CR-2 确认无漏网；**未做的是 `custom`/`AI` 轨与 snapshot 轨在「新建牌堆」层面的彻底分离**（C 类，需 Human 拍 A/B/C，现状是 C 类缺口）。
@@ -78,7 +89,8 @@
 **代码/技术坑**
 - `classifyMainlineCard` 的 `"fixed"` **≠ Formal**；判 Formal 必须用 `isFormalFixedCard`（读 manifest `provenance`）。**从 SSOT 读会静默 fail-open**（SSOT 无 `metadataStatus`）。
 - 「只换取卡来源、不同步计数」是**半改无效**：`assessExhaustion` 的 `bucket:` 计数不同步 ⇒ `hard.bucket=0 ∧ widened=0 ∧ pack>0` ⇒ 仍然 `PACK_EXHAUSTED`。解耦必须下沉到 `bucket()` 内部。
-- Formal 卡一旦 `heatMin≥2`，在生产 Heat 恒 H1（disclosure 未落地）下**永不可抽**。
+- ⚠️ **2026-09-28 起的重要事实变更（务必先读）**：第一包 Heat 诚实重标后，**在当前真实 UI（`roundDisclosureForCurrentRound()` 恒 `undefined` ⇒ Heat 恒 H1）下，24 张 Formal 只有 3 张（201/202/203，heatMin=1）可能被抽到，其余 21 张暂时抽不到**。这是 **Human 明确接受的正确结果**（内容 metadata 说真话，runtime 缺口由 runtime 以后解决），**不得**用「把 heatMin 压回 1」或「让 builder 改题」来消除。
+  - 后果（已知、如实登记）：在 disclosure 落地前，第一包对真实 UI 的实际贡献接近于零，`Heat 永久 H1` 这个 CONTENT-01 想解决的问题在生产侧**重新变为 inert**。要真正解决，只能等 disclosure UX 单独走 Human Gate。
 - `roundDisclosureForCurrentRound()` 仍恒 `undefined`（Human 冻结本批不新增披露 UI）⇒ 生产 UI 无法形成认识证据 ⇒ 中途 Mutual 在生产仍不可达；**正向验证只能走 integration 的正式 disclosure 通道**，禁止手搓 state。
 - 测试断言不要硬编码数量（如 `formal=23`）：本轮已改为**按人审输入派生**，否则每轮人审都会变红。
 - 锁旧态的既有测试断言可以改，但必须给「原断言 → 新断言 → 作废原因」，且**保留/加强** fail-closed（空人审重建 ⇒ `formal=0`；PASS 全入 / 非 PASS 不入；`reviewed` 集合与人审非 `UNREVIEWED` 集合双向相等）。
@@ -146,10 +158,10 @@
 - Phase A.2 状态：**CLOSED（2026-09-27）**。P1#2（Router 曝光饥饿）= **CLOSED**；P1#1（低开放度关系主线断粮）= **OPEN / CHANGE_C_CONTENT_MATRIX**（不实施 Heat 改动，随 Phase B 方案 E 一并解决）；最终 QA `docs/qa/BUGS-CONTENT-A2.md` 首判 **FAIL**（4 项遗留：复审标签术语旧称残留 / HANDOFF 过期数字 / 账本缺 A.2 收口行 / 工作区归属未清）→ builder 收口清理（稳定版术语→复审标签口径）→ **supervisor 终检 PASS 放行**（依据 `docs/model/TASK-MODEL-LOG.jsonl` 第 112–114 行；QA 报告本身未回填放行结论，见「收尾记一笔」）。**明确不再开 Phase A.3 / A.4 审查循环。**
 - **CONTENT-01 第一包（`formal fixed` 0 → 24，2026-09-28，Human 已授权连续执行）**
   - **做了什么**：新增**独立内容源** `lib/v2-content/formal-truth-pack.ts`，**24 张全新真心话卡** `PN-TRUTH-201~224`（既有 390 张 SSOT `text` 零修改）；管线接入（bridge 转发质量字段、精确 10 项 boundary tag 映射、quality sidecar、manifest 自动纳入）；BAR-FIT 机器审查对齐 414 张并生成**空**人工审查骨架（builder 未代填人工结论）；内容人工级审查**三轮**（product-reviewer / Research Reviewer，AI 角色）＋两次按审查意见重写。
-  - **关键设计**：`heatMin` 全为 1（因生产 Heat 恒 H1，`heatMin≥2` 的 Formal 卡永不可抽、会重演 H1 桶耗尽），`heatMax` 覆盖 1~4、`intensity` 覆盖 I1~I5。24 张全量 `humanBarFit=PASS`、`reviewed=true`，`formal fixed = 24`。
+  - **关键设计**：`intensity` 覆盖 I1~I5。24 张全量 `humanBarFit=PASS`、`reviewed=true`、`reviewerKind=ai-role`（产物 `buildInfo` 已如实写入），`formal fixed = 24`。**Heat 曾一度全部压成 1，该妥协已于同日被 Human 废除并由 reviewer 逐卡重标（见「注意事项」节的现行规则）。**
   - **运行时验证（Human §十八）**：Formal 卡能被 Router 抽到 → metadata 进入 production event → effective count 推进 → **Heat 逐档可达**（仅 Formal 牌堆 H1→H2@4→H3@8→H4@13，effective 15）；legacy 负向对照 effective 恒 0、Heat 恒 H1（fail-closed 成立）。
   - **已如实登记的缺口（后续包要补，不得靠放宽门槛）**：ceiling=1 dead-end **67.2%**｜H3 仅 2.6%｜H4 = 0｜中途互选窗口 `count≥12` 不可达｜A.1 旧 MC 产物相对新 Router 已 stale｜结论只覆盖 truth-dare 单包，**不可外推**。
-  - **等 Human 拍板的口径冲突**：`reviewed=true` 在代码/文档里被描述为「真实人工审查完成」，而第一包实际由 **AI 角色**（Research Reviewer）审查（人审 `source` 已如实标注 AI 身份）。是否改措辞或加 `reviewerKind` 字段，需 Human 决定（CR-3 P1-2）。
+  - ~~**等 Human 拍板的口径冲突**~~ → **已决并落地**（见「要注意意事项/下一步」段）：`reviewed=true` = 独立内容审查完成；`reviewerKind` 已进入构建器与产物（`ai-role`）。
 - 当前 Task（历史）：**Phase B｜B2.2 技术收口批次 Step 1~6 已完成并过 code-reviewer（PASS，P0=0/blocking P1=0）与 QA（首判 FAIL 仅因覆盖不完整 → 补齐后复验 PASS）。**（⚠️ 2026-09-28 收尾补注：原文「工作区仍红、全部未 commit」已过期，现全部已 commit 并 push；只作历史留痕，**不要**据此判断现状）
   - **本轮新 P0（已定位、已修、已过检）**：「Heat 永久 H1 → 每包仅 8~10 张 H1 卡 → 任何单玩法局第 9 轮 PACK_EXHAUSTED」。
     - 根因链（D1 fail-closed 的必然后果）：`app/game/page.tsx` `roundDisclosureForCurrentRound()` 恒 `undefined` ＋ SSOT schema 2.3 无 `informationGain/topic` → `isEffectiveInformationRound` 恒 false → `relationshipEffectiveCardCount` 恒 0 → `HEAT_THRESHOLDS` 使 Heat 恒 H1 → `v2-router.ts` / `v2-deal.ts` 对 Heat 硬过滤 ⇒ H1 桶耗尽。

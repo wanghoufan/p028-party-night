@@ -21,7 +21,9 @@
  * - 生产 Heat 恒 H1（disclosure 通道未落地 ⇒ 有效轮恒 0），**任何 `heatMin≥2` 的 Formal 卡
  *   在运行时都抽不到**。若把既有 `PN-TRUTH-*` 改判 Formal，等于把那批卡从可玩库存里删掉，
  *   会重演刚修好的「H1 桶耗尽 / PACK_EXHAUSTED」。
- * - 故第一包走「**新 ID + 全部 `heatMin=1` + 独立正式内容源**」，既有 390 卡一张不动。
+ * - 故第一包走「**新 ID + 独立正式内容源**」，既有 390 卡一张不动。（C1-2 当时为了避开
+ *   「H1 桶耗尽」，曾把本包 `heatMin` 一律压成 1；那是一次纯为「能抽到」的妥协，已由 Human
+ *   于 2026-09-28 废止，现行口径见下面「逐条硬规格 2」。）
  *
  * ## ID 约定
  * - 前缀沿用 `PN-TRUTH`（既有 pack / gameType 映射表 `V2_MAINLINE_PACK_BY_GAME_TYPE` 已认它）；
@@ -30,8 +32,12 @@
  *
  * ## 逐条硬规格（Human + C1-1 设计稿，实现时逐条对齐）
  * 1. **玩法**：`gameType="truth"` → pack `truth-dare`（真心话）。
- * 2. **`heatMin` 一律 = 1**：见上「H1 桶耗尽」原因；`heatMax` 按卡的关系深度拉开到 H1~H4
- *    （本包 H1 2 张 / H2 3 张 / H3 6 张 / H4 13 张），为将来 Heat 推进留库存。
+ * 2. **`heatMin` / `heatMax` 按卡的真实关系深度诚实标注**（Human 2026-09-28 冻结）：`Heat` =
+ *    关系聊到多深、`Intensity` = 用户接受多大尺度，**两者正交** —— 不得用 `Intensity` 代替
+ *    `Heat` 的推进作用，不得为库存好看压低 `heatMin`，也不得把 `heatMax` 统一拉 4。
+ *    现分布：`heatMin` H1 3 / H2 9 / H3 10 / H4 2；`heatMax` H1 0 / H2 1 / H3 4 / H4 19。
+ *    ⚠️ 生产 UI 未落地 disclosure ⇒ 运行时 Heat 恒 H1，故 `heatMin≥2` 的卡**当前抽不到**；
+ *    这是 Human 已明确接受的正确结果，**不得**为了「能抽到」反向改标注。
  * 3. **`intensity` 覆盖 1~5**（I1 4 / I2 9 / I3 7 / I4 2 / I5 2）：I1/I2 足量供 ceiling=1/2 的桌，
  *    I3/I4/I5 亦各有多张，不做「只做低强度」。
  * 4. **8 项必填质量字段逐卡齐全**（`V2_REQUIRED_QUALITY_FIELDS`，真源 `v2-card-metadata.ts`）：
@@ -123,7 +129,7 @@ export interface FormalTruthCard
 const SCHEMA = V2_SSOT_SCHEMA_VERSION;
 
 /**
- * 第一包真心话正式固定卡（24 张，`PN-TRUTH-201~224`，全部 `heatMin=1`）。
+ * 第一包真心话正式固定卡（24 张，`PN-TRUTH-201~224`；Heat 按真实关系深度标注，见文件头规格 2）。
  *
  * 排序：按 `cardId` 升序（201 → 224）。桥接侧若追加进 `mainlineSsotCards()`，
  * **只能追加在末尾**（不得前置/重排，否则既有取 `[0]` 的测试与 E2E 会漂移）。
@@ -137,7 +143,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     text: "说一件你最近主动花时间去做的小事，具体到那件事本身。",
     intensity: 1,
     heatMin: 1,
-    heatMax: 1,
+    heatMax: 3,
     relationStage: "notice",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -166,7 +172,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     text: "有没有一个爱好你坚持了很多年？说说它现在还在给你什么。",
     intensity: 1,
     heatMin: 1,
-    heatMax: 2,
+    heatMax: 4,
     relationStage: "know",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -195,7 +201,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     text: "下班或放学到睡前，你一个人最固定的一段安排是什么？",
     intensity: 1,
     heatMin: 1,
-    heatMax: 4,
+    heatMax: 3,
     relationStage: "continue",
     targetMode: "choose-opposite-sex",
     responseMode: "public",
@@ -223,7 +229,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 204,
     text: "最近一次有人对你抱有期待，你照做了还是没照？当时怎么决定的。",
     intensity: 2,
-    heatMin: 1,
+    heatMin: 2,
     heatMax: 3,
     relationStage: "signal",
     targetMode: "system-opposite-sex",
@@ -252,8 +258,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 205,
     text: "说一个小习惯，是熟人相处久了才会发现的。",
     intensity: 1,
-    heatMin: 1,
-    heatMax: 1,
+    heatMin: 2,
+    heatMax: 2,
     relationStage: "notice",
     targetMode: "choose-opposite-sex",
     responseMode: "public",
@@ -281,8 +287,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 206,
     text: "你在什么状态下会变得不像平时的自己？说一个最近发生的事。",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 2,
+    heatMin: 2,
+    heatMax: 3,
     relationStage: "know",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -310,8 +316,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 207,
     text: "伴侣半天没回你消息时，你一般会做什么？",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
+    heatMin: 2,
+    heatMax: 4,
     relationStage: "signal",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -339,7 +345,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 208,
     text: "你觉得关系里喜欢和合适各占几成？说说你为什么这么分。",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 2,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -368,8 +374,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 209,
     text: "你会被哪种人吸引？说一个具体行为，别只给形容词。",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 2,
+    heatMin: 2,
+    heatMax: 4,
     relationStage: "know",
     targetMode: "choose-opposite-sex",
     responseMode: "public",
@@ -397,8 +403,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 210,
     text: "闹别扭时你是当场说开还是先冷一冷？你希望对方怎么做？",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
+    heatMin: 2,
+    heatMax: 4,
     relationStage: "signal",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -426,7 +432,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 211,
     text: "关系里有没有你绝对不能接受的相处方式？说清一条。",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -455,8 +461,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 212,
     text: "你会在什么情况下吃醋？说一件真发生过的，别用看情况带过。",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
+    heatMin: 3,
+    heatMax: 4,
     relationStage: "signal",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -484,7 +490,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 213,
     text: "另一半和异性单独吃饭，你能接受到哪一步？说出你的分界。",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -513,8 +519,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 214,
     text: "你有关系很好的异性朋友吗？你们会聊到什么深度？",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
+    heatMin: 3,
+    heatMax: 4,
     relationStage: "signal",
     targetMode: "choose-opposite-sex",
     responseMode: "public",
@@ -542,7 +548,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 215,
     text: "如果伴侣要你少和某个异性朋友来往，你会怎么办？说实话。",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -571,7 +577,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 216,
     text: "上一段关系结束时，你花最久才想通的是哪一点？",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -600,7 +606,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 217,
     text: "什么时刻，上一段关系最容易又浮上来？说说那种时刻的样子。",
     intensity: 4,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "choose-opposite-sex",
@@ -629,8 +635,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 218,
     text: "关系里踩到哪条线，你会直接结束而不是再谈一次？说一条。",
     intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
+    heatMin: 3,
+    heatMax: 4,
     relationStage: "signal",
     targetMode: "system-opposite-sex",
     responseMode: "public",
@@ -658,7 +664,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 219,
     text: "你身上哪一点，是你希望对方永远不要拿来开玩笑的？",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -687,7 +693,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 220,
     text: "五年后理想的一天，从睁眼到睡前，你最想保住的是哪三段？",
     intensity: 2,
-    heatMin: 1,
+    heatMin: 2,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -716,7 +722,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 221,
     text: "你最想完成的一件事是什么？说说你已经为它做过的一步。",
     intensity: 3,
-    heatMin: 1,
+    heatMin: 2,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -745,7 +751,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 222,
     text: "在亲密关系里，哪件事你希望对方一定先问过你？说一条。",
     intensity: 5,
-    heatMin: 1,
+    heatMin: 3,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -774,7 +780,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 223,
     text: "亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。",
     intensity: 4,
-    heatMin: 1,
+    heatMin: 4,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "system-opposite-sex",
@@ -803,7 +809,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 224,
     text: "如果你们对亲密的节奏不一致，你会怎么开口谈？说一句。",
     intensity: 5,
-    heatMin: 1,
+    heatMin: 4,
     heatMax: 4,
     relationStage: "continue",
     targetMode: "choose-opposite-sex",

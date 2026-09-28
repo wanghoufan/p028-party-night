@@ -26,6 +26,7 @@ import {
   verifyFixedContentManifest,
   type BuildFixedContentManifestOptions,
   type HumanFixedReview,
+  type ReviewerKind,
 } from "@/lib/v2-content/fixed-content-manifest-build";
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
@@ -41,9 +42,11 @@ import type { GameCard } from "@/lib/domain/schemas";
  *    ＋冻结卡派生（下一轮人审改动不会再让测试变红）；
  * ② Formal 准入是**严格四条件**、**无任何宽松开关**——缺 strict metadata / humanBarFit≠PASS /
  *    reviewed≠true / hash 不全，逐条都进不了 Formal；
- * ③ `reviewed` 只来自真实人工审查输入（`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`），
+ * ③ `reviewed` 只来自独立审查输入（`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`），
  *    **不**由 metadata 齐全或 machineVerdict 推高；
- * ④ 构建产物可复现（重复构建 + 乱序输入 → 两轨同一 hash），strict 门禁 fail-closed。
+ * ④ 构建产物可复现（重复构建 + 乱序输入 → 两轨同一 hash），strict 门禁 fail-closed；
+ * ⑤ Change C｜`reviewerKind`（human | ai-role）必填且校验，缺失/非法 fail-closed 抛错；
+ *    身份写入 `buildInfo.reviewerKind`，但**不参与准入判定**（human 与 ai-role 行为对称）。
  */
 
 const frozenCards = (): GameCard[] => [...mainlineSsotCards(), ...expansionSsotCards()];
@@ -53,6 +56,8 @@ const HUMAN_REVIEW_PATH = "docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json";
 interface HumanReviewFile {
   source: string;
   reviewedAt: string;
+  /** 独立 reviewer 身份（Change C）：真人 `human` / AI 角色 `ai-role`。 */
+  reviewerKind: string;
   entries: Record<string, { reviewed: boolean; humanBarFit: FixedHumanBarFit }>;
 }
 const loadHumanReviewFile = (): HumanReviewFile =>
@@ -73,10 +78,16 @@ const buildOptions = (overrides: Partial<BuildFixedContentManifestOptions> = {})
   ...overrides,
 });
 
-/** 逐卡人工审查输入（只有它能把 reviewed / humanBarFit 置真）。 */
+/** 逐卡独立审查输入（只有它能把 reviewed / humanBarFit 置真）。默认身份 ai-role（第一包真实身份）。 */
 const humanReview = (
   entries: Record<string, { reviewed: boolean; humanBarFit: FixedHumanBarFit }>,
-): HumanFixedReview => ({ source: "tests/unit/fixed-content-manifest.test.ts", reviewedAt: "2026-09-28", entries });
+  reviewerKind: ReviewerKind = "ai-role",
+): HumanFixedReview => ({
+  source: "tests/unit/fixed-content-manifest.test.ts",
+  reviewedAt: "2026-09-28",
+  reviewerKind,
+  entries,
+});
 
 const card = (overrides: Partial<GameCard> & Pick<GameCard, "id">): GameCard => ({
   packId: "truth-dare", type: "truth", content: "说一件今天的开心事",
@@ -115,22 +126,22 @@ describe("Human Step 4｜两轨在代码与产物结构上分开", () => {
     for (const id of legacy.allowedCardIds) {
       expect(legacy.provenance[id], `${id} 缺 provenance`).toBeTruthy();
       expect(legacy.provenance[id]!.payloadHash).toMatch(FIXED_PAYLOAD_HASH_PATTERN);
-      // P1-4：机器预筛与人工定档分层，两条都留痕，互不替代。
+      // P1-4：机器预筛与独立定档分层，两条都留痕，互不替代。
       expect(["PASS", "SUSPECT", "HARD_FAIL_PATTERN"]).toContain(legacy.provenance[id]!.machineVerdict);
     }
-    // Human Step 4 ＋ 人审输入落地（C1-5）：旧 390 张无人审 ⇒ 仍 UNREVIEWED / reviewed=false；
-    // 第一包 24 张已由 product-reviewer 逐卡人工定档 ⇒ reviewed=true（只来自人审输入，非 metadata）。
+    // Human Step 4 ＋ 独立审查输入落地（C1-5）：旧 390 张无审查 ⇒ 仍 UNREVIEWED / reviewed=false；
+    // 第一包 24 张已由 product-reviewer 逐卡独立定档 ⇒ reviewed=true（只来自审查输入，非 metadata）。
     const legacyOnlyIds = legacy.allowedCardIds.filter((id) => legacy.provenance[id]!.metadataStatus === "legacy");
     const auditedIds = legacy.allowedCardIds.filter((id) => legacy.provenance[id]!.metadataStatus === "audited");
     expect(legacyOnlyIds).toHaveLength(390);
     expect(auditedIds).toHaveLength(24);
     for (const id of legacyOnlyIds) {
-      // 无人工审查输入的卡：不得被 metadata 齐全或机器档位推高为「已审」。
+      // 无独立审查输入的卡：不得被 metadata 齐全或机器档位推高为「已审」。
       expect(legacy.provenance[id]!.humanBarFit, id).toBe("UNREVIEWED");
       expect(legacy.provenance[id]!.reviewed, id).toBe(false);
     }
     for (const id of auditedIds) {
-      // 人工定档只可能是三值之一，且 reviewed 必须与「有定档」自洽。
+      // 独立定档只可能是三值之一，且 reviewed 必须与「有定档」自洽。
       expect(["PASS", "BORDERLINE", "FAIL"], id).toContain(legacy.provenance[id]!.humanBarFit);
       expect(legacy.provenance[id]!.reviewed, id).toBe(true);
     }
@@ -275,9 +286,9 @@ describe("P1-3｜准入是正向允许清单（不是「非 AI 即放行」）",
 describe("Human Step 4｜Formal 准入严格四条件：任一条不满足都不得入 Formal", () => {
   /**
    * 反例矩阵：每张卡单独构建，检查它是否进了 Formal 轨。
-   * `humanBarFit=PASS` + `reviewed=true` 只能由人工审查输入给出。
+   * `humanBarFit=PASS` + `reviewed=true` 只能由独立审查输入给出。
    */
-  it("① 缺 strict metadata（旧卡）＋人工 PASS → 仍不进 Formal，但 reviewed/humanBarFit 如实记录人工结论", () => {
+  it("① 缺 strict metadata（旧卡）＋独立 PASS → 仍不进 Formal，但 reviewed/humanBarFit 如实记录审查结论", () => {
     const built = buildFixedContentTracks(
       [card({ id: "PN-TRUTH-LEGACY" })],
       buildOptions(),
@@ -310,14 +321,14 @@ describe("Human Step 4｜Formal 准入严格四条件：任一条不满足都不
         buildOptions(),
         humanReview({ "PN-TRUTH-HALF": { reviewed: false, humanBarFit: "PASS" } }),
       ),
-    ).toThrow(/人工审查输入自相矛盾/);
+    ).toThrow(/独立审查输入自相矛盾/);
     expect(() =>
       buildFixedContentTracks(
         [audited("PN-TRUTH-HALF")],
         buildOptions(),
         humanReview({ "PN-TRUTH-HALF": { reviewed: true, humanBarFit: "UNREVIEWED" } }),
       ),
-    ).toThrow(/人工审查输入自相矛盾/);
+    ).toThrow(/独立审查输入自相矛盾/);
   });
 
   it("④ provenance / payloadHash 不完整 → 不进 Formal（谓词级反例）", () => {
@@ -355,7 +366,7 @@ describe("Human Step 4｜Formal 准入严格四条件：任一条不满足都不
   });
 });
 
-describe("Human Step 4｜reviewed 只来自真实人工审查（机器不得推高）", () => {
+describe("Human Step 4｜reviewed 只来自独立审查（机器不得推高）", () => {
   it("metadata 字段齐全 ≠ reviewed：已审 metadata ＋ 空人工输入 → reviewed=false、不进 Formal", () => {
     const built = buildFixedContentTracks([audited("PN-TRUTH-AUDITED-1")], buildOptions(), EMPTY_HUMAN_FIXED_REVIEW);
     expect(built.manifest.tracks.legacyCompatibility.provenance["PN-TRUTH-AUDITED-1"]).toMatchObject({
@@ -374,12 +385,80 @@ describe("Human Step 4｜reviewed 只来自真实人工审查（机器不得推�
     expect(built.formalCount).toBe(0);
   });
 
-  it("人工审查输入来源写进产物，便于复核 reviewed 的出处", () => {
+  it("独立审查输入来源写进产物，便于复核 reviewed 的出处", () => {
     const built = buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions(), humanReview({}));
     expect(built.manifest.buildInfo.humanReviewSource).toBe("tests/unit/fixed-content-manifest.test.ts");
     expect(built.manifest.buildInfo.humanReviewedAt).toBe("2026-09-28");
     expect(buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions()).manifest.buildInfo.humanReviewSource)
       .toBe(EMPTY_HUMAN_FIXED_REVIEW.source);
+  });
+});
+
+describe("Change C｜reviewerKind 身份如实标注（准入身份对称；缺失/非法 fail-closed）", () => {
+  it("reviewerKind 缺失 ⇒ 构建抛错（fail-closed，不默认 human、不默认放行）", () => {
+    const missing = {
+      source: "tests/unit/fixed-content-manifest.test.ts",
+      reviewedAt: "2026-09-28",
+      entries: {},
+    } as unknown as HumanFixedReview;
+    expect(() => buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions(), missing)).toThrow(/reviewerKind/);
+  });
+
+  it('reviewerKind 非法值（"robot"）⇒ 构建抛错（fail-closed）', () => {
+    const invalid = {
+      source: "x",
+      reviewedAt: "2026-09-28",
+      reviewerKind: "robot",
+      entries: {},
+    } as unknown as HumanFixedReview;
+    expect(() => buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions(), invalid)).toThrow(/reviewerKind/);
+  });
+
+  it("reviewerKind 如实写进产物 buildInfo（批次级），且不参与 snapshotHash / 准入判定", () => {
+    const entries = { "PN-TRUTH-1": { reviewed: true, humanBarFit: "PASS" as const } };
+    const asAi = buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions(), humanReview(entries, "ai-role"));
+    const asHuman = buildFixedContentTracks([audited("PN-TRUTH-1")], buildOptions(), humanReview(entries, "human"));
+    expect(asAi.manifest.buildInfo.reviewerKind).toBe("ai-role");
+    expect(asHuman.manifest.buildInfo.reviewerKind).toBe("human");
+    // 身份对称：两轨准入结果与 snapshotHash 完全一致（身份既不降低也不提高准入）。
+    expect(asHuman.manifest.tracks.formalFixed.allowedCardIds).toEqual(asAi.manifest.tracks.formalFixed.allowedCardIds);
+    expect(asHuman.manifest.tracks.formalFixed.snapshotHash).toBe(asAi.manifest.tracks.formalFixed.snapshotHash);
+    expect(asHuman.manifest.tracks.legacyCompatibility.snapshotHash).toBe(
+      asAi.manifest.tracks.legacyCompatibility.snapshotHash,
+    );
+  });
+
+  it("真实第一包：reviewerKind=ai-role 如实写入；24 张全进 Formal，human 身份行为完全对称", () => {
+    const review = loadHumanReviewFile();
+    expect(review.reviewerKind).toBe("ai-role");
+    const frozen = frozenCards();
+    const expectedPass = frozen
+      .filter((frozenCard) => {
+        const entry = review.entries[frozenCard.id];
+        return validateFixedCardMetadataStrict(frozenCard).ok && entry?.reviewed === true && entry.humanBarFit === "PASS";
+      })
+      .map((frozenCard) => frozenCard.id)
+      .sort();
+    const asAi = buildFixedContentTracks(frozen, buildOptions(), {
+      source: review.source,
+      reviewedAt: review.reviewedAt,
+      reviewerKind: "ai-role",
+      entries: review.entries,
+    });
+    const asHuman = buildFixedContentTracks(frozen, buildOptions(), {
+      source: review.source,
+      reviewedAt: review.reviewedAt,
+      reviewerKind: "human",
+      entries: review.entries,
+    });
+    expect(asAi.manifest.buildInfo.reviewerKind).toBe("ai-role");
+    expect(asHuman.manifest.buildInfo.reviewerKind).toBe("human");
+    // 第一包 24 张 humanBarFit=PASS 全量入 Formal；身份不改变准入集合。
+    expect(expectedPass).toHaveLength(PACK_IDS.length);
+    expect([...asAi.manifest.tracks.formalFixed.allowedCardIds]).toEqual(expectedPass);
+    expect([...asHuman.manifest.tracks.formalFixed.allowedCardIds]).toEqual(expectedPass);
+    expect(asAi.formalCount).toBe(expectedPass.length);
+    expect(asHuman.formalCount).toBe(asAi.formalCount);
   });
 });
 

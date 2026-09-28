@@ -82,22 +82,29 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
  * ⚠️ C1-8 口径变更：原夹具用 `intensityLimit=5`，其「顶档 = I4」的前提是「I5 全为 match-pair 被排除」。
  * 第一包新增 2 张**非 match-pair 的 I5 truth 卡**后，该前提不再成立（I5 顶档只剩 2 张 truth，
  * 不再是对称 tie 组）。故夹具改为 `intensityLimit=4`，让顶档继续落在对称的 I4 组
- * （truth 12 : dare 10），±18% 阈值、样本量、tie-break 回归语义均未改。
+ * （truth 10 : dare 10），±18% 阈值、样本量、tie-break 回归语义均未改。
  *
- * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（冻结快照 390 张旧卡全为 legacy ⇒ 豁免），bucket 不再按
- * Heat 收窄 ⇒ 出卡集中在包的 **top 强度档：强度 4 的 22 张（truth 12 : dare 10）**，「组内先出哪一张」
- * 完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
+ * ⚠️ A3 口径变更（2026-09-28，Human 冻结「热标注必须诚实」）：第一包 24 张的 `heatMin` 不再一律 1
+ * （现 H1 3 / H2 9 / H3 10 / H4 2）⇒ 在 H1 桶里 Formal 只剩 **3 张**（201/202/203，全为 I1），
+ * 其中**没有 I4 卡**。故本夹具的 H1 桶由 102 张收窄到 **83 张**（SSOT I1–I4 80 张 + 第一包 3 张），
+ * 顶强度档由 22 张收窄到 **20 张**（SSOT truth 10 : dare 10，第一包 0 张）。
+ * 该收窄**正是本单要的结果**（深关系题在当前 UI 不可抽），不是回归；对称性因此更强（10:10），
+ * ±18% 阈值与 tie-break 回归语义仍未改。
+ *
+ * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（冻结快照 390 张旧卡全为 legacy ⇒ 豁免），
+ * ── 对**旧卡**而言 bucket 不按 Heat 收窄，故出卡集中在包的 top 强度档（强度 4，SSOT truth 10 : dare 10）；
+ * 「组内先出哪一张」完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
  * 修复前 `bucket(...)[0]` 恒为同强度组里 cardId 字典序最小者；修复后随 seed 轮换。
  */
 const TIE_FIXTURE = {
   packId: "truth-dare",
   intensityLimit: 4,
-  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 22（I1–I4）= 102 张。 */
-  expectedBucketSize: 102,
+  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 3（I1，heatMin=1 的 201/202/203）= 83 张。 */
+  expectedBucketSize: 83,
   /** 实测：top 强度档 = 强度 4。 */
   expectedTieTierMaxIntensity: 4,
-  /** 实测：top 强度档 22 张（SSOT truth 10 : dare 10 + 第一包 truth 2）。 */
-  expectedTieTierSize: 22,
+  /** 实测：top 强度档 20 张（SSOT truth 10 : dare 10；第一包 I4 的 217/223 heatMin>1 ⇒ H1 不可抽）。 */
+  expectedTieTierSize: 20,
   expectedGameTypes: ["truth", "dare"] as const,
 } as const;
 
@@ -323,7 +330,7 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     }
   });
 
-  it("TIE_FIXTURE 局面的构成稳定：102 张桶、top 强度档 22 张（强度 4）、truth+dare 两种 gameType", () => {
+  it("TIE_FIXTURE 局面的构成稳定：83 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const cards = router.bucket(input({ drawSeed: 0 }));
     const topTier = cards.filter((card) => intensityOf(card.cardId) === TIE_FIXTURE.expectedTieTierMaxIntensity);
@@ -461,13 +468,14 @@ describe("P1#2⑤｜sessionId 盐：同 session 复现、跨 session 不同", ()
     const cards = router.bucket(input({ relationship, drawSessionSalt: "fixture" }));
 
     expect(drawSeedFor(relationship, "fixture")).toBe(2968762458);
-    // C1-8：卡源并入第一包 24 张后，同 seed 的确定性序列按新候选集重算（仍是逐字钉死）。
+    // A3：第一包 heatMin 诚实化后，H1 桶的顶强度档候选集变化（第一包 I4 的 217/223 在 H1 不可抽），
+    // 同 seed 的确定性序列按新候选集重算（仍是逐字钉死）；口径与 C1-8 的同类重算一致。
     expect(cards.map((card) => card.cardId).slice(0, 5)).toEqual([
-      "PN-TRUTH-223",
-      "PN-DARE-031",
       "PN-DARE-032",
       "PN-DARE-033",
       "PN-DARE-034",
+      "PN-DARE-035",
+      "PN-DARE-036",
     ]);
   });
 

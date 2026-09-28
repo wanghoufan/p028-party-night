@@ -38,13 +38,15 @@ import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 const FORMAL_IDS = FORMAL_TRUTH_CARDS.map((card) => card.cardId);
 
 /**
- * 人审输入真源（只读）：`reviewed` / `humanBarFit` 的唯一合法来源，与构建脚本同源。
+ * 独立审查输入真源（只读）：`reviewed` / `humanBarFit` 的唯一合法来源，与构建脚本同源。
  * 本文件只用它**派生期望值**，绝不修改它。
  */
 const HUMAN_REVIEW_PATH = "docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json";
 interface HumanReviewFile {
   source: string;
   reviewedAt: string;
+  /** 独立 reviewer 身份（Change C）：真人 `human` / AI 角色 `ai-role`。 */
+  reviewerKind: string;
   entries: Record<string, { reviewed: boolean; humanBarFit: FixedHumanBarFit }>;
 }
 const loadHumanReviewFile = (): HumanReviewFile =>
@@ -151,7 +153,7 @@ describe("C1-3③ fail-closed 守住", () => {
     source: "builtin",
   });
 
-  it("带齐 8 项 → audited（但无人审仍进不了 Formal）；缺全部 → legacy；半填 → 构建抛错", () => {
+  it("带齐 8 项 → audited（但无独立审查仍进不了 Formal）；缺全部 → legacy；半填 → 构建抛错", () => {
     // ① 真正带齐质量字段的第一包卡 ≡ audited。
     const auditedCard = mainlineSsotCards().find((card) => card.id === "PN-TRUTH-201")!;
     expect(validateFixedCardMetadataStrict(auditedCard).ok).toBe(true);
@@ -161,7 +163,7 @@ describe("C1-3③ fail-closed 守住", () => {
       reviewed: false,
       humanBarFit: "UNREVIEWED",
     });
-    // 补了 metadata 也不进 Formal（Formal 准入四条含真实人工审查）。
+    // 补了 metadata 也不进 Formal（Formal 准入四条含独立审查）。
     expect(auditedBuild.formalCount).toBe(0);
 
     // ② 完全缺质量字段 → legacy 降级（旧卡兼容读取），不进 audited。
@@ -179,14 +181,14 @@ describe("C1-3③ fail-closed 守住", () => {
     expect(() => buildFixedContentTracks([partial], options)).toThrow(/入库门禁失败/);
   });
 
-  it("缺字段的卡不产生 informationGain / topic；metadata 齐全本身不产生 reviewed（空人审重建 + 产物⇄人审双向对账）", () => {
+  it("缺字段的卡不产生 informationGain / topic；metadata 齐全本身不产生 reviewed（空独立审查重建 + 产物⇄独立审查双向对账）", () => {
     // 侧车：无档位可言 ⇒ 双 null（fail-closed 的输入侧表达）。
     expect(metadataForCard("PN-TRUTH-901")).toEqual({ informationGain: null, topic: null });
     // 真实产物：旧卡（未补标）legacyMetadata；第一包 audited——两数按内容源派生，不写死。
     const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
     expect(legacy.counts.auditedMetadata).toBe(FORMAL_TRUTH_CARDS.length);
     expect(legacy.counts.legacyMetadata).toBe(legacy.counts.total - FORMAL_TRUTH_CARDS.length);
-    // 旧卡无人审 ⇒ reviewed 必须为 false。
+    // 旧卡无独立审查 ⇒ reviewed 必须为 false。
     expect(legacy.provenance["PN-TRUTH-001"]!.reviewed).toBe(false);
 
     // 关键 fail-closed①：**metadata 齐全本身不产生 reviewed**——用空人工输入重建带齐质量字段的
@@ -200,8 +202,8 @@ describe("C1-3③ fail-closed 守住", () => {
     });
     expect(rebuilt.formalCount).toBe(0);
 
-    // 关键 fail-closed②：产物 `reviewed=true` ⇄ 人审输入「有 entry 且 humanBarFit≠UNREVIEWED」，
-    // **双向**成立。期望值由人审输入派生后与产物逐项比对（非 UNREVIEWED 集合为空时也不空转）。
+    // 关键 fail-closed②：产物 `reviewed=true` ⇄ 独立审查输入「有 entry 且 humanBarFit≠UNREVIEWED」，
+    // **双向**成立。期望值由独立审查输入派生后与产物逐项比对（非 UNREVIEWED 集合为空时也不空转）。
     const review = loadHumanReviewFile();
     const reviewedInArtifact = legacy.allowedCardIds.filter((id) => legacy.provenance[id]!.reviewed);
     const expectedReviewed = legacy.allowedCardIds.filter((id) => {
@@ -209,17 +211,17 @@ describe("C1-3③ fail-closed 守住", () => {
       return entry !== undefined && entry.humanBarFit !== "UNREVIEWED";
     });
     expect(reviewedInArtifact).toEqual(expectedReviewed);
-    // 正向逐卡复核：产物 reviewed=true 的卡，人审输入里必有 entry 且非 UNREVIEWED。
+    // 正向逐卡复核：产物 reviewed=true 的卡，独立审查输入里必有 entry 且非 UNREVIEWED。
     for (const id of reviewedInArtifact) {
       const entry = review.entries[id];
-      expect(entry, `${id} reviewed=true 但人审输入无 entry`).toBeDefined();
+      expect(entry, `${id} reviewed=true 但独立审查输入无 entry`).toBeDefined();
       expect(entry!.humanBarFit, id).not.toBe("UNREVIEWED");
     }
-    // 反向逐卡复核：产物 reviewed=false 的卡，人审输入里不得把它标成非 UNREVIEWED。
+    // 反向逐卡复核：产物 reviewed=false 的卡，独立审查输入里不得把它标成非 UNREVIEWED。
     for (const id of legacy.allowedCardIds) {
       if (legacy.provenance[id]!.reviewed) continue;
       const entry = review.entries[id];
-      if (entry) expect(entry.humanBarFit, `${id} 人审有定档但产物 reviewed=false`).toBe("UNREVIEWED");
+      if (entry) expect(entry.humanBarFit, `${id} 独立审查有定档但产物 reviewed=false`).toBe("UNREVIEWED");
     }
   });
 });

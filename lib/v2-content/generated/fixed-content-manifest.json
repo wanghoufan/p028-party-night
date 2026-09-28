@@ -4162,12 +4162,12 @@
     "formalFixed": {
       "track": "formalFixed",
       "isFormalFixedContent": true,
-      "purpose": "正式主线准入的唯一允许清单（当前 0 张，Human 认可的正确状态）",
+      "purpose": "正式主线准入的唯一允许清单；实际张数由当前 strict metadata、独立审查结论与 provenance 动态决定。",
       "admission": "strict",
       "requirements": [
         "strict metadata 全字段通过（Plan §3 必填字段完整、枚举合法、卡面 barFit=PASS）",
-        "humanBarFit = PASS（人工双人模拟噪声计时定档）",
-        "reviewed = true（真实人工审查完成，不得由 metadata 齐全或 machineVerdict 推高）",
+        "humanBarFit = PASS（独立审查的 BAR-FIT 定档；字段名为历史兼容名，不代表 reviewer 必然是 Human）",
+        "reviewed = true（独立审查完成：有一个独立 reviewer 已逐卡审查并给出明确结论，身份见 buildInfo.reviewerKind；不得由 metadata 齐全或 machineVerdict 推高）",
         "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）"
       ],
       "snapshotHash": "bc129ccdc74ee80d7c3c9ea8c05f9575898585074b244ff011558d89fc472cc0",
@@ -4222,7 +4222,8 @@
     "barFitSource": "lib/v2-content/bar-fit-input.ts lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput（正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染））→ bar-fit.ts judgeBarFit → provenance.machineVerdict（机器预筛，非双人模拟噪声计时）；provenance.humanBarFit 机器阶段恒 UNREVIEWED；text-only 扫描为 forensic，不参与 admission",
     "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变）",
     "humanReviewedAt": "2026-09-28T15:10:00Z",
-    "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（真实人工审查）∧ provenance/hash 完整；无任何宽松开关",
+    "reviewerKind": "ai-role",
+    "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（独立审查完成，reviewer 身份见 reviewerKind；不参与准入判定）∧ provenance/hash 完整；无任何宽松开关",
     "ssotMainlineSha256": "6b6c43f870fe22a86c98423db483cc99734090b1f70c48c31dc3fc6b47c75f33",
     "ssotExpansionSha256": "01ff77acd8eb2f53166a9da84aa403c6a49902e3a6e7a0104f4ea83d9f4c5b8d",
     "ssotSchemaVersion": "2.3"

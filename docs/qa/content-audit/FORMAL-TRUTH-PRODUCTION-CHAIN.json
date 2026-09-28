@@ -15,190 +15,190 @@
     "rounds": [
       {
         "round": 1,
-        "cardId": "PN-TRUTH-222",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "亲密边界",
-        "effectiveCount": 1,
-        "heat": "H1"
-      },
-      {
-        "round": 2,
-        "cardId": "PN-TRUTH-224",
-        "formal": true,
-        "informationGain": "medium",
-        "topic": "性观念·亲密态度",
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 3,
-        "cardId": "PN-DARE-036",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 4,
-        "cardId": "PN-DARE-040",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 5,
-        "cardId": "PN-TRUTH-034",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 6,
-        "cardId": "PN-DARE-035",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 7,
-        "cardId": "PN-DARE-038",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 8,
-        "cardId": "PN-TRUTH-038",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 9,
-        "cardId": "PN-TRUTH-037",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 10,
-        "cardId": "PN-TRUTH-039",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 11,
-        "cardId": "PN-DARE-032",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 2,
-        "heat": "H1"
-      },
-      {
-        "round": 12,
         "cardId": "PN-TRUTH-032",
         "formal": false,
         "informationGain": null,
         "topic": null,
-        "effectiveCount": 2,
+        "effectiveCount": 0,
         "heat": "H1"
       },
       {
-        "round": 13,
-        "cardId": "PN-TRUTH-223",
-        "formal": true,
-        "informationGain": "medium",
-        "topic": "性观念·亲密态度",
-        "effectiveCount": 3,
-        "heat": "H1"
-      },
-      {
-        "round": 14,
-        "cardId": "PN-TRUTH-031",
+        "round": 2,
+        "cardId": "PN-DARE-035",
         "formal": false,
         "informationGain": null,
         "topic": null,
-        "effectiveCount": 3,
+        "effectiveCount": 0,
         "heat": "H1"
       },
       {
-        "round": 15,
-        "cardId": "PN-DARE-033",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 3,
-        "heat": "H1"
-      },
-      {
-        "round": 16,
-        "cardId": "PN-TRUTH-035",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 3,
-        "heat": "H1"
-      },
-      {
-        "round": 17,
-        "cardId": "PN-DARE-039",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 3,
-        "heat": "H1"
-      },
-      {
-        "round": 18,
-        "cardId": "PN-DARE-034",
-        "formal": false,
-        "informationGain": null,
-        "topic": null,
-        "effectiveCount": 3,
-        "heat": "H1"
-      },
-      {
-        "round": 19,
-        "cardId": "PN-TRUTH-217",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "前任态度",
-        "effectiveCount": 4,
-        "heat": "H2"
-      },
-      {
-        "round": 20,
+        "round": 3,
         "cardId": "PN-DARE-037",
         "formal": false,
         "informationGain": null,
         "topic": null,
-        "effectiveCount": 4,
-        "heat": "H2"
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 4,
+        "cardId": "PN-TRUTH-036",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 5,
+        "cardId": "PN-TRUTH-035",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 6,
+        "cardId": "PN-TRUTH-037",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 7,
+        "cardId": "PN-DARE-032",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 8,
+        "cardId": "PN-DARE-040",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 9,
+        "cardId": "PN-TRUTH-040",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 10,
+        "cardId": "PN-DARE-039",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 11,
+        "cardId": "PN-DARE-033",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 12,
+        "cardId": "PN-TRUTH-033",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 13,
+        "cardId": "PN-DARE-038",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 14,
+        "cardId": "PN-DARE-034",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 15,
+        "cardId": "PN-TRUTH-039",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 16,
+        "cardId": "PN-DARE-036",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 17,
+        "cardId": "PN-TRUTH-038",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 18,
+        "cardId": "PN-TRUTH-034",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 19,
+        "cardId": "PN-TRUTH-031",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
+      },
+      {
+        "round": 20,
+        "cardId": "PN-DARE-031",
+        "formal": false,
+        "informationGain": null,
+        "topic": null,
+        "effectiveCount": 0,
+        "heat": "H1"
       }
     ],
-    "finalHeat": "H2",
-    "finalEffective": 4,
+    "finalHeat": "H1",
+    "finalEffective": 0,
     "firstReachRoundByHeat": {
       "H1": 1,
-      "H2": 19,
+      "H2": null,
       "H3": null,
       "H4": null
     }
@@ -208,147 +208,39 @@
     "rounds": [
       {
         "round": 1,
-        "cardId": "PN-TRUTH-222",
+        "cardId": "PN-TRUTH-203",
         "formal": true,
-        "informationGain": "high",
-        "topic": "亲密边界",
+        "informationGain": "medium",
+        "topic": "生活方式",
         "effectiveCount": 1,
         "heat": "H1"
       },
       {
         "round": 2,
-        "cardId": "PN-TRUTH-224",
+        "cardId": "PN-TRUTH-202",
         "formal": true,
         "informationGain": "medium",
-        "topic": "性观念·亲密态度",
+        "topic": "兴趣爱好",
         "effectiveCount": 2,
         "heat": "H1"
       },
       {
         "round": 3,
-        "cardId": "PN-TRUTH-223",
+        "cardId": "PN-TRUTH-201",
         "formal": true,
         "informationGain": "medium",
-        "topic": "性观念·亲密态度",
+        "topic": "兴趣爱好",
         "effectiveCount": 3,
         "heat": "H1"
-      },
-      {
-        "round": 4,
-        "cardId": "PN-TRUTH-217",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "前任态度",
-        "effectiveCount": 4,
-        "heat": "H2"
-      },
-      {
-        "round": 5,
-        "cardId": "PN-TRUTH-219",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "底线·雷区",
-        "effectiveCount": 5,
-        "heat": "H2"
-      },
-      {
-        "round": 6,
-        "cardId": "PN-TRUTH-208",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "恋爱观",
-        "effectiveCount": 6,
-        "heat": "H2"
-      },
-      {
-        "round": 7,
-        "cardId": "PN-TRUTH-221",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "人生目标·理想生活",
-        "effectiveCount": 7,
-        "heat": "H2"
-      },
-      {
-        "round": 8,
-        "cardId": "PN-TRUTH-211",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "相处规则",
-        "effectiveCount": 8,
-        "heat": "H3"
-      },
-      {
-        "round": 9,
-        "cardId": "PN-TRUTH-213",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "吃醋·占有",
-        "effectiveCount": 9,
-        "heat": "H3"
-      },
-      {
-        "round": 10,
-        "cardId": "PN-TRUTH-215",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "异性朋友边界",
-        "effectiveCount": 10,
-        "heat": "H3"
-      },
-      {
-        "round": 11,
-        "cardId": "PN-TRUTH-216",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "前任态度",
-        "effectiveCount": 11,
-        "heat": "H3"
-      },
-      {
-        "round": 12,
-        "cardId": "PN-TRUTH-207",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "恋爱观",
-        "effectiveCount": 12,
-        "heat": "H3"
-      },
-      {
-        "round": 13,
-        "cardId": "PN-TRUTH-214",
-        "formal": true,
-        "informationGain": "medium",
-        "topic": "异性朋友边界",
-        "effectiveCount": 13,
-        "heat": "H4"
-      },
-      {
-        "round": 14,
-        "cardId": "PN-TRUTH-220",
-        "formal": true,
-        "informationGain": "high",
-        "topic": "人生目标·理想生活",
-        "effectiveCount": 14,
-        "heat": "H4"
-      },
-      {
-        "round": 15,
-        "cardId": "PN-TRUTH-203",
-        "formal": true,
-        "informationGain": "medium",
-        "topic": "生活方式",
-        "effectiveCount": 15,
-        "heat": "H4"
       }
     ],
-    "finalHeat": "H4",
-    "finalEffective": 15,
+    "finalHeat": "H1",
+    "finalEffective": 3,
     "firstReachRoundByHeat": {
       "H1": 1,
-      "H2": 4,
-      "H3": 8,
-      "H4": 13
+      "H2": null,
+      "H3": null,
+      "H4": null
     },
     "note": "牌堆只有 Formal 卡 ⇒ 每张 completed 都是有效信息轮 ⇒ Heat 逐档 H1→H2→H3→H4，逐档首次到达计数 = HEAT_THRESHOLDS 的 min+1（4/8/13）。"
   },
@@ -548,14 +440,13 @@
   },
   "fullPackSeedSweep": {
     "sessions": 200,
-    "reachedH2": 107,
+    "reachedH2": 0,
     "reachedH3": 0,
     "reachedH4": 0,
-    "effectiveSum": 691,
+    "effectiveSum": 0,
     "heatDistribution": {
-      "H2": 107,
-      "H1": 93
+      "H1": 200
     },
-    "effectiveMean": 3.46
+    "effectiveMean": 0
   }
 }

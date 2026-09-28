@@ -236,5 +236,13 @@
 {"date":"2026-09-28","task":"QA-5 第一包门禁与专项","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
 {"date":"2026-09-28","task":"C1-4 BAR-FIT机器审查+空人工骨架(通道更正)","role":"builder","model":"codebuddy/glm-5.3-flash","used":"备用","runtime":"codebuddy","result":"PASS","note":"CORRECTION：原行记 deepseek-v4.1-flash 有误——该次实调返回429限频(2026-09-29 14:00 重置)，随后按 USER_MODEL_OVERRIDE 备用通道改派 glm-5.3-flash 成功；补记本行以保账实一致，used 如实标备用"}
 {"date":"2026-09-28","task":"NF-2 neat-freak 大交接2 收尾","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"Human授权：残留清理不用问，自行判定"}
-{"date":"2026-09-28","task":"NF-2 neat-freak 大交接2 收尾","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"Human授权：残留清理不用问，自行判定"}
 {"date":"2026-09-28","task":"FX-1 修三处过期事实","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"产品语义与判定结果零改"}
+{"date":"2026-09-28","task":"A1 reviewerKind 接入+中性化","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"产物 buildInfo.reviewerKind=ai-role"}
+{"date":"2026-09-28","task":"A1b 修骨架脚本 reviewerKind","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"pending-reviewer 非法值已修"}
+{"date":"2026-09-28","task":"A3 24张Heat逐字落地","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"205=2/2 由编排者裁决"}
+{"date":"2026-09-28","task":"A5 MC 重跑双口径","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"口径A也断在H1→H2冷启门"}
+{"date":"2026-09-28","task":"A3 首派 停线(reviewer表未落盘)","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"FAIL","note":"零改动，停线上报；补记在 TASK CORRECTION 行"}
+{"date":"2026-09-28","task":"A4 HANDOFF 规则更新(TM 自做)","role":"task-manager","model":"—","used":"主","runtime":"本窗口","result":"PASS","note":"docs/handoff 属 TM 位置"}
+{"date":"2026-09-28","task":"CR-4 code-reviewer 复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
+{"date":"2026-09-28","task":"QA-6 门禁与专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
+{"date":"2026-09-28","task":"SUP-4 终检","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"blocking=0，可 commit+push"}

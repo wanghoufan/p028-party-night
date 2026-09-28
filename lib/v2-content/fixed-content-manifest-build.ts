@@ -16,12 +16,12 @@
  *    | # | 条件 | 判据 |
  *    |---|---|---|
  *    | 1 | strict metadata 全字段通过 | `validateFixedCardMetadataStrict()`（缺必填/枚举非法/卡面 barFit≠PASS 即不过） |
- *    | 2 | humanBarFit = PASS | 只来自构建期注入的人工审查输入 |
- *    | 3 | reviewed = true | **只**来自人工审查输入；metadata 齐全 / machineVerdict 好看都不算 |
+ *    | 2 | humanBarFit = PASS | 只来自构建期注入的独立审查输入（`humanBarFit` 为历史兼容字段名） |
+ *    | 3 | reviewed = true | **只**来自独立审查输入；metadata 齐全 / machineVerdict 好看都不算 |
  *    | 4 | provenance / payloadHash 完整 | ID 在快照内且 hash 为 64 位 sha256 |
  *
- *    Formal 张数由**当前人工审查输入**动态决定（不是写死值）：空输入 ⇒ 0 张；第一包入库后
- *    随真实人工审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或直接置
+ *    Formal 张数由**当前独立审查输入**动态决定（不是写死值）：空输入 ⇒ 0 张；
+ *    随独立审查结论变化。**不许**为了数字好看补默认 metadata、放宽准入或直接置
  *    `reviewed=true`（Human Step 4 冻结口径）；当前值见产物 `tracks.formalFixed.counts.total`。
  *
  * > 旧版有「显式开启旧冻结通道」的折让参数，会让未审旧卡以 `metadataStatus="legacy"` 蒙进
@@ -31,7 +31,14 @@
  * ## `reviewed` 的唯一合法来源
  * `reviewed` **不由卡面字段推导**，只取 `HumanFixedReview.entries[cardId].reviewed`；
  * 且要求它与 `humanBarFit` 自洽（`reviewed === (humanBarFit !== "UNREVIEWED")`），
- * 否则直接抛错——防止「半填」人工审查输入把未审卡标成已审。
+ * 否则直接抛错——防止「半填」独立审查输入把未审卡标成已审。
+ *
+ * ## `reviewerKind` 的身份如实标注（Change C 冻结；fail-closed）
+ * `reviewed=true` 只表示「**有一个独立 reviewer 已逐卡审查并给出明确结论**」，
+ * **不再自动等价于「真人已逐卡审查」**。审查输入必须带 `reviewerKind: "human" | "ai-role"`：
+ * 缺字段或非法值一律**直接抛错（fail-closed）**，不得默认 `human`、也不得默认放行
+ * （AI 角色不得冒充 Human）。身份写入产物 `buildInfo.reviewerKind`，但**不参与 Formal 准入判定**——
+ * `ai-role` 与 `human` 的准入行为完全对称，身份既不降低也不提高准入。
  *
  * 运行：`pnpm build:fixed-manifest`（见 `scripts/build-fixed-content-manifest.ts`）。
  */
@@ -51,7 +58,15 @@ import {
   type FixedContentManifest,
   type FixedHumanBarFit,
   type FormalRejectionCounts,
+  type ReviewerKind,
 } from "@/lib/v2-content/fixed-content-manifest";
+
+/**
+ * 独立 reviewer 身份类别，**从构建期模块再导出**（定义在运行期 `fixed-content-manifest.ts`，
+ * 因为 `buildInfo` 类型在那里、且该模块禁止 import 构建期模块）。
+ * 构建器 / 测试统一从本模块 import 即可拿到该类型。
+ */
+export type { ReviewerKind };
 
 /** 逐卡 payload 的稳定序列化字段（顺序在 `canonicalizeValue` 里按 key 排序，与对象字面量顺序无关）。 */
 const CARD_PAYLOAD_KEYS = [
@@ -134,29 +149,46 @@ function hasAuditedMetadata(card: GameCard): boolean {
 const EXPANSION_PACK_ID = "expansion";
 
 /**
- * 逐卡人工审查输入（Human Step 4：`reviewed=true` 与 `humanBarFit` 的唯一合法来源）。
+ * 逐卡独立审查输入（Human Step 4：`reviewed=true` 与 `humanBarFit` 的唯一合法来源）。
  *
- * 构建期由脚本注入（无人工审查输入 ⇒ 空输入 ⇒ Formal = 0 张；存在人审输入则按结论入轨）。
+ * 构建期由脚本注入（无独立审查输入 ⇒ 空输入 ⇒ Formal = 0 张；存在审查输入则按结论入轨）。
  * **不接受**从卡面 metadata 或机器 `machineVerdict` 推导这两个字段。
  */
 export interface HumanFixedReviewEntry {
-  /** 是否真实人工审查完成。 */
+  /**
+   * 是否已由独立 reviewer 逐卡审查并给出明确结论。
+   * ⚠️ 不等于「真人已逐卡审查」——reviewer 身份见批次级 `HumanFixedReview.reviewerKind`。
+   */
   reviewed: boolean;
-  /** 人工 BAR-FIT 定档（双人模拟噪声计时 / 动作审查）。 */
+  /** 独立审查的 BAR-FIT 定档（`humanBarFit` 为历史兼容字段名，不代表 reviewer 必然是 Human）。 */
   humanBarFit: FixedHumanBarFit;
 }
 
-/** 人工审查输入：`source` / `reviewedAt` 人读留痕，`entries` 键为 cardId。 */
+/**
+ * 独立审查输入：`source` / `reviewedAt` / `reviewerKind` 人读留痕，`entries` 键为 cardId。
+ *
+ * `reviewerKind` **必填**（`"human" | "ai-role"`）：缺失或非法值一律 **fail-closed 抛错**，
+ * 不得默认 `human`、不得默认放行；但它**不参与 Formal 准入判定**——`human` 与 `ai-role`
+ * 的准入行为完全对称，身份既不降低也不提高准入。
+ */
 export interface HumanFixedReview {
   source: string;
   reviewedAt: string;
+  reviewerKind: ReviewerKind;
   entries: Readonly<Record<string, HumanFixedReviewEntry>>;
 }
 
-/** 空人工审查输入（当前真实状态：无人审过 ⇒ reviewed 全 false、humanBarFit 全 UNREVIEWED）。 */
+/**
+ * 空独立审查输入（无审查产物输入时的占位：无任何 entry ⇒ reviewed 恒 false、
+ * humanBarFit 恒 UNREVIEWED ⇒ Formal 恒 0 张）。
+ *
+ * `reviewerKind` 取 `"ai-role"`：该占位由构建器自动生成、无人工参与；按 Change C 治理约束
+ * **不得默认 `"human"`**（那会冒充人工审查）。因 entries 为空，此值不参与任何准入判定。
+ */
 export const EMPTY_HUMAN_FIXED_REVIEW: HumanFixedReview = {
-  source: "(none：尚无人工审查产物输入)",
+  source: "(none：尚无独立内容审查产物输入)",
   reviewedAt: "(none)",
+  reviewerKind: "ai-role",
   entries: {},
 };
 
@@ -178,7 +210,13 @@ export interface BuildFixedContentManifestOptions {
 /** 两轨（Legacy / Formal）的 purpose 声明，写进产物供报告直接引用。 */
 export const LEGACY_COMPATIBILITY_PURPOSE =
   "旧局读取 / 恢复 / 迁移；可缺 Plan §3 新 metadata；明确不是正式 Fixed Content";
-export const FORMAL_FIXED_PURPOSE = "正式主线准入的唯一允许清单（当前 0 张，Human 认可的正确状态）";
+/**
+ * Formal Fixed 轨的 purpose 声明（长期有效的动态描述，不写死张数）。
+ * 实际张数由当前 strict metadata、独立审查结论与 provenance 动态决定，见产物
+ * `tracks.formalFixed.counts.total`。
+ */
+export const FORMAL_FIXED_PURPOSE =
+  "正式主线准入的唯一允许清单；实际张数由当前 strict metadata、独立审查结论与 provenance 动态决定。";
 
 export interface BuildFixedContentTracksResult {
   manifest: FixedContentManifest;
@@ -186,20 +224,39 @@ export interface BuildFixedContentTracksResult {
   legacyCount: number;
   /** 其中已带 Plan §3 新质量字段的卡数（随冻结内容变化，不是写死值）。 */
   auditedCount: number;
-  /** Formal Fixed 轨卡数（由当前人工审查输入动态决定，不是写死值）。 */
+  /** Formal Fixed 轨卡数（由当前独立审查输入动态决定，不是写死值）。 */
   formalCount: number;
   /** Formal 被拒卡按原因分布。 */
   rejection: FormalRejectionCounts;
 }
 
-/** 人工审查输入自检：`reviewed` 必须与 `humanBarFit` 自洽，半填输入直接拒。 */
+/** 合法的独立 reviewer 身份类别（唯一真源；`reviewerKind` 校验与构建期脚本共用）。 */
+const REVIEWER_KINDS: readonly ReviewerKind[] = ["human", "ai-role"];
+
+/** 独立 reviewer 身份是否合法（非导出；供断言与构建期脚本复用）。 */
+export function isValidReviewerKind(value: unknown): value is ReviewerKind {
+  return typeof value === "string" && (REVIEWER_KINDS as readonly string[]).includes(value);
+}
+
+/**
+ * 独立审查输入自检（fail-closed）：
+ * ① `reviewerKind` **必填且合法**（缺失 / 非法值一律抛错——不得默认 `human`、不得默认放行）；
+ * ② 逐卡 `reviewed` 必须与 `humanBarFit` 自洽，半填输入直接拒。
+ */
 function assertHumanReviewConsistent(review: HumanFixedReview): void {
+  if (!isValidReviewerKind(review.reviewerKind)) {
+    throw new Error(
+      `独立审查输入缺少合法的 reviewerKind（得到 ${JSON.stringify(review.reviewerKind)}）：` +
+        `必须是 ${REVIEWER_KINDS.map((kind) => JSON.stringify(kind)).join(" | ")}；` +
+        `不得缺损、不得默认 human、不得默认放行（fail-closed）`,
+    );
+  }
   for (const [cardId, entry] of Object.entries(review.entries)) {
-    const hasHumanVerdict = entry.humanBarFit !== "UNREVIEWED";
-    if (entry.reviewed !== hasHumanVerdict) {
+    const hasReviewVerdict = entry.humanBarFit !== "UNREVIEWED";
+    if (entry.reviewed !== hasReviewVerdict) {
       throw new Error(
-        `人工审查输入自相矛盾（${cardId}）：reviewed=${entry.reviewed} 与 humanBarFit=${entry.humanBarFit} 不一致；` +
-          `reviewed 只能表示真实人工审查完成`,
+        `独立审查输入自相矛盾（${cardId}）：reviewed=${entry.reviewed} 与 humanBarFit=${entry.humanBarFit} 不一致；` +
+          `reviewed 只能表示「有一个独立 reviewer 已逐卡审查并给出明确结论」`,
       );
     }
   }
@@ -224,7 +281,7 @@ function trackCounts(
  * 从冻结固定库卡构建 manifest 的**两轨**（Legacy Compatibility + Formal Fixed）。
  *
  * @throws 任一卡不是 `source === "builtin"` / ID 重复 / 已带新字段却 strict 不过 /
- *   人工审查输入自相矛盾。
+ *   独立审查输入 `reviewerKind` 缺失或非法 / 独立审查输入自相矛盾。
  */
 export function buildFixedContentTracks(
   cards: readonly GameCard[],
@@ -273,7 +330,7 @@ export function buildFixedContentTracks(
     const barFit = judgeCanonicalBarFit(card);
     const payloadHash = fixedCardPayloadHash(card);
     const cardSet: FixedCardSet = card.packId === EXPANSION_PACK_ID ? "expansion" : "mainline";
-    // `reviewed` / `humanBarFit` 只来自人工审查输入；机器预筛只写 machineVerdict，绝不代写正式定档。
+    // `reviewed` / `humanBarFit` 只来自独立审查输入；机器预筛只写 machineVerdict，绝不代写正式定档。
     const humanEntry = humanReview.entries[card.id];
     const reviewed = humanEntry?.reviewed === true;
     const humanBarFit: FixedHumanBarFit = humanEntry?.humanBarFit ?? "UNREVIEWED";
@@ -358,8 +415,9 @@ export function buildFixedContentTracks(
         "text-only 扫描为 forensic，不参与 admission",
       humanReviewSource: humanReview.source,
       humanReviewedAt: humanReview.reviewedAt,
+      reviewerKind: humanReview.reviewerKind,
       formalAdmission:
-        "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（真实人工审查）∧ provenance/hash 完整；无任何宽松开关",
+        "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（独立审查完成，reviewer 身份见 reviewerKind；不参与准入判定）∧ provenance/hash 完整；无任何宽松开关",
       ssotMainlineSha256: options.ssotMainlineSha256,
       ssotExpansionSha256: options.ssotExpansionSha256,
       ssotSchemaVersion: options.ssotSchemaVersion,

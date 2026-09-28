@@ -94,7 +94,7 @@ function formalManifest(formalCard: GameCard, legacyCard: GameCard): FixedConten
     buildInfo: {
       generatedBy: "test", source: "test", batchId: "test", contentVersion: "test",
       legacyReviewStage: "test", barFitSource: "test",
-      humanReviewSource: "test", humanReviewedAt: "test", formalAdmission: "test",
+      humanReviewSource: "test", humanReviewedAt: "test", reviewerKind: "ai-role", formalAdmission: "test",
       ssotMainlineSha256: hash, ssotExpansionSha256: hash, ssotSchemaVersion: "test",
     },
   };

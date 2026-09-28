@@ -184,8 +184,23 @@ printDistribution("informationGoalType", goalTypeDist, V2_INFORMATION_GOAL_TYPES
 printDistribution("topic", topicDist, V2_TOPICS);
 
 for (const level of [1, 2, 3, 4, 5]) if ((intDist.get(level) ?? 0) === 0) errors.push(`intensity=${level} 无库存（必须覆盖 1~5）`);
-for (const level of [1, 2, 3, 4]) if ((heatMaxDist.get(level) ?? 0) === 0) errors.push(`heatMax=${level} 无库存（必须覆盖 H1~H4）`);
-for (const card of cards) if (card.heatMin !== 1) errors.push(`${card.cardId}: heatMin=${card.heatMin} ≠ 1（disclosure 通道落地前必须恒 1）`);
+/**
+ * A3（2026-09-28，Human 冻结「Heat / Intensity 正交、标注必须诚实」）废止两条旧律：
+ *   旧①「`heatMin` 一律 = 1」（disclosure 未落地时的妥协，已由 Human 明令废弃）；
+ *   旧②「`heatMax` 必须覆盖 H1~H4」（H1 已无卡，且禁止为库存统一拉 4）。
+ * 新律 = 原则性不变量（不钉死具体张数，避免下次补卡即误红）；逐卡真值由
+ * `tests/unit/formal-truth-heat-labels.test.ts` 按 reviewer 表逐字锁死。
+ */
+for (const level of [1, 2, 3, 4]) {
+  if ((heatMinDist.get(level) ?? 0) === 0) errors.push(`heatMin=H${level} 无库存（四档都必须有「首次解锁」的卡，不得空档）`);
+}
+for (const level of [2, 3, 4]) {
+  if ((heatMaxDist.get(level) ?? 0) === 0) errors.push(`heatMax=H${level} 无库存（深档必须有卡）`);
+}
+if ((heatMaxDist.get(4) ?? 0) === cards.length) errors.push("heatMax 全为 H4（禁止为了库存统一拉 4）");
+if ((heatMaxDist.get(1) ?? 0) + (heatMaxDist.get(2) ?? 0) + (heatMaxDist.get(3) ?? 0) === 0) {
+  errors.push("heatMax 无一低于 H4（禁止为了库存统一拉 4）");
+}
 if ((intDist.get(1) ?? 0) + (intDist.get(2) ?? 0) < 8) errors.push(`intensity=1/2 合计 <8，ceiling=1/2 库存不足`);
 
 /** A.1 审查发现的 2 个零维度 → 既有合法 topic 值。 */
@@ -382,5 +397,5 @@ if (errors.length > 0) {
 }
 console.log(
   `全部合规：${cards.length} 张；精确重复 0；枚举非法 0；strict 必填缺失 0；` +
-    `heatMin 全 1；intensity 覆盖 1~5；heatMax 覆盖 H1~H4；零维度已补；BAR-FIT HARD_FAIL_PATTERN 0。`,
+    `heatMin 覆盖 H1~H4（无空档）；heatMax 未统一拉 4；intensity 覆盖 1~5；零维度已补；BAR-FIT HARD_FAIL_PATTERN 0。`,
 );

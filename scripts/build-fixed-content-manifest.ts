@@ -6,9 +6,9 @@
  *
  * 做六件事，任一不达标即非零退出：
  * 1. **两轨分别构建**（`buildFixedContentTracks`，见 `lib/v2-content/fixed-content-manifest-build.ts`）：
- *    - Legacy Compatibility 轨：冻结 SSOT 的 390 张 builtin 卡，供旧局读取 / 恢复 / 迁移；
- *    - Formal Fixed 轨：strict metadata ∧ humanBarFit=PASS ∧ reviewed=true（人工）∧ provenance/hash 完整。
- *      **无宽松开关**，当前 0 张（Human 认可的正确状态）。
+ *    - Legacy Compatibility 轨：冻结 SSOT 的全部 builtin 卡（数量由冻结快照决定，不是写死值），供旧局读取 / 恢复 / 迁移；
+ *    - Formal Fixed 轨：strict metadata ∧ humanBarFit=PASS ∧ reviewed=true（独立审查）∧ provenance/hash 完整。
+ *      **无宽松开关**，张数由当前独立审查输入动态决定（不是写死值）。
  * 2. **快照外 ID 数 = 0**：Legacy 轨允许清单必须覆盖全部冻结卡，且反查每个 builtin 卡 ID 都在清单内。
  * 3. **Formal 交叉校验**：Formal 清单必须 ⊆ Legacy 且逐卡满足四条准入。
  * 4. **产物可复现**：连续构建两次，两轨 `snapshotHash` 都必须一致；再用 `verifyFixedContentManifest`
@@ -19,9 +19,10 @@
  *    构建失败（fail-closed）。
  * 6. **写产物**：`lib/v2-content/generated/fixed-content-manifest.json`（运行期只读这份）。
  *
- * `reviewed` / `humanBarFit` 只来自人工审查输入：默认读
- * `docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`；文件不存在即「无人审过」，
- * Formal 恒为 0 张。本脚本**不**从卡面 metadata 或 machineVerdict 推导这两个字段。
+ * `reviewed` / `humanBarFit` 只来自独立审查输入：默认读
+ * `docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`；文件不存在即「无独立审查输入」，
+ * Formal 恒为 0 张。该输入的 `reviewerKind`（`"human" | "ai-role"`）**必填**，缺失或非法即 fail-closed 退出。
+ * 本脚本**不**从卡面 metadata 或 machineVerdict 推导 `reviewed` / `humanBarFit`。
  *
  * 运行：`pnpm build:fixed-manifest`
  */
@@ -32,6 +33,7 @@ import { expansionSsotCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-
 import {
   EMPTY_HUMAN_FIXED_REVIEW,
   buildFixedContentTracks,
+  isValidReviewerKind,
   verifyFixedContentManifest,
   type BuildFixedContentManifestOptions,
   type HumanFixedReview,
@@ -54,20 +56,34 @@ function fail(message: string): never {
   process.exit(1);
 }
 
-/** 读人工审查输入（缺失 ⇒ 空输入 ⇒ Formal = 0；存在则做最小形态校验，坏输入直接失败）。 */
+/**
+ * 读独立审查输入（文件缺失 ⇒ 空输入 ⇒ Formal = 0；存在则做最小形态校验，坏输入直接失败）。
+ * `reviewerKind` 必填且必须合法——缺失 / 非法一律 fail-closed 退出（不得默认 human、不得默认放行）。
+ */
 function loadHumanReview(): HumanFixedReview {
   if (!existsSync(HUMAN_REVIEW_PATH)) return EMPTY_HUMAN_FIXED_REVIEW;
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(HUMAN_REVIEW_PATH, "utf8"));
   } catch (error) {
-    fail(`人工审查输入无法解析（${HUMAN_REVIEW_PATH}）：${String(error)}`);
+    fail(`独立审查输入无法解析（${HUMAN_REVIEW_PATH}）：${String(error)}`);
   }
   const review = parsed as Partial<HumanFixedReview>;
   if (typeof review.source !== "string" || typeof review.reviewedAt !== "string" || typeof review.entries !== "object") {
-    fail(`人工审查输入形态非法（${HUMAN_REVIEW_PATH}）：需 { source, reviewedAt, entries }`);
+    fail(`独立审查输入形态非法（${HUMAN_REVIEW_PATH}）：需 { source, reviewedAt, reviewerKind, entries }`);
   }
-  return { source: review.source, reviewedAt: review.reviewedAt, entries: review.entries ?? {} };
+  if (!isValidReviewerKind(review.reviewerKind)) {
+    fail(
+      `独立审查输入缺少合法的 reviewerKind（${HUMAN_REVIEW_PATH}）：得到 ${JSON.stringify(review.reviewerKind)}，` +
+        `必须为 "human" 或 "ai-role"（fail-closed：不得缺损、不得默认 human）`,
+    );
+  }
+  return {
+    source: review.source,
+    reviewedAt: review.reviewedAt,
+    reviewerKind: review.reviewerKind,
+    entries: review.entries ?? {},
+  };
 }
 
 const adapter = getV2ContentAdapter();
@@ -162,17 +178,18 @@ console.log(`  legacy allowed      : ${legacy.counts.total}（主线 ${legacy.co
 console.log(`  legacy snapshotHash : ${legacy.snapshotHash}`);
 console.log(`  metadata 完整度      : audited ${legacy.counts.auditedMetadata} / legacy ${legacy.counts.legacyMetadata}`);
 console.log(
-  `  BAR-FIT 机器预筛    : PASS ${machineVerdicts.PASS} / 人工复核池 ${machineVerdicts.SUSPECT} / hard-fail 候选 ${machineVerdicts.HARD_FAIL_PATTERN}`,
+  `  BAR-FIT 机器预筛    : PASS ${machineVerdicts.PASS} / 独立复核池 ${machineVerdicts.SUSPECT} / hard-fail 候选 ${machineVerdicts.HARD_FAIL_PATTERN}`,
 );
 console.log(
-  `  BAR-FIT 人工定档    : 已人工定档 ${legacy.counts.total - humanBarFits.UNREVIEWED} / 未审 ${humanBarFits.UNREVIEWED}（机器阶段恒 UNREVIEWED，非 FAIL）`,
+  `  BAR-FIT 独立定档    : 已独立定档 ${legacy.counts.total - humanBarFits.UNREVIEWED} / 未审 ${humanBarFits.UNREVIEWED}（机器阶段恒 UNREVIEWED，非 FAIL）`,
 );
-console.log(`  其中 reviewed=true  : ${reviewedTrue}（只来自人工审查输入：${first.manifest.buildInfo.humanReviewSource}）`);
+console.log(`  其中 reviewed=true  : ${reviewedTrue}（只来自独立审查输入：${first.manifest.buildInfo.humanReviewSource}）`);
+console.log(`  独立审查身份        : reviewerKind=${first.manifest.buildInfo.reviewerKind}（不参与准入判定）`);
 console.log(`  ── Formal Fixed 轨（正式主线准入唯一允许清单）──`);
-console.log(`  formal fixed        : ${formal.counts.total} 张（Human 接受：不许把未审旧题伪装成正式固定库）`);
+console.log(`  formal fixed        : ${formal.counts.total} 张（张数由当前独立审查输入动态决定，不是写死值）`);
 console.log(`  formal snapshotHash : ${formal.snapshotHash}`);
 console.log(
-  `  被拒（按原因）      : missingStrictMetadata ${formal.rejectedFromFormal.missingStrictMetadata} / humanBarFit≠PASS ${formal.rejectedFromFormal.humanBarFitNotPass} / 未人工审 ${formal.rejectedFromFormal.notHumanReviewed} / hash 不全 ${formal.rejectedFromFormal.provenanceIncomplete}`,
+  `  被拒（按原因）      : missingStrictMetadata ${formal.rejectedFromFormal.missingStrictMetadata} / humanBarFit≠PASS ${formal.rejectedFromFormal.humanBarFitNotPass} / 未过独立审查 ${formal.rejectedFromFormal.notHumanReviewed} / hash 不全 ${formal.rejectedFromFormal.provenanceIncomplete}`,
 );
 console.log(`  ── 门禁 ──`);
 console.log(`  固定库快照外 ID 数  : ${verified.outsideIds.length}`);
