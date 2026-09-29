@@ -163,3 +163,77 @@ manifest hash：legacy `e4fffc31af0633b5ba48265147e66a116598c2ccac460754623c02c2
 
 - 上一轮报告 SHA-256：`a1aab0f384006f209066c72dbda416d4cde68c08909141a092211fe01b1c8292`
 - 第二轮追加后 SHA-256：见交付自证；文件为同一份 `docs/qa/BUGS-A9-CLOSEOUT.md`。
+
+## 第三轮复核（2026-09-30｜V2.3 AC 最小验收）
+
+> 本轮按 `PRODUCT_PLAN_V2.3-AC-ITERATION` 的 AC-01～AC-13 逐条复核，关键集合 AC-01～AC-11。仅追加本节；未改业务代码、测试/spec、内容源、Plan、generated JSON，未 commit/push/deploy。完整矩阵、NC、红线与原始证据说明见 `temp/QA-AC-RECHECK-V23.md`，命令日志在 `temp/qa-v23/`。
+
+### 产品验收追踪矩阵
+
+| AC 编号 | 用户可见要求 | 关键 AC? | 证据文件 + 用例名/命令 | 证据层级 | 本轮实测值 | 结论 | 备注 |
+|---|---|---:|---|---|---|---|---|
+| AC-01 | 首页进入本地局，真心话作答后继续 | 是 | `tests/e2e/spin-bottle.spec.ts` 首页空牌堆与 Alex 真心话续局用例；`game-flow.spec.ts` 本地整局 | L1 | 106 passed / 0 failed / 6 skipped；对应项通过 | 通过 | 三个 E2E 测试名均独立 grep 到真实定义。 |
+| AC-02 | 结束本局；退出确认继续/退出产生相应页面变化 | 是 | `game-flow.spec.ts`；`exit-confirm.spec.ts` 继续玩留原地、退出导航离站 | L1 | 对应 E2E 通过；全套 106/0/6 | 通过 | 实际点击并断言状态/导航。 |
+| AC-03 | 同局切换玩法后保留身份与配置 | 是 | `tests/e2e/pack-switching.spec.ts` 同局切换与已有局切换用例 | L1 | 对应 E2E 通过；全套 106/0/6 | 通过 | Session ID / 配置 / 尺度断言通过。 |
+| AC-04 | 固定内容已审合格可追溯，退役 30 卡不回流 | 是 | `bar-fit-review-input.test.ts`；`retired-truth-archive.test.ts`；两次 `pnpm build:fixed-manifest` | L1 | 相关定点套件通过；Formal 53；快照外固定 ID 0；443/443、0 mismatch | 通过 | 真实文件、用例存在并复跑。 |
+| AC-05 | 旧 350 原文和版本不变；AI 主线关闭时不发生成请求 | 是 | `retired-truth-archive.test.ts`；`content-track-gate.test.ts` 关闭不请求用例；AI isolation 定点测试 | L1 | SSOT diff=0；三处版本 1.5.0；AI 定点 31/31 | 通过 | 全量 Vitest 中 AI 页面测试另有 1 个失败，归技术门禁 FAIL；该测试孤立定点通过。 |
+| AC-06 | Heat/Mutual/无效披露不误推进，冻结阈值保持 | 是 | `v2-mutual-check.test.ts` [12,14] 边界；`v2-formal-truth-production-chain.test.ts` disclosure 恒 undefined | L1 | 对应定点通过；H3；相关路径 diff=0 | 通过 | final Mutual HEAT/TIMING 仍是未决项。 |
+| AC-07 | 未审、坏审查输入与 legacy 不绕过 Formal 准入 | 是 | `fixed-content-manifest.test.ts` 四条件/空输入/非法身份；manifest build | L1 | 定点 184/184；Formal 53；快照外 ID 0 | 通过 | 另有既有坏输入探针结果，前两轮报告留痕。 |
+| AC-08 | 精确标签使题意和过滤口径一致 | 是 | `pack1-replaces.test.ts`；`pack1-physical-contact-scope.test.ts`；Supervisor A9 报告 | L1 | 定点套件全绿；接触专项 5 项通过 | 通过 | 256 topic 精确、262/264 hook 静态对照。 |
+| AC-09 | 规划字段不进 Runtime；Host disclosure 未授权不生效 | 是 | `pack1-replaces.test.ts` schema/桥接；production-chain disclosure；路径 diff | L1 | 对应定点通过；函数返回 undefined；UI/Router/Engine diff=0 | 通过 | 静态与执行证据一致。 |
+| AC-10 | 非 3000 端口可运行 E2E，退出行为正确 | 是 | `e2e-port-config.test.ts`；`PLAYWRIGHT_BASE_URL=http://127.0.0.1:3210 npx playwright test` | L1 | 守护测试 5/5；E2E 106/0/6；3210 测后释放 | 通过 | 3000 PID 63779 未触碰，spec 未改。 |
+| AC-11 | 固定输入可重复生成相同卡源和审计结果 | 是 | 连续两次 `pnpm build:fixed-manifest`；manifest 重建/乱序用例 | L1 | 两次 Formal snapshotHash=`d911d0b8239c7de29a9d5b14a8a4915472415375845bf845d4b64ffcc1832115`；hash 可复现 true | 通过 | legacy/formal 两轨 hash 均一致，443/443。 |
+| AC-12 | 机器 SUSPECT 与人工 PASS 分层；A2 分类对账 | 否 | `bar-fit-review-input.test.ts` note 派生断言；`PACK1-A2-ADJUDICATION.md` | L2 | 文件/断言存在；KEEP 5 / REWRITE 5 / REPLACE 21；ledger LEDGER-OK | 通过 | 静态复核，按要求不重跑。 |
+| AC-13 | 验收与技术/内容审查一致，不虚报发布完成 | 否 | FINAL-53 主审、A9 Code Review、Supervisor、QA 报告、账本校验 | L2 | 主审 53/0/0；Code Review PASS_WITH_NOTES、P0/P1=0；本轮技术 FAIL 与 6 skip 如实列明；LEDGER-OK | 通过 | 结论分栏，未声称发布完成。 |
+
+**AC 汇总：** AC-01～AC-13 全部有结论；L1 11 条、L2 2 条。关键 AC 11/11 有证据支撑且通过：**是**。
+
+### 本版不覆盖
+
+| 编号 | 不覆盖范围与理由 | 本轮登记 |
+|---|---|---|
+| NC-01 | 桌面与窄屏全视觉边界走查；A9 UI 零改动，计划将完整桌面/边界样本留给 UI 变更版本 | 本轮只覆盖 Pixel 7 390×844；桌面与完整边界视觉走查未做。 |
+| NC-02 | 真人局与 RG-01～RG-07 / Release | `RG-02=HOLD_BY_CONTENT_01`、`RC=RC_NEEDS_REFREEZE`；不 Release、不部署，原 7/7 gate 未执行。 |
+| NC-03 | BAR-FIT v2 | 尚未实现，不计交付。 |
+| NC-04 | 229 咨询句式瑕疵 | 主审判 PASS 可容忍，登记不修。 |
+| NC-05 | `follow_up_hook=9` 余量 0 与“选谁”骨架收敛风险 | 主审登记项；未退卡、未加门槛。 |
+| NC-06 | 父版其他待兑现 DoD | 完整玩法冻结、20/25 轮 MC、最终 Mutual HEAT/TIMING 冻结继续留原 Gate，不包装成已验收。 |
+
+### 红线逐项核对
+
+| 红线 | 结论 | 证据 |
+|---|---|---|
+| 旧 350 题 text diff=0 | 通过 | 冻结 SSOT `git diff --quiet 0a879ed..013939b` exit 0，专测通过。 |
+| 三处版本均 1.5.0 | 通过 | package.json / version.json / sw.js CACHE_VERSION 读值均为 1.5.0。 |
+| AI_MAINLINE_ENABLED=off | 通过 | 当前未注入 true；关闭分支隔离测试定点通过；AI 启用断网 E2E 条件 skip。 |
+| Mutual 窗口 [12,14] 未改 | 通过 | 常量/边界用例通过，Router/Engine diff=0。 |
+| MUTUAL_MIN_HEAT=H3 未改 | 通过 | state 常量与集成断言均为 H3。 |
+| HEAT_THRESHOLDS 未改 | 通过 | 对应测试通过、相关路径无变更。 |
+| Host disclosure UI 未新增/未改 | 通过 | `roundDisclosureForCurrentRound()` 仍恒 `undefined`；对应 integration 通过。 |
+| final Mutual HEAT/TIMING 仍留空 | 通过（保持未决） | V2.3/父版原文仍为未冻结，本轮未变更。 |
+| RC 未重冻 | 通过 | `RC_NEEDS_REFREEZE`，未触发重冻。 |
+| 未部署 | 通过 | 本轮无部署动作，HANDOFF/Plan 记录未部署。 |
+| 题库机制未改 | 通过 | 准入四条件、有效轮 fail-closed、legacy 豁免相关测试本轮通过。 |
+| 零 UI、零 Router/Engine 变更 | 通过 | `app/ components/ styles/ lib/v2-relationship/ lib/engine/` 相对 A9 基线 diff=0。 |
+
+### 门禁实测与 E2E skip
+
+- E2E：`PLAYWRIGHT_BASE_URL=http://127.0.0.1:3210 npx playwright test` → **106 passed / 0 failed / 6 skipped**。六条 skip 均不计 PASS：`production-offline`（production 模式）；`pwa-cache-regression`（production build/真实 SW）；`pwa-schema-upgrade`（production build/真实 SW）；`v2-mutual-flow` 正向 Mutual（`DEFERRED_BY_HUMAN`）；`would-you-rather` AI 断网回退（需 `AI_MAINLINE_ENABLED=true`）；`v1-1-recovery` PWA reload（production build/SW）。
+- Vitest 全量：**137 文件中 136 passed、1 failed；1452 passed / 1 failed / 1453**。失败为 `ai-mainline-generating-page.test.tsx` 的关闭开关页面标题断言，并有 `profiles.find` 未处理错误。该文件与 `ai-mainline-isolation`、`content-track-gate` 定点运行 **31/31 通过**；全量仍为失败，不掩盖。
+- AC 定点组：9 文件 / **184 passed / 0 failed**；端口守护测试包含其中 5 项。ledger：`LEDGER-OK (含 WARN)`。
+- Manifest 连跑：Formal 53；legacy/audited/reviewed/formal = 443/53/53/53；两次 formal snapshotHash 均为 `d911d0b8239c7de29a9d5b14a8a4915472415375845bf845d4b64ffcc1832115`；443/443 一致、0 mismatch、快照外固定 ID 0。
+- E2E 将 `next-env.d.ts` 改写；已用 `temp/qa-v23/next-env.d.ts.baseline` 回写。当前与 HEAD hash 均为 `1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b`。3000 的 PID 63779 未停止；3210 测试结束后无监听。
+
+### 分栏结论
+
+| 结论类别 | 本轮结论 |
+|---|---|
+| **技术门禁结论** | **FAIL**：全量 Vitest 有 1 failed；E2E 有 6 条条件 skip（不计 PASS）。其他已列定点与 manifest、ledger 检查通过。 |
+| **产品验收结论** | **PASS**：AC-01～AC-13 有逐条结论；关键 AC 11/11 有本轮证据并通过。此结论不覆盖 NC 项，也不表示 Release/部署完成。 |
+
+## 同文件更新指纹（第三轮）
+
+- 第一轮追加后 SHA-256：`a1aab0f384006f209066c72dbda416d4cde68c08909141a092211fe01b1c8292`。
+- 第二轮追加后（本轮更新前）SHA-256：`22e076dfe436c4e138208a04a9190d49c13edbaf9dccfb31b20fecdec83dbab0`。
+- 本轮在同一文件末尾追加第三轮章节；第一、二轮原文未改。
+- 更新后 SHA-256 与 `ls -l` 实测值见本轮交付回执。

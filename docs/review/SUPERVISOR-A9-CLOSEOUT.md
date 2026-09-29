@@ -52,3 +52,74 @@
 - 目标：A9 收尾 supervisor 复检；剩 P0：产品验收（人类拍板）+ commit（人类指令）；下一步：编排者补账本 3 类行、订正 67→71、上呈人类拍板 commit 与 Change C。
 
 （自证见终端 `ls -l` + `shasum -a 256`。）
+
+---
+
+# SUPERVISOR｜Change C 治理收尾复检结论（2026-09-30，致编排者）
+
+- 复检身份：supervisor（opencode-go/muse-spark-1.3-contributor，opencode 通道）。只对编排者说话。
+- 读盘：AGENTS.md → docs/roles/supervisor.md → USER_MODEL_OVERRIDE.md → HANDOFF「大交接 4」→ 经验一句话.md → PRODUCT_PLAN_V2.3-AC-ITERATION.md → BUGS-A9-CLOSEOUT.md（三轮）→ 本文件上一轮结论 → CODE_REVIEW-A9-CLOSEOUT.md → RESEARCH_REVIEW-PACK1-FINAL-53.md → 派工书 §4。
+- 本单纪律：**未改任何业务/测试/内容源文件**；唯一写入是本文件本章节（派工书 §5 指定落位）。未 commit/push，未 checkout，未读写本仓外目录。临时文件无新增。
+- HEAD 现为 `498ca58`（neat-freak 回填提交，已 push，`origin/main` 0 0）；工作树改动仅 `M BUGS-A9-CLOSEOUT.md`（QA 第三轮追加）＋ `M next-env.d.ts`（E2E 附带改写，见治理 NOTE）＋ `?? V2.3`（planner 新文件）＋ 14 份备份 `??`。
+
+## 分面结论
+
+| 面 | 档位 | 一句话 |
+|---|---|---|
+| 技术面 | **FAIL（非阻塞性已知 flaky，已登记，不抹记录）** | QA 第三轮全量 1 failed（`ai-mainline-generating-page.test.tsx`）真实发生过；本监督独立复跑全量 2 次 `137/1453/0 failed`＋该单文件 1 次通过。分类为既有负载型 flaky（§4.4），不构成阻止治理收尾的阻塞项，但 FAIL 记录保留。 |
+| 产品面 | **PASS** | AC-01~AC-13 全部通过，关键 AC 11/11 均有真实证据（§4.1）。NC-01~06 诚实登记为未覆盖，未包装成通过（§4.3）。 |
+| 治理面 | **PASS_WITH_NOTES** | V2.3＋QA 回填闭环成立，`product_acceptance_ac_added` 可置 `true`；NOTES：①next-env.d.ts 待恢复；②planner-V2.3 与 QA 第三轮两账本行待 TM 补记；③STATE 行数当前一致（220/277）。账本 `LEDGER-OK`。 |
+| 阶段暂停口径 | **PASS** | V2.3 §4 已写明暂停＋恢复口径（§4.6）。 |
+
+## §4.1 治理性 FAIL 可解除：是（纸面通过零发现）
+
+- AC 可执行可对账：AC=13、关键=11（复算 `AC=13 key=11 pending=13`），关键集合非空；V2.3 表中 `pending`＝planner 侧“待 QA 回填”状态，QA 已在 BUGS 第三轮矩阵逐条回填，职责分离正确（planner 未碰 `docs/qa/**`）。
+- 证据独立抽验（grep 真实定义，非只读表）：E2E 7 个用例名（spin-bottle×2、game-flow、exit-confirm×2、pack-switching×2）全部存在；unit 侧 `30张UNREVIEWED`（bar-fit:228）、`12–14之外不触发`＋`认识阈值全满足`（mutual:738/856）、`恒undefined`（production-chain:279）、`metadata≠reviewed`＋`formal=0`＋`robot抛错`（manifest:418/428/479）、`256精确相处规则`（replaces:831）、`gameCardSchema不含三字段`＋`桥接不转发`（replaces:661/670 等三文件）、`端口真传入dev server`＋`禁硬编码`（port-config:63/79）、`重复构建+乱序同hash`（manifest:542）、`note由实测派生`（bar-fit:423）、`关闭时不发请求`（content-track-gate:206）——**11 条关键 AC 引用的用例名全部真实存在**，与编排者抽验一致。
+- QA 回填逐条对上 AC 编号：BUGS 第三轮矩阵 AC-01~AC-13 行、NC-01~06 行、红线 12 项行齐全；L1 11 条 / L2 2 条（AC-12/13 静态复核，符合“按要求不重跑”）；无“AC 表待回填、矩阵没填”的空洞。
+- **判定：上一轮“治理性 FAIL：产品验收阻断”解除条件已满足。**
+
+## §4.2 未借 Change C 扩大范围：成立
+
+- 父版 `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` 对 HEAD 零 diff（`git diff --name-only HEAD` 无命中），最后改动仍为 `57f5be3`。**一字未改** ✓。
+- V2.3 §0 声明“唯一差异是版本号＋§AC 表达；未新增功能、未扩大范围、未改变任何产品要求”，§0.1 对 Heat/Mutual/[12,14]/H3/Router/准入四条件/UI/旧350/三处版本/AI开关/RC逐项声明未改并给出核对方式；正文无任何新功能、新阈值、新机制语句。**无夹带** ✓。
+- `RELEASE_TYPE=ITERATION_UPDATE` 后果表述正确：不强制用户签收，但“关键 AC 未测／控件未实际点击／证据缺失仍不得报完工”保留 ✓。
+
+## §4.3 NC 诚实：成立
+
+- NC-01 依据成立：`git diff --name-only 0a879ed..013939b -- app/ components/ styles/` 输出为空（本监督亲跑），A9 UI 零改动；E2E 仅 Pixel 7 390×844，桌面未覆盖的登记属实。**未包装成已验收** ✓。
+- NC-02~NC-06：RG/RC 未动、BAR-FIT v2 未实现、229 登记不修、hook 真值 9 诊断基线、父版其余 DoD 留原 Gate——均与 QA/CR/主审口径一致，无美化 ✓。
+
+## §4.4 技术门禁 flaky 裁决（本单最关键判断）
+
+- 现状（本监督亲跑）：全量第1次 `137 files / 1453 passed / 0 failed`（16.27s）；全量第2次 `1453 passed` 0 failed（16.18s）；单文件 `ai-mainline-generating-page.test.tsx` 1/1 通过。连同编排者 3 次全绿＋QA 定点 31/31，**6 次运行 5 绿 1 flaky 红**。
+- 分类：**既有测试的负载型 flaky**。理由：①失败文件最后改动 `8bcef40`（本轮之前），`0a879ed..013939b` 与对 HEAD diff 均 0 命中，与本轮无关；②仅全量并发跑失败一次，单跑／定点／E2E 并发下均通过；③该文件 2 处 `findBy*`、**0 显式 timeout**（默认 1000ms），典型负载敏感异步断言；④失败断言（关闭开关页面标题）与本轮改动（docs/qa＋Plan）无代码路径关联。
+- 是否阻塞治理收尾：**否**。Human 指令“只做治理收尾、不新增任务”——修既有 flaky（加 timeout／测试基建）属于新增工程，与指令冲突；但隐瞒不允许。
+- 处置：**如实登记为已知 flaky，留待未来含 UI/测试基础设施变更的版本修；本轮不修**。登记内容：文件＋现象（全量并发下偶发 1 failed，`findByRole` 默认超时）＋证据（6 次 5 绿 1 红）＋QA 第三轮 FAIL 记录保留。**FAIL 记录不抹**。
+- 另：QA 第三轮 E2E 6 skip 仍为既有条件 skip，不计 PASS，口径延续 ✓。
+
+## §4.5 治理面
+
+- STATE：`task_ledger_rows=220`／`dispatch_ledger_rows=277` 与两账本实测行数一致；`product_acceptance_ac_added=false` 仍为 false——**正确**（V2.3 §3 规定 QA 通过后由编排者置 true，本结论即为通过依据，TM 随后置 true）。
+- `node scripts/model/check-ledger.mjs` 亲跑 **`LEDGER-OK`（含既有 WARN 4 条历史行）** ✓。
+- TM 未写业务代码：成立。工作树 `M BUGS-A9`＝QA 职责、`?? V2.3`＝planner 职责；编排者仅 HANDOFF/账本/STATE（本次 STATE 的 true 位待写）。
+- **NOTE①**：`M next-env.d.ts` 是 E2E 附带改写（`.next/types`→`.next/dev/types`，2 行自动生成 churn），QA 报告称已回拷但现仍 drift。非业务改动，但 **commit 前须由 TM 用 temp 备份回拷恢复（禁 `git checkout --`，见经验 2026-09-30 探针还原条）**。
+- **NOTE②**：planner-V2.3 与 QA 第三轮的两账本行尚未落盘（TASK 尾行仍停在上一轮 supervisor 行，DISPATCH 同）——属正常流程（TM 待本结论后补记），列出以防遗漏，不算缺失。
+- 14 份备份：`status` 14 行全 `??`、`git ls-files` 0 跟踪，未删未改 ✓；`PRODUCT_PLAN.template.md.旧版` 未入索引 ✓。
+- 返工计数：**本监督本轮打回 0 次**；TASK 尾部 8 行 rework 全 0；历史 rework=2 行（ChangeB 终检等）均为旧任务已闭环。**本轮无累计 2 次情形，无需升 senior-expert。**
+
+## §4.6 阶段暂停口径：已如实落 Plan（PASS）
+
+- V2.3 §4（L71）：到此暂停、不扩题不改题不原创题、不启动第二包、不做新内容治理工程、等 Human 外部输入 ✓。
+- V2.3 §4（L73）：外部题库默认视为 Human 已筛选可用内容、不走复杂二次生产流程、只做必要技术入库＋回归；仍守全部红线＋父版约束、逐卡过准入四条件＋fail-closed、回归 vitest＋E2E；入库≠自动重冻 RC/部署 ✓。
+
+## 三选一裁决：② 治理性 FAIL 解除，但带 1 条登记项
+
+- **治理性 FAIL（产品验收阻断）解除**；`product_acceptance_ac_added` 可置 `true`（由编排者执行）。
+- **登记项（§4.4 flaky）**：`tests/unit/ai-mainline-generating-page.test.tsx` 全量并发下偶发 1 failed（`findByRole` 默认 1000ms、无显式 timeout；文件自 `8bcef40` 未动，与本轮无关）；6 次运行 5 绿 1 红；QA 第三轮技术门禁 FAIL 记录保留；修法（加显式 timeout／测试基建）留待未来含 UI/测试变更版本，本轮不修（Human 不新增任务指令）。
+- 本阶段治理收尾可收尾；待办仅 NOTE①（next-env.d.ts 回拷）＋NOTE②（两账本补 2 类行＋STATE 置 true）＋ commit/push（需人类明确指令，含分支名）。
+
+## 心跳
+
+- 目标：Change C 治理收尾 supervisor 复检；剩 P0：无（治理阻断解除）；下一步：编排者回拷 next-env.d.ts→补账本→STATE 置 true→携本结论上呈人类要 commit 指令。
+
+（自证见本单终端 `ls -l` + `shasum -a 256`。）

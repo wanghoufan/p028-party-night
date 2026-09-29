@@ -4,7 +4,61 @@
 
 ---
 
-# ★ 大交接 4（2026-09-30 A9 收口，**接手只读这一段**；覆盖下方全部历史段）
+# ★ 大交接 5（2026-09-30 阶段收尾，**接手只读这一段**；覆盖下方全部历史段）
+
+## 0. 三十秒定位：当前状态（本段是现役答案）
+- **本阶段已干净收口，内容工作暂停，等待 Human 从外部输入新题库。**
+- **A9 已收口并 commit + push**：`6cac2a2`（内容准入 + 测试迁移 + 证据重刷）→ `013939b`（Playwright baseURL 治本）→ `498ca58`（提交后状态回填）→ 本次治理收尾提交。`origin/main` `0 0`，**tracked tree clean**。
+- **Formal Truth = 53 张，作为现阶段基线保留**（H1 **14** / H2 **17** / H3 **16** / H4 **6**）｜legacy **443** / audited **53** / reviewed **53** / formal **53**｜退役卡共 **30** 张均不在运行时卡源、不在 Formal｜`follow_up_hook` 真值 **9**（诊断基线、非放行门）。
+- **当前不继续优化、不扩写题库。** 不扩题、不改题、不原创题、不启动第二包、不做 BAR-FIT v2、不做 Human 审题、不做新的内容治理工程。
+- **第二包暂停。**
+- **新 `DEV_BASELINE` = `PRODUCT_PLAN_V2.3-AC-ITERATION`**（`RELEASE_TYPE=ITERATION_UPDATE`；AC **13** 条 / 关键 **11** 条 / 不覆盖 **6** 条）。父版 `PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` **一字未改**。
+- `PROJECT_PHASE=DEVELOP`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜**未部署**。
+- `docs/model/GOVERNANCE-STATE.json`：`product_acceptance_ac_added = true`（治理阻断已解除）｜`task_ledger_rows` 223｜`dispatch_ledger_rows` 280｜`check-ledger` = `LEDGER-OK`。
+- ⛔ 下方「大交接 4（2026-09-30 A9 收口）」及更早段落已被本段取代，仅作留痕。
+
+## 1. 本阶段收尾做了什么（Change C 治理收尾）
+| 步骤 | 角色 | 结果 |
+|---|---|---|
+| Change C 受控重开 | planner（`codex/gpt-6-sol`） | 新建 `docs/pm/PRODUCT_PLAN_V2.3-AC-ITERATION.md` 作新 `DEV_BASELINE`；**只补验收表达**：AC 13 条（关键 11）、不覆盖 6 条、`RELEASE_TYPE=ITERATION_UPDATE`；**未新增功能、未扩大范围** |
+| 最小验收复核 | qa（`codex/gpt-6-luna`） | **AC-01~AC-13 全部通过**（L1 亲跑 11 / L2 静态 2），**关键 AC 11/11 有证据支撑且通过** ⇒ **产品验收 PASS**；在 `docs/qa/BUGS-A9-CLOSEOUT.md` 追加第三轮「产品验收追踪矩阵」 |
+| 治理复检与裁决 | supervisor | 四面：技术 FAIL（非阻塞已知 flaky）／产品 PASS／治理 PASS_WITH_NOTES／阶段暂停口径 PASS。**裁决 ②：治理性 FAIL 解除，带 1 条登记项** |
+| 治理状态落盘 | task-manager | `product_acceptance_ac_added` 置 `true`；两本账本各补 3 行（planner / QA / supervisor），行数与 STATE 对齐 |
+
+## 2. 外部题库到来后的恢复口径（Human 已明示，**默认按此执行**）
+> 外部题库**默认视为 Human 已筛选的可用内容**，**不再走复杂的二次内容生产流程**，只做**必要的技术入库 + 回归验证**。
+
+执行口径：
+1. **恢复前置条件**：Human 提供已从外部搜集并筛选的新题库。**未提供前不启动任何内容施工。**
+2. **不重走**：Golden 12 流程、多轮 Product Reviewer 八维审查、SKILL 二次内容生产链。Human 的筛选即为内容质量把关。
+3. **仍须做（必要技术入库）**：
+   - 逐卡满足 `pnpm build:fixed-manifest` 的**准入四条件**与 fail-closed 校验（`reviewed=true` 不由 metadata 自动产生、`reviewerKind` 如实标注、payloadHash 完整）；
+   - 新卡**必须**带 `heatMin` / `heatMax`（Heat 与 Intensity 正交，⛔ 不得为凑库存压低 `heatMin`、⛔ 不得把 `heatMax` 统一拉 4）；
+   - 明确 Heat 分档归属，保持 H1 冷启动余量；
+   - 内容源与运行时卡源**同源**（`v2-card-bridge` 与 `v2-card-quality-index` 不得漂移 —— 本轮唯一真回归就出在这里）。
+4. **仍须做（回归验证）**：`npx tsc --noEmit`｜`pnpm lint`｜`npx vitest run --testTimeout=30000`（**0 failed**）｜`PLAYWRIGHT_BASE_URL=http://127.0.0.1:<空闲端口> npx playwright test`（**0 failed**，skip 不计 PASS）｜`pnpm build`｜`pnpm build:fixed-manifest`（两次 hash 一致）｜`node scripts/model/check-ledger.mjs`。
+5. **入库验证 ≠ 自动重冻 RC 或部署**。RC 仍 `RC_NEEDS_REFREEZE`，Release Gate 仍 `RG-01`~`RG-07` 7/7。
+6. **本阶段已登记、不做**（未来若恢复内容工作再议）：BAR-FIT v2 未实现｜`229` 咨询句式瑕疵登记不修｜「选谁」骨架收敛风险与限流｜`follow_up_hook` 余量 0｜结构缺口（Golden H2 缺 1、REPLACE 缺 1、supplement 缺 2）。
+
+## 3. 已知登记项（如实保留，⛔ 不许抹掉）
+1. **既有负载型 flaky（本阶段不修，与 Human「不新增任务」指令一致）**：
+   `tests/unit/ai-mainline-generating-page.test.tsx` 在全量并发下偶发 `1 failed`（该文件自 `8bcef40` 起未动，**不在本轮 diff 内**；2 处 `findBy*` 用默认 1000ms 超时、无显式 timeout）。编排者连跑 3 次全量 1453/0 failed；Supervisor 独立复跑 6 次得 5 绿 1 红 ⇒ 判**既有负载型 flaky，非真实回归，不阻塞**。QA 第三轮的技术门禁 FAIL 记录**保留未抹**。**修法（加显式 timeout／测试基建加固）留待未来含测试基础设施变更的版本。**
+2. **E2E 6 条 skip**：`106 passed / 0 failed / 6 skipped`，A8 起既有条件 skip，⛔ 不得计 PASS。
+3. **`NC-01` 桌面视口未覆盖**：本版 `app/` `components/` `styles/` **零改动**、`lib/v2-relationship/` `lib/engine/` **零改动**，故视觉/交互呈现未变更；E2E 覆盖 390×844 移动视口，**桌面视口本版未覆盖**（不包装成已验收）。
+4. `RG-02=HOLD_BY_CONTENT_01`、`RC=RC_NEEDS_REFREEZE`、**未部署**：Release Gate 7/7 要求不变。
+5. 14 份 `*.旧版-2026-09-29` 预存备份：**保持未跟踪、未删、未改、未 stash**。
+
+## 4. 红线（本阶段全程未动，恢复后继续不动）
+旧 350 题 `text` 零修改｜准入四条件｜认识阈值、窗口 `[12,14]`、`MUTUAL_MIN_HEAT=H3`、`HEAT_THRESHOLDS`、`isEffectiveInformationRound` fail-closed 四项｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜不新增/改 Host disclosure UI｜最终 Mutual HEAT/TIMING 留空｜RC 不重冻｜不 bump｜不部署。
+
+## 5. 恢复读盘（全体系唯一顺序）
+`AGENTS.md` → `docs/roles/<你的角色卡>.md` → 根 `USER_MODEL_OVERRIDE.md` → **本文件「大交接 5」段** → 根 `经验一句话.md` → 涉基础设施加 `docs/sop/` → 任务目标最后。
+之后跑：`git -c core.quotepath=false status --short` / `git log --oneline -5` / `git rev-list --left-right --count @{u}...HEAD` / `npx vitest run --testTimeout=30000`。
+**接手第一件事：确认是否已收到 Human 的外部题库。未收到就不要启动任何内容施工。**
+
+---
+
+# ★ 大交接 4（2026-09-30 A9 收口，已被上方大交接 5 取代，仅留痕）
 
 ## 0. 三十秒定位
 - 阶段：`DEVELOP`｜`DEV_BASELINE=PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜**未部署**。
