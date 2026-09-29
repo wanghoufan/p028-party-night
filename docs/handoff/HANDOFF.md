@@ -50,7 +50,7 @@
 - **派工跨目录禁令**：opencode 通道角色读写仓外目录会被 `external_directory` 静默拒绝；临时文件一律放仓内 `temp/`。
 - **模型通道**：用户 2026-09-29 指示 builder 继续派 `codebuddy/deepseek-flash`；本轮 A9 因 429 中断，**接手时先探一次可用性**，429 则按 override 表切 `glm-5.3-flash` 并如实记账。
 - **TM 行不 commit**：builder 派工书里那条「不许 commit/push」是编排者行为；**只有用户明确说 commit/push 才提交**（用户 2026-09-29 已明确提交本轮成果）。
-- **⚠️ 提交卫生踩坑（2026-09-29 本轮亲历）**：`git status` 对中文路径会加引号并转义（`"AGENTS.md.\346\227\247\211\346\210\260..."`），导致 `grep "旧版-2026-09-29"` 的**禁入检查假通过**，3 份预存备份（`docs/handoff/HANDOFF.template.md.旧版-2026-09-29`、`docs/qa/BUGS.template.md.旧版-2026-09-29`、`scripts/model/check-ledger.mjs.旧版-2026-09-29`）被误提交进 `7d3254e`。已用**后续 commit 移出索引、文件留在磁盘未跟踪**（**不做 force-push**）。**规矩：所有路径类 grep 检查必须加 `git -c core.quotepath=false`**，或改用 `git diff --cached --name-only -z`。磁盘上现存 **17 份** `*.旧版-2026-09-29` 预存备份，**保持未跟踪、不删不改**。
+- **⚠️ 提交卫生踩坑（2026-09-29 本轮亲历）**：`git status` 对中文路径会加引号并转义（`"AGENTS.md.\346\227\247\211\346\210\260..."`），导致 `grep "旧版-2026-09-29"` 的**禁入检查假通过**，3 份预存备份（`docs/handoff/HANDOFF.template.md.旧版-2026-09-29`、`docs/qa/BUGS.template.md.旧版-2026-09-29`、`scripts/model/check-ledger.mjs.旧版-2026-09-29`）被误提交进 `7d3254e`。已用**后续 commit 移出索引、文件留在磁盘未跟踪**（**不做 force-push**）。**规矩：所有路径类 grep 检查必须加 `git -c core.quotepath=false`**，或改用 `git diff --cached --name-only -z`。磁盘上现存 **14 份** `*.旧版-2026-09-29` 预存备份，**保持未跟踪、不删不改**。
 
 ## 4. 需要 Human / 审查拍板的口径（本轮我改了口径，记录在案）
 1. **归类改判**：旧 `202`/`225` 实测 `AI腔5/现场反应2`，**改判 REPLACE**，批次口径由 REWRITE 7 ＋ REPLACE 19 变为 **REWRITE 5 ＋ REPLACE 21**；`246/247` 保留新方向，不补 1:1 卡。审计文件未回改。
