@@ -258,3 +258,7 @@
 {"date":"2026-09-29","task":"CR-5 code-reviewer 复检 Bootstrap 链","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
 {"date":"2026-09-29","task":"QA-7 门禁与专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
 {"date":"2026-09-29","task":"P3-1 清过期注释","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"按用户指示继续派 deepseek-flash"}
+{"date":"2026-09-29","task":"NF-3 neat-freak 大交接2 收尾","role":"neat-freak","model":"volcengine-plan/ark-code-latest","used":"主","runtime":"opencode","result":"PASS","note":"跨目录禁令已遵守(仅仓内 temp/)"}
+{"date":"2026-09-29","task":"HANDOFF 酒吧基线段(TM 自做)","role":"task-manager","model":"—","used":"主","runtime":"本窗口","result":"PASS","note":"docs/handoff 属 TM 位置"}
+{"date":"2026-09-29","task":"skill-reveiw 第二批候选(TM 自做)","role":"task-manager","model":"—","used":"主","runtime":"本窗口","result":"PASS","note":"docs/skill-reveiw 属 TM 自留文件"}
+{"date":"2026-09-29","task":"治理母版同步单独提交","role":"task-manager","model":"—","used":"主","runtime":"本窗口","result":"PASS","note":"预存脏改动先隔离，不混入内容提交"}

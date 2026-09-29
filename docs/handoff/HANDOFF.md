@@ -3,6 +3,70 @@
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
 ---
+
+# ★ 大交接 2（2026-09-29，覆盖上方 2026-09-28 段；**接手先读这一段**）
+
+## 0. 三十秒定位
+- HEAD **`3b783b8`**（治理母版 2026-09-29 同步 + 文档对齐），前一内容提交 `730c025`（Truth H1 Bootstrap，formal 24→31），已 push，与 origin/main `0 0`。
+- 阶段：`DEVELOP`｜`DEV_BASELINE=PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜未部署。
+- 工作区：**跟踪文件 clean**；仍有 **12 份 `*.旧版-2026-09-29` 备份未跟踪**（neat-freak 建议不入库，已按「不处理预存改动」要求原样保留，未删、未 stash、未改 `.gitignore`）。
+- ⛔ **上方「大交接 2（2026-09-28）」段已被本段取代**，冲突以本段为准；再往下的历史交接正文仅作留痕。
+
+## 1. 🔴 当前进行中的工作：酒吧主线内容重构（Human 已冻结新方向）
+**Human 已冻结**（不再逐题确认）：酒吧主线内容目标 = **短期吸引、快速了解、现场有趣、暧昧张力、即时反应、后续互动铺垫**；**不是**「判断是否适合长期恋爱」。优先级：`场景可玩性 ≈ 即时吸引/反应 > 简单人物信息 > 关系深度`。
+- 场景约束：酒吧、多人、噪音、注意力短、可能微醺、需快轮转 ⇒ **3 秒理解 / 10 秒能答 / 优先封闭半封闭 / 现场能产生反应**。
+- **主线退出四类**：A 长期关系规则；B 前任回忆（深聊）；C 复杂人生规划；D 心理咨询式自我剖析。
+- **主线重点五类**：①快速认识 ②吸引偏好 ③暧昧/现场化学反应 ④亲密/身体偏好 ⑤后续玩法钩子。
+- **Heat 重新解释**（与 Intensity 仍正交）：H1 轻量破冰／H2 吸引与社交偏好／H3 明显暧昧与对眼前人的偏好反应／H4 更大胆的身体与亲密偏好。
+- **`followUpHook` 为新增 planning-only 字段**（`none|attraction|initiative|eye_contact|body_preference|contact_preference|flirt_target|social_style`）：**本轮只作设计/audit 字段，不得改 Runtime Schema**；**`followUpHook` ≠ 身体接触授权**。
+- **BAR-FIT 必须升级 v2**：新增酒吧主线高风险词/结构（`五年后`/`长期关系`/`上一段关系`/`花最久才想通`/`最想完成的人生目标`/`各占几成`/`哪三段`/`最近一次……当时怎么决定……` 等）⇒ 至少 **SUSPECT 强制 Reviewer 看**（不机械全 HARD_FAIL）。旧机器 BAR-FIT 曾把心理咨询题/人生规划题/长期关系题判 PASS，**已证明覆盖不了新基线**。
+- **审计三分类取代旧 18/13**：`KEEP`（方向+题面都合格）／`REWRITE`（信息目标可留、题面太抽象/面试/AI腔/开放/复杂）／`REPLACE`（方向本身不适合酒吧主线）。初始基线（**须由 Reviewer 独立复核**）：KEEP 倾向 `203 209 226 227 228 229`；REWRITE 倾向 `201 202 205 225 230 231`；REPLACE 倾向 `204 206 207 208 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224`。
+- **REPLACE 的 ID 规则**：核心信息目标完全改变 ⇒ **新建新 ID**，旧卡退出 Formal（provenance / payloadHash / review 历史 / MC trace 更清楚）；仅题面缩短口语化才可保留 ID。新号段从当前最大 `PN-TRUTH-*` 之后起，全库 collision test。
+- **判 REWRITE/REPLACE 后旧版本立即暂时退出 Formal**（UNREVIEWED/不再 Formal），通过审查后才回 Formal；**Formal 数下降要接受**，不得为数字保留坏题。
+- **H1 库存纪律**：删/替换后重算 H1 库存，低于安全余量就**新增真正 H1 酒吧题**，**不把深题压回 H1**。
+- **Golden 12**：H1/H2/H3/H4 各 3 张，作为后续 Builder/Reviewer 的**内部风格基准**（不是停机问 Human 的关卡）；硬风格 `≤25~30 中文字`、一口气念完、单句或最多两小句、无多层条件、**避免把「说说为什么……」当默认句式**、优先 A/B/C、一个部位、一个选择。
+- **三链顺序**：Builder → **Product Reviewer（内容质量主审）** → Code Reviewer → QA → Supervisor。Code Reviewer 不替代产品审查。
+- **Reviewer 八维打分**（每张必打）：酒吧可答性／认知负担／现场反应／吸引·暧昧贡献／人物信息增量／后续玩法钩子／AI·面试·咨询腔／是否属于长期关系主题。**酒吧可答性不过，信息再深也不能 PASS。**
+- **重构后内容结构报告**新增统计：`quick_know / attraction / flirt / body_preference / follow_up_hook / long_term_relationship / ex_partner / therapy_like / complex_open_question`；目标 `long_term_relationship ≈ 0`、`ex_partner ≈ 0`、`therapy_like = 0`、`complex_open_question 极低`。
+- **Current UI 双口径不变**：`roundDisclosureForCurrentRound()` 仍恒 `undefined` ⇒ B 口径 `effective=0 / Heat=H1 / mid Mutual 不可达`；**本轮不接 disclosure UX，不偷接**。
+- 执行顺序 A0→A15（Git 隔离 → 基线固化 → 31 张审计 → 旧卡退 Formal → 重构 → Golden 12 → BAR-FIT v2 → Reviewer 多轮 → admission → 结构报告/MC/production-chain → CR/QA/SUP → 门禁/commit/push），然后**自动进入第二包**（Either Or 20 + Never Have I Ever 20，**先做结构矩阵再写正文**，四层 MC，40 是候选不是 quota）。
+
+## 2. 当前内容现状（重构前基线）
+- `formal 31`（`PN-TRUTH-201~224` 第一包 24 + `225~231` Bootstrap 7）；`legacy 421`；`audited 31`；`reviewed 31`；`reviewerKind=ai-role`。
+- `heatMin=1` 的 Formal **11 张**（`201 202 203 205 225~231`），H2 门槛 4 ⇒ Engine 口径冷启动余量 7。
+- 内容源：`lib/v2-content/formal-truth-pack.ts`、`lib/v2-content/formal-truth-bootstrap-pack.ts`（**旧 350 题 SSOT text 零修改**）。
+- 现行门禁：`tsc` 0 error｜`lint` 0 error（11 既有 warning）｜`vitest` 125 文件/1254 用例/0 failed｜`playwright` 106 passed/0 failed/6 skipped｜`build` 通过｜`build:fixed-manifest` 通过（对账 421:421、0 mismatch、两次 hash 一致）｜`check-ledger` = LEDGER-OK。
+
+## 3. 下一步（接手即可连推，不需再问 Human）
+1. 派 **Product Reviewer** 按新基线逐卡审计 31 张 → `KEEP / REWRITE / REPLACE`（**必须先落盘 + `ls -l` + `shasum -a 256` 自证**；分布汇总必须由脚本从逐卡表计算）。
+2. 旧 REWRITE/REPLACE 卡**先退出 Formal**（`UNREVIEWED`），接受 Formal 数下降。
+3. Builder 按分类重构（REPLACE 走新 ID）、产出 **Golden 12**、加 **BAR-FIT v2** 酒吧高风险规则。
+4. Reviewer 多轮审查（八维）→ 收敛 → **Formal admission** → **结构报告 + MC（四层）+ production-chain（双口径）**。
+5. **三链**：Builder → Product Reviewer → Code Reviewer → QA → Supervisor。
+6. 全量门禁 → **commit/push 只 stage 本轮文件**（12 份 `*.旧版-2026-09-29` 保持未跟踪、不动）。
+7. 自动进入**第二包**（新基线）：先结构矩阵（`category/expectedAnswerShape/followUpHook` 等）→ Reviewer 看结构 → 写 20+20 候选 → 审查/重写/复判 → admission → 四层 MC → 三链 → commit。
+
+## 4. 注意事项与规矩（踩过的坑 + 本轮新增）
+- **派工跨目录禁令（母版 2026-09-29 新规）**：派 opencode 通道角色（supervisor／neat-freak／experience-recorder）时，**读写本仓以外目录**（`/tmp`、`~/Downloads`、其它项目）会被 `external_directory` 权限**自动拒绝且静默失败**（本轮 supervisor 终检已因此被拒两次）。派单前：①临时文件一律放仓内 `temp/`；②或先取得用户授权。codebuddy／codex 通道无此限制。
+- **Reviewer 产物必须真落盘**：上一轮 reviewer 曾**声称**写入但磁盘没有，导致 A3 停线返工。规矩：判定表先落盘 + `ls -l` + `shasum -a 256` 自证，TM 核验存在后 builder 才能消费；**转录件不得在未回签时当唯一真源**。
+- **判定表汇总必须脚本计算**：曾出现同一张卡（205）同时被列入两个档的汇总笔误，由 TM 裁决「以逐卡行为准」。
+- **报告/MC 的 `note`/`summary` 必须由实测派生**：曾出现「数据说没到 H2、note 说逐档到 H4」的自相矛盾。已建立可复算护栏（篡改产物会红）。
+- **Heat 纪律**：`heatMin` 必须逐卡来自 reviewer；⛔ 不得为让 MC 好看压低 heatMin 或改门槛；诚实的深题暂时抽不到是**正确结果**。
+- **双口径纪律**：A｜Engine/显式披露 与 B｜当前真实 UI 必须分章；⛔ 禁止写「生产 Heat 已正常推进」。
+- **不动项**：旧 350 题 text、认识阈值、窗口 `[12,14]`、中途 `MUTUAL_MIN_HEAT=H3`、`isEffectiveInformationRound` fail-closed 四项、`HEAT_THRESHOLDS`、三处版本 `1.5.0`、`AI_MAINLINE_ENABLED` 关闭、**不新增 disclosure UI**、不重冻 RC、不 bump、不部署。
+- **作者归属**：`docs/handoff` 与两本账本 ＝ TM；`docs/pm` ＝ planner（**锁定 Plan 不得由 TM 编辑**）；业务/测试/脚本/内容源 ＝ builder；内容质量 ＝ product-reviewer。
+- **提交前卫生**：排除 `docs/pm/**`、`next-env.d.ts`（每次全量 E2E 会被自动改写）、`.env*`、签名文件、`temp/`。
+- **打开 MD 给用户审查**：必须用系统默认方式 `open "<绝对路径>"`；**不得用 orca 内置预览**；不要用 `open -a <应用>` 强行指定非默认程序。已记入根 `agent.md`。
+- **模型通道**：用户 2026-09-29 指示 **builder 继续派 `codebuddy` 的 `deepseek-flash`**（当日曾 429 限频，R3 一单按 override 备用通道切 `glm-5.3-flash` 并记账）。
+- **真机**：只动 11T Pro+（`IN9LZTAY4UGU4JF`）；12 Pro（`indq5xfi6hovay4d`）禁碰；测试连接/开局验证**只能真人手点**。
+- **新规待办（母版 2026-09-29，存量项目）**：本项目实绩 Plan 需补「视觉与交互验收标准（AC 编号）＋关键 AC 集合＋发布类型」，否则新规则下收尾会被判**计划缺项**；完成后把 `docs/model/GOVERNANCE-STATE.json` 的 `product_acceptance_ac_added` 置 `true`（`docs/pm` 属 planner，需用户决定是否走 Change C）。
+
+## 5. 恢复读盘（全体系唯一顺序）
+`AGENTS.md` → `docs/roles/<你的角色卡>.md` → 根 `USER_MODEL_OVERRIDE.md` → **本文件「大交接 2（2026-09-29）」段** → 根 `经验一句话.md` → 涉基础设施加 `docs/sop/` → 任务目标最后。
+之后跑：`git status` / `git log --oneline -5` / `git rev-list --left-right --count @{u}...HEAD`。
+
+
+---
 ---
 
 # ★ 大交接 2（2026-09-28 收尾，**接手先读这一段**）
