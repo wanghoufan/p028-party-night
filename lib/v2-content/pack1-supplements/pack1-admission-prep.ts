@@ -21,8 +21,12 @@
  * |---|---|---|
  * | `267` | `responseMode: private-individual` ＋ `boundaryTags: ["proximity"]` | Round-3 §1/§4 约束①（A7 已判、A8 维持） |
  * | `269` | 同 `267`（H4 亲密档两张一起收，不宜只收 267） | Round-3 §1 `269` 行 |
- * | `277` | `boundaryTags: ["location-sensitive"]` | Round-3 §1/§8（A8 选备选②：题面不动） |
  * | `259` | `boundaryTags: ["relationship-sensitive"]` | Round-2 §F（A7 沿用登记，A8 一并归档） |
+ *
+ * ⚠️ A9-R6（2026-09-29 内容裁决）：原 `277` 的 `location-sensitive` 登记**随该卡退役一并作废**——
+ * 裁决理由为「内容本身不好玩」，⛔ 不得用泛安全标签给它续命；277 题面归档在
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`。`location-sensitive` 仍保留在
+ * 泛安全元数据闭集里（供后续批次按需登记），但当前**无卡使用**。
  */
 
 /** 允许登记的泛安全元数据标签（闭集；新增须经主审批准）。 */
@@ -74,13 +78,9 @@ export const PACK1_PENDING_ADMISSION_OVERRIDES: readonly Pack1PendingAdmissionOv
     registeredIn: ["A8"],
     note: "与 267 同属 H4 亲密档，主审要求两张一起收；A8 一并登记（题面/字段均不动）。",
   },
-  {
-    cardId: "PN-TRUTH-277",
-    admissionBoundaryTags: ["location-sensitive"],
-    reasons: ["boundary_tag"],
-    registeredIn: ["A8"],
-    note: "回程题「走路」可能暴露距离量级/方向；Round-3 §8 判不必改题面 ⇒ 只登记泛安全标签（内容弱问题另记）。",
-  },
+  // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-277` 的 `location-sensitive` 登记随该卡**退役**一并作废
+  // （⛔ 不得用泛安全标签给它续命）；277 的题面逐字归档在
+  // `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`。
 ];
 
 /** 待收条件的卡 ID 清单（升序，派生自登记表，不手写）。 */

@@ -20,6 +20,7 @@ import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { FIXED_CONTENT_MANIFEST, formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARD_IDS } from "@/lib/v2-content/pack1-admission";
 import {
   RETIRED_TRUTH_AT,
   RETIRED_TRUTH_AUDIT_SOURCE,
@@ -142,7 +143,7 @@ describe("A4a② 运行时隔离：退役卡不在任何运行时卡池", () => 
   it("源码扫描：lib/**（除归档目录）、app/**、MC 生产链脚本都不 import 归档", () => {
     const violations: string[] = [];
     const scanTargets: string[] = [];
-    // 归档目录本身不算违规（唯一合法归属；其唯一合法消费者是测试与只读扫描脚本）。
+    // 归档目录本身不算违规（唯一合法归属；其合法消费者是测试、只读扫描脚本与审计/裁决脚本，运行时路径禁 import）。
     const archiveDir = join("lib", "v2-content", "archive");
 
     const walk = (dir: string): void => {
@@ -197,11 +198,18 @@ describe("A4a③ KEEP 5 仍在运行时卡源、仍在 Formal，且全部满足�
     for (const id of KEEP_IDS) expect(runtimeGameIds.has(id), `${id} 不在运行时卡源`).toBe(true);
   });
 
-  it("KEEP 5 恰为 manifest FormalFixed 清单；逐张 reviewed / humanBarFit=PASS / metadataStatus=audited", () => {
+  it("KEEP 5 仍在 Formal；manifest FormalFixed 清单 === 内容源派生的正式集（逐 id，不写死）", () => {
     const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
-    expect([...FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds].sort()).toEqual(KEEP_IDS);
-    expect([...formalFixedIdSet()].sort()).toEqual(KEEP_IDS);
+    // A9（2026-09-29）：Formal = 第一包 3 ＋ Bootstrap 2 ＋ 重构批 52，逐 id 由内容源派生。
+    const formalFromContent = [
+      ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+      ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+      ...PACK1_ADMISSION_CARD_IDS,
+    ].sort();
+    expect([...FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds].sort()).toEqual(formalFromContent);
+    expect([...formalFixedIdSet()].sort()).toEqual(formalFromContent);
     for (const id of KEEP_IDS) {
+      expect(formalFromContent, `${id}（KEEP）应仍在 Formal`).toContain(id);
       const provenance = legacy.provenance[id];
       expect(provenance, `${id} 缺 provenance`).toBeDefined();
       expect(provenance!.reviewed, id).toBe(true);

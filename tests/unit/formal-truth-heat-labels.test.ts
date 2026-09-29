@@ -26,7 +26,9 @@ import { describe, expect, it } from "vitest";
 import { createDeckRouter } from "@/lib/engine/v2-deal";
 import { RETIRED_TRUTH_CARDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
 import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARDS } from "@/lib/v2-content/pack1-admission";
 import { mainlineRuntimeCards, mainlineSsotCards, V2_MAINLINE_PACK_IDS } from "@/lib/v2-content/v2-card-bridge";
 import { createV2MainlineRouter } from "@/lib/v2-relationship/v2-router";
 import type { V2RouterInput } from "@/lib/v2-relationship/v2-session";
@@ -78,7 +80,9 @@ const REVIEWER_HEAT: Readonly<Record<string, readonly [number, number]>> = {
 const NON_HEAT_SHA256: Readonly<Record<string, string>> = {
   "PN-TRUTH-201": "ef9935189ac0b692602c9132f7c24cc3e134076b5e1a8caca288f2061877ec34",
   "PN-TRUTH-202": "00dbc50fcb5f6fdbd2bdd3da9280db66b64ebdb39feeadceac82c8797c8fa56d",
-  "PN-TRUTH-203": "38f9e61a4f3518ff0a188e98db79e929aa4b931b2005fa38fff97d40977cdbda",
+  // A9-R7（2026-09-29 内容返工）：203 题面按审查处方改写（RESEARCH_REVIEW-PACK1-FINAL-54 §1），
+  // 非 Heat 指纹随之更新（heatMin/heatMax 未动，见上方 EXPECTED_HEAT 表）。
+  "PN-TRUTH-203": "e28823922873f85130ffcf66cd9dee8dc012da6e89f293162f6987f5cf1bd8c9",
   "PN-TRUTH-204": "69234348b62495da7057e18c2cb5c099fa0eeb3c177393453cd54a9fcb1cdf5e",
   "PN-TRUTH-205": "f99948c31d9cc8f8421aae6426db824370944254e17d133ca5076bb53313e72f",
   "PN-TRUTH-206": "6ee884a7308bc6b2adddae4ffdb963fd22c60f630301d5ff8581408a16243cc9",
@@ -252,11 +256,23 @@ const formalIdsInBucketAt = (heat: Heat): string[] =>
 const firstPackFormalInBucketAt = (heat: Heat): string[] =>
   formalIdsInBucketAt(heat).filter((cardId) => FIRST_PACK_ID_SET.has(cardId));
 
-/** 当前真实 UI（Heat 恒 H1）下，**Formal** 里 heatMin=1 的浅题（A3/A4a 后 = {203,205} ∪ {227,229}）。 */
-const H1_REACHABLE_FORMAL = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"] as const;
+/**
+ * 当前真实 UI（Heat 恒 H1）下，**Formal** 里 heatMin=1 的浅题集合。
+ *
+ * 由**内容源**派生（第一包 ＋ Bootstrap ＋ A9 重构批里 `heatMin<=1<=heatMax` 的卡），
+ * 与下方「运行时卡源 ∩ manifest」派生集合双向比对 —— 不写死张数（A9 准入后集合已扩容）。
+ */
+const H1_REACHABLE_FORMAL: readonly string[] = [
+  ...FORMAL_TRUTH_CARDS,
+  ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
+  ...PACK1_ADMISSION_CARDS,
+]
+  .filter((card) => card.heatMin <= 1 && 1 <= card.heatMax)
+  .map((card) => card.cardId)
+  .sort();
 
 describe("A3/A4a④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口径", () => {
-  it("当前真实 UI：H1 桶内 Formal 集合 === 卡源里 heatMin=1<=heatMax 的 Formal 卡 === {203,205,227,229}", () => {
+  it("当前真实 UI：H1 桶内 Formal 集合 === 卡源里 heatMin=1<=heatMax 的 Formal 卡（逐 id 派生）", () => {
     const h1 = formalIdsInBucketAt("H1");
     const expected = mainlineRuntimeCards()
       .filter((card) => FORMAL_ID_SET.has(card.cardId) && card.heatMin === 1 && card.heatMax >= 1)
@@ -264,6 +280,7 @@ describe("A3/A4a④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两�
       .sort();
     expect(expected).toEqual([...H1_REACHABLE_FORMAL]);
     expect(h1).toEqual(expected);
+    expect(h1.length).toBeGreaterThan(0);
   });
 
   it("第一包 Formal 只剩 203/205/209：H1 桶内只有 203/205；209（heatMin=2）被硬过滤；退役 21 张不在任何运行时卡池", () => {
@@ -287,16 +304,25 @@ describe("A3/A4a④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两�
     expect(h1.has("PN-TRUTH-209")).toBe(false);
   });
 
-  it("engine / 显式 disclosure 口径：Formal 逐档首次解锁 H1=4 / H2=1 / H3=0 / H4=0（H3/H4 断档，如实登记）", () => {
+  it("engine / 显式 disclosure 口径：Formal 逐档首次解锁与桶内可抽数由卡源派生（两路真源交叉，不写死）", () => {
     // 「该档首次解锁」= Formal 里 heatMin === H 的张数；「该档 bucket 内可抽总数」= heatMin<=H<=heatMax。
-    const firstUnlock: Record<Heat, number> = {
+    // 两路真源：① 内容源（第一包 ＋ Bootstrap ＋ A9 重构批）；② 运行时卡源 ∩ manifest。
+    const contentFormal = [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS, ...PACK1_ADMISSION_CARDS];
+    const contentFirstUnlock: Record<Heat, number> = {
+      H1: contentFormal.filter((card) => card.heatMin === 1).length,
+      H2: contentFormal.filter((card) => card.heatMin === 2).length,
+      H3: contentFormal.filter((card) => card.heatMin === 3).length,
+      H4: contentFormal.filter((card) => card.heatMin === 4).length,
+    };
+    const runtimeFirstUnlock: Record<Heat, number> = {
       H1: [...FORMAL_ID_SET].filter((id) => metaById.get(id)!.heatMin === 1).length,
       H2: [...FORMAL_ID_SET].filter((id) => metaById.get(id)!.heatMin === 2).length,
       H3: [...FORMAL_ID_SET].filter((id) => metaById.get(id)!.heatMin === 3).length,
       H4: [...FORMAL_ID_SET].filter((id) => metaById.get(id)!.heatMin === 4).length,
     };
-    // A3 中间态：H3/H4 的 Formal 合格库存为 0（下一单补卡）——不再假装「四档全部有货」。
-    expect(firstUnlock).toEqual({ H1: 4, H2: 1, H3: 0, H4: 0 });
+    // 两路真源必须一致；四档合计 = Formal 总数（张数由真源派生，不写死 —— 上一版锁的是 A3 的 {4,1,0,0} 断档态）。
+    expect(runtimeFirstUnlock).toEqual(contentFirstUnlock);
+    expect(Object.values(contentFirstUnlock).reduce((sum, count) => sum + count, 0)).toBe(FORMAL_ID_SET.size);
 
     for (const heat of ["H1", "H2", "H3", "H4"] as const) {
       const rank = Number(heat.slice(1));
@@ -306,14 +332,10 @@ describe("A3/A4a④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两�
         .sort();
       // 运行期 Router 的桶必须与卡源派生集合逐字相同。
       expect(formalIdsInBucketAt(heat), `${heat} 桶内 Formal 集合`).toEqual(expectedInBucket);
+      // 「该档桶内可抽总数」= 内容源里 heatMin<=rank<=heatMax 的 Formal 卡数（如实报告口径，不写死）。
+      const derivedInBucket = contentFormal.filter((card) => card.heatMin <= rank && rank <= card.heatMax).length;
+      expect(formalIdsInBucketAt(heat).length, `${heat} 桶内 Formal 数`).toBe(derivedInBucket);
     }
-    // 该档 bucket 内可抽总数（如实报告口径）：H1 4 / H2 5 / H3 5 / H4 1。
-    expect([
-      formalIdsInBucketAt("H1").length,
-      formalIdsInBucketAt("H2").length,
-      formalIdsInBucketAt("H3").length,
-      formalIdsInBucketAt("H4").length,
-    ]).toEqual([4, 5, 5, 1]);
   });
 
   it("两 Router 同口径：生产 createDeckRouter 在 H1 也只放行 heatMin=1 的 Formal 卡", () => {

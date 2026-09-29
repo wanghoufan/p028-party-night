@@ -44,6 +44,7 @@ import {
 } from "./v2-card-metadata";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "./formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
+import { PACK1_ADMISSION_RUNTIME_CARDS } from "./pack1-admission";
 import type { V13ExpansionCard, V13MainlineCard } from "./v2-types";
 import { getV2ContentAdapter } from "./v2-content-adapter";
 
@@ -100,9 +101,18 @@ function projectFromSsot(card: QualityIndexSourceCard): V2RoundMetadataFields {
 }
 
 /**
- * 内容卡（主线 + 扩圈 + 第一包正式内容）——与 `v2-card-bridge` 同一个单例 adapter 出口 + 同一份
- * 第一包内容源，不另开第二条真源。第一包卡自带 `topic` / `informationGain`，故其侧车行**非 null**，
- * 运行期 §7.2 有效轮判定对新卡真正生效；旧 SSOT 卡仍投影为双 `null`（未补标 = 不计数）。
+ * 内容卡（主线 + 扩圈 + 第一包正式内容 + Truth H1 Bootstrap + **A9 第一包重构批**）——
+ * 与 `v2-card-bridge` 同一个单例 adapter 出口 + 同一份内容源，不另开第二条真源。
+ * 自带 `topic` / `informationGain` 的卡其侧车行**非 null**，运行期 §7.2 有效轮判定对新卡真正生效；
+ * 旧 SSOT 卡仍投影为双 `null`（未补标 = 不计数）。
+ *
+ * ⚠️ A9（2026-09-29）：第一包重构批（`PN-TRUTH-232~283` 号段）经准入后已是 Formal，
+ * 桥接（`mainlineSsotCards()` / `mainlineRuntimeCards()`）会把它们放进生产牌堆；
+ * 若本侧车不收它们，生产链 `eventForRoundTerminal()`（唯一取 meta 处）对这批卡读到双 `null`
+ * ⇒ 新 Formal 卡永远计不了有效信息轮、Heat 推不动（「出卡卡源」与「计数 metadata 卡源」漂移）。
+ * 故这里并入**与桥接同一份运行期投影** `PACK1_ADMISSION_RUNTIME_CARDS`（含已落地的待收字段、
+ * 且已剥掉 planning-only 三字段），保证两处卡源逐 id 一致。
+ * A9-R6（2026-09-29 内容裁决）：该批退役 236/263/277 ⇒ 现役张数由卡源派生。
  */
 function ssotRawCards(): readonly QualityIndexSourceCard[] {
   const adapter = getV2ContentAdapter();
@@ -112,6 +122,8 @@ function ssotRawCards(): readonly QualityIndexSourceCard[] {
     ...(FORMAL_TRUTH_CARDS as readonly FormalTruthCard[]),
     // R2/R3｜Truth H1 Bootstrap：自带质量字段 ⇒ 侧车有档位（是否入 Formal 由 manifest 准入决定，与此无关）。
     ...(FORMAL_TRUTH_BOOTSTRAP_CARDS as readonly FormalTruthCard[]),
+    // A9｜第一包重构批（现役）：与桥接同源，保证有效轮计数通道看得到这批 Formal 卡（A9-R6 退 236/263/277）。
+    ...(PACK1_ADMISSION_RUNTIME_CARDS as readonly FormalTruthCard[]),
   ];
 }
 

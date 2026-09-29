@@ -60,6 +60,7 @@ import { FIXED_CONTENT_MANIFEST } from "@/lib/v2-content/fixed-content-manifest"
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { RETIRED_TRUTH_CARD_IDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
+import { RETIRED_PACK1_R7_CARD_IDS } from "@/lib/v2-content/archive/retired-pack1-r7-2026-09-29";
 import { V2_REQUIRED_QUALITY_FIELDS, validateFixedCardMetadataStrict } from "@/lib/v2-content/v2-card-metadata";
 import { mainlineRuntimeCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
 
@@ -156,17 +157,8 @@ describe("A4c① 第一包 REWRITE 7 张逐卡值锁死", () => {
       informationGoalType: "relationship_rule", secondaryTopics: ["性格·习惯·小癖好"],
       consentMode: "skip-anytime", boundaryTags: [],
     },
-    "PN-TRUTH-249": {
-      // A6（主审 §7.2）：换轴为「这周哪天最像在放假」，解除与 250 的同族 + 与 203 的邻接。
-      text: "你这周哪天最像在放假：工作日的晚上、周六，还是周一？",
-      intensity: 1, heatMin: 1, heatMax: 3,
-      category: "quick_know", followUpHook: "social_style", expectedAnswerShape: "ternary",
-      topic: "生活方式", informationGain: "medium",
-      informationGoal: "知道他这周哪天最像在放假",
-      socialEnergy: "medium", relationshipProgression: "open", intimacyClass: "none",
-      informationGoalType: "self_preference", secondaryTopics: ["性格·习惯·小癖好"],
-      consentMode: "skip-anytime", boundaryTags: [],
-    },
+    // A9-R7（2026-09-29 内容返工）：原 `PN-TRUTH-249`（这周哪天最像在放假）与 250 同轴
+    // ⇒ 退役，逐字归档在 lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts，不再进本锁值表。
     "PN-TRUTH-250": {
       // A8（Part 3 换题面，主审 Round-3 §1/§10.2）：A7 版仍缺现场时间锚 ⇒ 时间轴绑到今晚。
       text: "这一周攒的劲，你打算今晚一次放完，还是留着明天再放？",
@@ -180,19 +172,27 @@ describe("A4c① 第一包 REWRITE 7 张逐卡值锁死", () => {
     },
   };
 
-  it("恰 7 张，ID 恰为 PN-TRUTH-244~250 连续且唯一", () => {
-    expect(PACK1_REWRITE_CARDS).toHaveLength(7);
+  it("现役张数由卡源派生（A9-R7 退役 249 后为 6）；ID 落在 244~250 号段且唯一", () => {
+    expect(PACK1_REWRITE_CARDS).toHaveLength(PACK1_REWRITE_CARD_IDS.length);
+    expect(PACK1_REWRITE_CARDS.length).toBeGreaterThan(0);
+    // 号段 244~250 减去已退役的 249（ID 清单由「号段 + 退役集」派生，不写死 7/6）。
     expect(PACK1_REWRITE_CARD_IDS).toEqual(
-      Array.from({ length: 7 }, (_, index) => `PN-TRUTH-${244 + index}`),
+      Array.from({ length: 7 }, (_, index) => `PN-TRUTH-${244 + index}`).filter(
+        (id) => !RETIRED_PACK1_R7_CARD_IDS.includes(id),
+      ),
     );
-    expect(new Set(PACK1_REWRITE_CARD_IDS).size).toBe(7);
+    expect(new Set(PACK1_REWRITE_CARD_IDS).size).toBe(PACK1_REWRITE_CARD_IDS.length);
     for (const card of PACK1_REWRITE_CARDS) {
       expect(card.number, card.cardId).toBe(parseTruthCardNumber(card.cardId));
       expect(card.gameType, card.cardId).toBe("truth");
-      // 新批必须新开 ID：既不与所重写的 7 张旧卡同号，也不与归档 26 卡同号。
+      // 新批必须新开 ID：既不与所重写的 7 张旧卡同号，也不与归档 26 卡 / A9-R7 退役卡同号。
       expect(OLD_REWRITE_IDS as readonly string[], card.cardId).not.toContain(card.cardId);
       expect(RETIRED_TRUTH_CARD_IDS, card.cardId).not.toContain(card.cardId);
+      expect(RETIRED_PACK1_R7_CARD_IDS, card.cardId).not.toContain(card.cardId);
     }
+    // A9-R7：249 已退役（号段内缺，不再回卡源）。
+    expect(PACK1_REWRITE_CARD_IDS).not.toContain("PN-TRUTH-249");
+    expect(RETIRED_PACK1_R7_CARD_IDS).toContain("PN-TRUTH-249");
   });
 
   it("逐卡锁值：题面 / Heat / intensity / planning 字段 / 全部必填质量字段与冻结表一致", () => {
@@ -249,7 +249,7 @@ describe("A4c/A5③ 结构：热档分布派生对账 + 类别覆盖达标 + 同
       fromLock[card.heatMin] = (fromLock[card.heatMin] ?? 0) + 1;
     }
     expect(fromCards).toEqual(fromLock);
-    // A5：7 张旧 REWRITE 全是 H1 生活 / 兴趣 / 社交向 ⇒ 本批只自然产出 H1/H2。
+    // A5：7 张旧 REWRITE 全是 H1 生活 / 兴趣 / 社交向 ⇒ 本批只自然产出 H1/H2（A9-R7 退役 249 后 H1 少一张）。
     // H3/H4 覆盖改由同单新批 PN-TRUTH-251~269 承担（断言在 pack1-replaces.test.ts）。
     expect(fromCards[1]).toBeGreaterThan(0);
     expect(fromCards[2]).toBeGreaterThan(0);
@@ -282,8 +282,8 @@ describe("A4c/A5③ 结构：热档分布派生对账 + 类别覆盖达标 + 同
   it("followUpHook / expectedAnswerShape 分布由卡源派生且各值合法（无卡落在枚举外）", () => {
     const hookDist = pack1FollowUpHookDistribution();
     const shapeDist = pack1AnswerShapeDistribution();
-    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(7);
-    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(7);
+    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_REWRITE_CARDS.length);
+    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_REWRITE_CARDS.length);
     expect(hookDist.none, "本批不应有 none 空钩子卡").toBe(0);
   });
 
@@ -329,9 +329,9 @@ describe("A4c④ 钩子当场可兑现：每卡一条立刻能说出口的反问
 /* ------------------------------------------------------------------ */
 
 describe("A4c⑤ 去重：批内互不重复，且与 Golden 12 / KEEP 5 无重复", () => {
-  it("7 张题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并）", () => {
+  it("现役题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并；A9-R7 后 6 张）", () => {
     const hanzi = PACK1_REWRITE_CARDS.map((card) => stripNonHanzi(card.text));
-    expect(new Set(hanzi).size).toBe(7);
+    expect(new Set(hanzi).size).toBe(PACK1_REWRITE_CARDS.length);
     for (let i = 0; i < hanzi.length; i += 1) {
       for (let j = 0; j < hanzi.length; j += 1) {
         if (i === j) continue;
@@ -428,25 +428,40 @@ describe("A4c⑦ planning-only 锁：三个设计字段未进 Runtime / GameCard
     for (const field of PLANNING_ONLY_FIELDS) expect(V2_REQUIRED_QUALITY_FIELDS).not.toContain(field);
   });
 
-  it("桥接运行时投影不做三字段转发，本批卡不在任何运行时卡池 / manifest 两轨", () => {
+  it("桥接运行时投影不转发三字段（负向锁保留）；本批卡已进运行时卡池 / manifest 两轨，且逐张满足准入四条件", () => {
     const mine = new Set(PACK1_REWRITE_CARD_IDS);
+    expect(mine.size).toBe(PACK1_REWRITE_CARD_IDS.length);
     const gameCards = mainlineSsotCards();
     expect(gameCards.length).toBeGreaterThan(0);
-    for (const card of gameCards) {
-      expect(mine.has(card.id), `${card.id} 已进 SSOT 卡池`).toBe(false);
-      for (const field of PLANNING_ONLY_FIELDS) expect(card, card.id).not.toHaveProperty(field);
-    }
+    const ssotIds = new Set(gameCards.map((card) => card.id));
     const runtimeCards = mainlineRuntimeCards();
     expect(runtimeCards.length).toBeGreaterThan(0);
+    const runtimeIds = new Set(runtimeCards.map((card) => card.cardId));
+    // 正向（A9 准入后）：本批卡真在两个运行时投影里 ⇒ 下面那条「不转发三字段」自动覆盖到本批卡。
+    for (const id of PACK1_REWRITE_CARD_IDS) {
+      expect(ssotIds.has(id), `${id} 应已在 SSOT 卡池`).toBe(true);
+      expect(runtimeIds.has(id), `${id} 应已在运行时卡池`).toBe(true);
+    }
+    // 负向锁（不得删）：桥接运行时投影一个 planning-only 字段都不许转发。
+    for (const card of gameCards) {
+      for (const field of PLANNING_ONLY_FIELDS) expect(card, card.id).not.toHaveProperty(field);
+    }
     for (const card of runtimeCards) {
-      expect(mine.has(card.cardId), `${card.cardId} 已进运行时卡池`).toBe(false);
       for (const field of PLANNING_ONLY_FIELDS) expect(card, card.cardId).not.toHaveProperty(field);
     }
+    // 正向：在 manifest 两轨，且 Formal 四条件逐张成立。
+    const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
     const formalAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds);
-    const legacyAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds);
+    const legacyAllowed = new Set(legacy.allowedCardIds);
     for (const id of PACK1_REWRITE_CARD_IDS) {
-      expect(formalAllowed.has(id), `${id} 已在 formalFixed`).toBe(false);
-      expect(legacyAllowed.has(id), `${id} 已在 legacyCompatibility`).toBe(false);
+      expect(legacyAllowed.has(id), `${id} 应在 legacyCompatibility`).toBe(true);
+      expect(formalAllowed.has(id), `${id} 应在 formalFixed`).toBe(true);
+      const provenance = legacy.provenance[id];
+      expect(provenance, `${id} 缺 provenance`).toBeDefined();
+      expect(provenance!.metadataStatus, id).toBe("audited");
+      expect(provenance!.reviewed, id).toBe(true);
+      expect(provenance!.humanBarFit, id).toBe("PASS");
+      expect(provenance!.payloadHash, id).toMatch(/^[0-9a-f]{64}$/u);
     }
   });
 

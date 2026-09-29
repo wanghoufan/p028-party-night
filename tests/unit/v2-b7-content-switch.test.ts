@@ -18,6 +18,7 @@ import {
 import { RETIRED_TRUTH_CARDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARD_IDS } from "@/lib/v2-content/pack1-admission";
 import { V2_PRECISE_BOUNDARY_TAGS, cardPassesBoundaryFilter } from "@/lib/v2-content/v2-card-metadata";
 import { buildPlayableDeck, localSeedDeck, refillPackFromSeeds } from "@/lib/ai/generate-deck";
 import { filterCards, isHardBlocked } from "@/lib/ai/safety-filter";
@@ -77,17 +78,23 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect((rawSnapshot as { provenance: { migrationIdPolicy: string } }).provenance.migrationIdPolicy).toBe("NONE");
   });
 
-  it("桥接出 355 主线卡（SSOT 350 + 运行时 KEEP 5：truth-dare 105、其余各 50）且 cardType 落在 pack 支持类型内", () => {
+  it("桥接主线卡 = SSOT 350 + 运行时正式内容源（第一包 ＋ Bootstrap ＋ A9 重构批），cardType 落在 pack 支持类型内", () => {
     const cards = mainlineSsotCards();
-    // SSOT 冻结主线 350 + 运行时保留的 KEEP 5（第一包 3：203/205/209 + Bootstrap 2：227/229）。
-    // A4a（2026-09-29）：其余 26 张退役卡已移出卡源，逐字归档于 lib/v2-content/archive/。
-    const extraTruthCards = FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length;
+    // SSOT 冻结主线 350 + 运行时正式内容源（KEEP 5 与 A9 重构批 52）。
+    // A4a（2026-09-29）：26 张退役卡已移出卡源，逐字归档于 lib/v2-content/archive/。
+    // 张数一律由内容源派生（不写死）。
+    const extraTruthCards =
+      FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length + PACK1_ADMISSION_CARD_IDS.length;
     expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + extraTruthCards);
 
+    // SSOT 段里 truth-dare 的张数由已桥接的 SSOT 前缀实算（不写死 100）。
+    const ssotTruthDare = cards
+      .slice(0, V2_SSOT_MAINLINE_CARD_COUNT)
+      .filter((card) => card.packId === "truth-dare").length;
     const perPack = new Map<string, number>();
     for (const card of cards) perPack.set(card.packId, (perPack.get(card.packId) ?? 0) + 1);
-    // 两包全是真心话（pack truth-dare），故只有它变化：100 + 24 + 7 = 131。
-    expect(perPack.get("truth-dare")).toBe(100 + extraTruthCards);
+    // 正式内容源全是真心话（pack truth-dare），故只有它变化：SSOT truth-dare 张数 + 追加段张数。
+    expect(perPack.get("truth-dare")).toBe(ssotTruthDare + extraTruthCards);
     for (const packId of MAINLINE_PACK_IDS.filter((id) => id !== "truth-dare")) {
       expect(perPack.get(packId), packId).toBe(50);
     }
@@ -101,6 +108,7 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(cards.slice(V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual([
       ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
       ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+      ...PACK1_ADMISSION_CARD_IDS,
     ]);
 
     for (const card of cards) {
@@ -212,10 +220,10 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(blocked).toEqual(["PN-CHEM-048"]);
 
     // 安全方向不变式：默认雷区下主线只被剔除这一张，其余全部可出
-    // （355 = 350 SSOT + 5 运行时 KEEP）。
+    // （张数 = SSOT 主线 ＋ 运行时正式内容源，逐项由内容源派生）。
+    const formalSourceCount =
+      V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length + PACK1_ADMISSION_CARD_IDS.length;
     const allowed = filterCards([...mainlineSsotCards()], { intensity: 5, playerCount: 4, boundaries: DEFAULT_BOUNDARIES });
-    expect(allowed).toHaveLength(
-      V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length - 1,
-    );
+    expect(allowed).toHaveLength(formalSourceCount - 1);
   });
 });

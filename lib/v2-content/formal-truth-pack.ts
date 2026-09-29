@@ -138,7 +138,11 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     cardId: "PN-TRUTH-203",
     gameType: "truth",
     number: 203,
-    text: "下班或放学到睡前，你一个人最固定的一段安排是什么？",
+    // A9-R7（2026-09-29 内容返工，按 RESEARCH_REVIEW-PACK1-FINAL-54 §1 P1）：
+    // 旧题面「下班或放学到睡前，你一个人最固定的一段安排是什么？」是开放回忆题，
+    // 理解＋组织答案超 10 秒、现场无即时反应，且「安排」偏书面 ⇒ 改成**封闭二选一**，
+    // 保 H1 轻量破冰定位（heat/intensity/relationStage 一律不动）。
+    text: "睡前的最后半小时，你是刷手机，还是直接躺平？",
     intensity: 1,
     heatMin: 1,
     heatMax: 3,
@@ -155,7 +159,7 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     topic: "生活方式",
     barFit: "PASS",
     informationGain: "medium",
-    informationGoal: "知道他每天真实的生活节奏与独处安排",
+    informationGoal: "知道他睡前的最后半小时一般是刷手机还是直接躺平",
     socialEnergy: "low",
     relationshipProgression: "open",
     intimacyClass: "none",

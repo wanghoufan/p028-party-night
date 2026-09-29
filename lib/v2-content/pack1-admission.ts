@@ -1,23 +1,31 @@
 /**
- * A9｜第一包重构批（Golden 12 ＋ REWRITE 7 ＋ REPLACE 19 ＋ 补卡 14 = **52 张**，
- * `PN-TRUTH-232 ~ 283`）的**准入聚合视图**（唯一出口，供运行时卡源与准入测试共用）。
+ * A9｜第一包重构批（Golden 12 ＋ REWRITE 7 ＋ REPLACE 19 ＋ 补卡 14，`PN-TRUTH-232 ~ 283` 号段）
+ * 的**准入聚合视图**（唯一出口，供运行时卡源与准入测试共用）。
  *
  * ## 这是什么 / 不是什么
  * - **是**：把四个 planning-only 内容模块**聚合成一条**、并**按 A8 登记落地待收字段**的
- *   内容侧模块。桥接（`v2-card-bridge.ts`）从本模块取卡，因此 52 张与 KEEP 5 同形地进入
+ *   内容侧模块。桥接（`v2-card-bridge.ts`）从本模块取卡，因此本批与 KEEP 5 同形地进入
  *   运行时卡源（`mainlineSsotCards()` / `mainlineRuntimeCards()`），再经**同一条既有准入路径**
  *   （`bar-fit-review-input.ts` 的独立审查输入 → `fixed-content-manifest-build.ts` 的四条件）
  *   决定是否进 Formal。**本模块不产出任何准入结论、不碰准入条款。**
  * - **不是**第二条准入路径：Formal 与否仍**只**由 manifest 独立审查输入决定。
  *
+ * ## A9-R6（2026-09-29 内容裁决）
+ * `PN-TRUTH-236 / 263 / 277` 已裁决退役 ⇒ 移出各 planning 卡源、逐字归档在
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`。故本聚合视图现为 **48 张**
+ * （张数一律由 `PACK1_ADMISSION_CARD_IDS.length` 派生，⛔ 不写死 48/52）。
+ *
+ * ## A9-R7（2026-09-29 内容返工）
+ * `PN-TRUTH-249`（与 250 同轴）经内容返工裁决退役 ⇒ 移出 REWRITE 卡源、逐字归档在
+ * `lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts`；另 5 张（`203 / 241 / 252 / 262 / 266`）
+ * 按 `docs/review/RESEARCH_REVIEW-PACK1-FINAL-54.md` 返工题面（`203` 属 KEEP 包，不在本批）。
+ *
  * ## 待收字段落地（A8 登记 → A9 执行）
  * A8（`pack1-supplements/pack1-admission-prep.ts`）把「题面没问题、卡点是投放条件」的卡登记为
  * `PACK1_PENDING_ADMISSION_OVERRIDES`。A9 在本模块里**读该表并逐条落地**（单一真源，不抄第二份）：
  * - `267` / `269`：`responseMode: "private-individual"` ＋ `boundaryTags: ["proximity"]`；
- * - `259`：`boundaryTags: ["relationship-sensitive"]`；
- * - `277`：`boundaryTags: ["location-sensitive"]`（A8 选备选②：题面不动）。
- *   `location-sensitive` 是本单新增的**泛安全元数据**（`V2_GENERIC_BOUNDARY_TAGS`，映 `null`，
- *   不产出 App 过滤标签）。
+ * - `259`：`boundaryTags: ["relationship-sensitive"]`。
+ *   （原 `277` 的 `location-sensitive` 登记随该卡退役作废。）
  * 落地只作用于**本聚合视图**（`PACK1_ADMISSION_CARDS`）；各 planning 卡源的**字面量保持原样**
  * （`pack1-admission-prep.ts` 的「只准备不落地」语义对卡源仍成立），避免同一事实两处存放。
  *
@@ -44,7 +52,7 @@ import { PACK1_SUPPLEMENT_CARDS, PACK1_SUPPLEMENT_CARD_IDS } from "./pack1-suppl
 import type { V2BoundaryTagName } from "./v2-card-metadata";
 
 /**
- * 52 张按批次分组（ID 一律**从卡源派生**，不手抄；键名是稳定标识，不是数量）。
+ * 现役本批按批次分组（ID 一律**从卡源派生**，不手抄；键名是稳定标识，不是数量）。
  * 批次口径见 `temp/PACK1-ROUND3-REVIEW.md` §9.6（Golden 232~243 / REWRITE 244~250 /
  * REPLACE 251~269 / 补卡 270~283）。
  */
@@ -63,7 +71,7 @@ export const PACK1_ADMISSION_BATCH_LABELS: Readonly<Record<string, string>> = {
   supplement: "补卡 14（H1/H2/H3 库存补位）",
 } as const;
 
-/** 四个 planning 卡源合并后的**原始** 52 张（未落地待收字段；升序由各源自身保证，见断言）。 */
+/** 四个 planning 卡源合并后的**原始**现役卡（未落地待收字段；升序由各源自身保证，见断言）。 */
 export const PACK1_ADMISSION_RAW_CARDS: readonly GoldenTruthCard[] = [
   ...GOLDEN_12_CARDS,
   ...PACK1_REWRITE_CARDS,
@@ -91,7 +99,7 @@ export const PACK1_ADMISSION_CARDS: readonly GoldenTruthCard[] = PACK1_ADMISSION
   return next;
 });
 
-/** 52 张 ID（升序，派生自有效卡；不得手写）。 */
+/** 现役本批 ID（升序，派生自有效卡；不得手写）。 */
 export const PACK1_ADMISSION_CARD_IDS: readonly string[] = PACK1_ADMISSION_CARDS.map((card) => card.cardId);
 
 /** planning-only 三字段：**不得**进 Runtime / 正式 `GameCard` schema（见 `tests/unit/golden-12.test.ts`）。 */
@@ -170,10 +178,17 @@ export function pack1AdmissionFingerprintInput(card: GoldenTruthCard): string {
 }
 
 /**
- * 52 张的内容指纹冻结快照（sha256 of `pack1AdmissionFingerprintInput(card)`）。
+ * 本批现役卡的**内容指纹冻结快照**（sha256 of `pack1AdmissionFingerprintInput(card)`）。
  *
  * 变更流程：只有内容主审重审并**改写题面/字段**时才允许连同本表一起更新（同时须记 HANDOFF）；
  * 单纯推进准入状态（进 / 出 Formal）**不得**改本表。
+ * ⚠️ 例外（A9-R6，2026-09-29）：`236 / 263 / 277` 经**内容裁决退役**（移出卡源），
+ * 本表对应条目随之删除（其退役前 payloadHash 逐字冻结在
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`）。
+ * ⚠️ 例外（A9-R7，2026-09-29）：`249` 经**内容返工裁决退役**（与 250 同轴，移出卡源），
+ * 本表条目随之删除（退役前 payloadHash 冻结在
+ * `lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts`）；`241 / 252 / 262 / 266` 因题面返工
+ * 指纹同步更新（内容主审返工，非单纯推进准入状态）。
  */
 export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, string>> = {
   /* FROZEN-FINGERPRINTS:BEGIN */
@@ -181,12 +196,11 @@ export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, strin
   "PN-TRUTH-233": "4bcb16a862f022bf003c2b0eeaec71fa502311462b3b158a5d6d5e4a2eeee96d",
   "PN-TRUTH-234": "c8c4d6fcab7d0b9a34605ebbf6aff41cd12f00f43a9a4fa6cc9e543eb7a2b533",
   "PN-TRUTH-235": "d13e253aa7016ae85ef2333960303602dc6bbe29adaaeecb36952844a89f62ef",
-  "PN-TRUTH-236": "3ba25d3e92ab945af902ab77b284e40c31a3781a152a782ec1f3a0382aec4978",
   "PN-TRUTH-237": "bde08f2b21d1ea960dd35e7646e61ba6c4ecbe32a43ec9d5beca02b07122bed9",
   "PN-TRUTH-238": "6c2c75a2b3d3d480745826bdd1a56d1a1b81902c6f6e67a9967fa8b1a5d72f24",
   "PN-TRUTH-239": "0a4ab1f4e817e2f0065edf4a50626f74f60998db48d42807d9ae330f618684cc",
   "PN-TRUTH-240": "397ec1a7ddffbcedb855021d0af51ab64b40e4b2b7eea0612be1426755fa4d44",
-  "PN-TRUTH-241": "481d72977c9ee22ded4b420441899a2cf640be8302e30288849ea23e3e6cc3f7",
+  "PN-TRUTH-241": "7c1cd24585ad02f61e66e364c410576142a9df4a83cc4c4dccc793becc5e1a73",
   "PN-TRUTH-242": "c7e12245b01fad5a0c59107ddb4af5e99fefe3aef41f383b923fd8a4d35161ef",
   "PN-TRUTH-243": "54a2558eb5991375aeb0b6f3bc75bd005b45b758ce7e6534596b0cfafbb31cd7",
   "PN-TRUTH-244": "577dbafae48e5823e57e72f816cf2e4e32cbf33ef01cac43026d7216a3c7d3ac",
@@ -194,10 +208,9 @@ export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, strin
   "PN-TRUTH-246": "85183314712c5ecf3d9bc85485e8a145e37e0c0f3137538032e3bff475628d2d",
   "PN-TRUTH-247": "3020ab3e466aaf98b2aef442693b13a791091ac098eb86b04dbfe33fbdd6bf50",
   "PN-TRUTH-248": "349658c586d96f1ce53f999ce1c04834917f2d7c73e0aa9b6b47691c8d45f6bd",
-  "PN-TRUTH-249": "ce457c60c54be72a2452e9072bd2874fdb819bb471edd20f899680d111fe57a0",
   "PN-TRUTH-250": "c3ca737b78f8e63135274187d921299b8faa63a60a88c967a471a5302833d91f",
   "PN-TRUTH-251": "7989df3892c0a423e1d17b4af2b9499cd726bbed28f744f975fc02d09f46dec0",
-  "PN-TRUTH-252": "3cdcddc0c562432647bb958ceab037e7fbf338f86a5e2d70ffcd349ba4e7a181",
+  "PN-TRUTH-252": "9b475e64bc3aa2d71882ab68215c9c395b2ca96b18c3bc116349884173dd96a6",
   "PN-TRUTH-253": "bfa1422ae487f260939dd663194f763333d865181e4e5b0b89e31011a83a0cff",
   "PN-TRUTH-254": "506857966c622ea040a3014911beee23a1651bc96c38fff634e34d28fd4ff9f9",
   "PN-TRUTH-255": "7a742425467d628bc2a49a5335c7b352e827e62cd6908a2d8770982e4594ee64",
@@ -207,11 +220,10 @@ export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, strin
   "PN-TRUTH-259": "38909bd40b648a94c7d716033263b2f7e78e83b7009e3bdb3c2ceabcccad1213",
   "PN-TRUTH-260": "a99962f98d030fe13385bd9a4ad3a90fe2df895fb02ba575a079a88ec9acf208",
   "PN-TRUTH-261": "f54cad9bdc505325e002c9cd4af8424441f58935f1bae0b863463786deec9fe6",
-  "PN-TRUTH-262": "f3093c49fc2c8e97d3842e16a3230f1a504fba87e07b8c9f0e7714abe748b023",
-  "PN-TRUTH-263": "4f79acffebfa6b389218aa37f8303ed2267db9689248b7eb6d421a508741fdfd",
+  "PN-TRUTH-262": "8a5d1f02b89a0f328bd73e2c0975ea64b46a891207caa530130ecb4518893ae0",
   "PN-TRUTH-264": "61a61a4ccb5c2ce1700f79064346fe8184d6aaa7b33b5b5fc1b832d22266aad3",
   "PN-TRUTH-265": "2ce0f8a04962d697dbdfc1e4db469c304d6c5e52fe7b4af8d27a5241dae0abde",
-  "PN-TRUTH-266": "f6bb08b58ae826ac2ae97c24b6963fdca52bd89a90837c0d7d2d73107a36ff6a",
+  "PN-TRUTH-266": "e250bcec7ab3c249664dec49e11f2ed906a1bb3a63f4778122f4e40d1c7b197b",
   "PN-TRUTH-267": "9c32e61c598d56c8c7b03329dffeb23d7b41dd48e2c4d0750be84a5ce9e85101",
   "PN-TRUTH-268": "234eb7e2675a21647d59f26f21048c67da9c4be8c3d9aaeefd51abd7a79dfa95",
   "PN-TRUTH-269": "2a552d081de948530fd452dc6eed78d38d4ea071bb921d8c03d582e806f489e1",
@@ -222,7 +234,6 @@ export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, strin
   "PN-TRUTH-274": "e4e656318244fc310c516e5a374165d8de47fdfc0bfc7da17527e712f3678147",
   "PN-TRUTH-275": "dfcaafd745c0edfe3693fe0a36f3a92edf401d3d88761283416b44ba1fbacb0f",
   "PN-TRUTH-276": "ee4683ae4d46c44fcb49130231a17aea95133817d6d192f94f661f67d699a687",
-  "PN-TRUTH-277": "b0cd5f400bf43bfce2adbeca370c84e1fc70f42aa070f02f98e0a0ed935cfc6d",
   "PN-TRUTH-278": "99185221f9896e1696681805cf9fe3e80686331ce87ea5da5cbf3957f19e79da",
   "PN-TRUTH-279": "374a340a02e9185447a24c086e53ec850c0994a8fdf628bef4c39c8441f9b8bf",
   "PN-TRUTH-280": "3b5628477e7045d87e940a17642f2eba7e5b894b7ec940a5e7108c7867a624ee",
@@ -230,4 +241,9 @@ export const PACK1_ADMISSION_CONTENT_FINGERPRINTS: Readonly<Record<string, strin
   "PN-TRUTH-282": "98d1e788de1650afe6c4ff325bcb237b56d5acd126109591490995199cba3da3",
   "PN-TRUTH-283": "e317b6d52624a3b8533a7404a7f5994f9ff21ce60763129d246274bcafbc3ae5",
   /* FROZEN-FINGERPRINTS:END */
+  /* 退役留痕（2026-09-29，非指纹表内容，仅供追溯）：曾有 4 张卡的条目在本表内、后被内容裁决删除——
+   * A9-R6：PN-TRUTH-236 / 263 / 277（退役前 payloadHash 逐字冻结于
+   *   lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts）；
+   * A9-R7：PN-TRUTH-249（lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts）。
+   * 详见本常量上方「⚠️ 例外」注释；本注释在 BEGIN/END 边界之外，不影响指纹表本体。 */
 };

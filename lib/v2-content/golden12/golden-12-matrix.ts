@@ -30,13 +30,19 @@ import {
 /* 汇总阈值（Human 冻结的类别覆盖要求）                                          */
 /* -------------------------------------------------------------------------- */
 
-/** Human 对本批的类别覆盖下界（follow_up_hook 可与其它类别重叠）。 */
-export const GOLDEN_CATEGORY_REQUIREMENTS: Readonly<Record<GoldenCategory, number>> = {
+/**
+ * Human 对本批的类别覆盖下界（**放行门**；A9-R6 §4.7 起不含 `follow_up_hook`）。
+ *
+ * `follow_up_hook` 的**数量**不再作放行条件——它降级为**诊断基线**（当前真值由
+ * `goldenCategoryCoverage().follow_up_hook` 派生，报告如实引用）；语义门禁改由
+ * 「`category="follow_up_hook"` 的卡题面须点名对象/动作」承担（见 `pack1-supplement-matrix.ts`
+ * 的 `PACK1_FOLLOW_UP_HOOK_TARGET_TOKENS` 与 `pack1FollowUpHookCardsMissingTarget()`）。
+ */
+export const GOLDEN_CATEGORY_REQUIREMENTS: Readonly<Record<Exclude<GoldenCategory, "follow_up_hook">, number>> = {
   quick_know: 2,
   attraction: 3,
   flirt: 3,
   body_preference: 2,
-  follow_up_hook: 4,
 };
 
 /* -------------------------------------------------------------------------- */

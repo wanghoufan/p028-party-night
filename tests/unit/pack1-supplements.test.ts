@@ -6,9 +6,9 @@
  * ② **字数与句读**：题面 ≤30 个中文字（`pack1SupplementCountHanzi` 可复算）、单一问句、≤2 逗号；
  * ③ **结构**：`heatMin` 分布由卡源派生（H2×5 / H3×9、**H1/H4 = 0**）；**同档不同轴**；
  * ④ **钩子当场可兑现**：每卡一条「旁人立刻能说出口的反问」，以「？」结尾、无需要时间的动作；
- * ⑤ **去重**：本批 14 张互不重复，且与 Golden 12 / KEEP 5 / REWRITE（244~250）/ REPLACE（251~269）
+ * ⑤ **去重**：本批现役 13 张互不重复（A9-R6 退役 277），且与 Golden / KEEP 5 / REWRITE（244~250）/ REPLACE（251~269）
  *    的题面**双向整句包含 0 命中**（去标点口径）；
- * ⑥ **ID 号段**：`PN-TRUTH-270~283` 连续 14 个；全库扫描 0 collision、最大 283 / 新起点 284；
+ * ⑥ **ID 号段**：`PN-TRUTH-270~283` 号段（A9-R6 退役 277 后现 13 张）；全库扫描 0 collision、最大 283 / 新起点 284；
  * ⑦ **planning-only 锁**：`category / followUpHook / expectedAnswerShape` **未进入** `GameCard`
  *    正式 schema、`V2_REQUIRED_QUALITY_FIELDS`、桥接转发卡；本批**不进任何运行时卡池 / Formal 清单**；
  * ⑧ **consent**：全批 `skip-anytime`；本批无 `body_preference` 卡 ⇒ 卡面 0 条 consent 注释；
@@ -72,6 +72,7 @@ import { FIXED_CONTENT_MANIFEST } from "@/lib/v2-content/fixed-content-manifest"
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { RETIRED_TRUTH_CARD_IDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
+import { RETIRED_PACK1_R6_CARD_IDS } from "@/lib/v2-content/archive/retired-pack1-r6-2026-09-29";
 import { V2_REQUIRED_QUALITY_FIELDS, validateFixedCardMetadataStrict } from "@/lib/v2-content/v2-card-metadata";
 import { mainlineRuntimeCards, mainlineSsotCards } from "@/lib/v2-content/v2-card-bridge";
 
@@ -89,7 +90,7 @@ function stripNonHanzi(text: string): string {
 /* ① 逐卡值锁                                                          */
 /* ------------------------------------------------------------------ */
 
-describe("A6① 补卡 14 张逐卡值锁死", () => {
+describe("A6① 补卡逐卡值锁死（A9-R6 后 13 张）", () => {
   const LOCKED: Record<
     string,
     {
@@ -189,17 +190,8 @@ describe("A6① 补卡 14 张逐卡值锁死", () => {
       informationGoalType: "live_observation", secondaryTopics: ["择偶偏好"],
       consentMode: "skip-anytime", boundaryTags: [],
     },
-    "PN-TRUTH-277": {
-      // A7（Part 2）：heatMin 3→2（消除 H3×I1 倒挂）；category 如实降 quick_know（回程是后勤偏好）。
-      text: "散场后你打算怎么回：打车、地铁，还是走路？",
-      intensity: 1, heatMin: 2, heatMax: 4,
-      category: "quick_know", followUpHook: "social_style", expectedAnswerShape: "ternary",
-      topic: "生活方式", informationGain: "medium",
-      informationGoal: "知道散场后他打算打车、地铁还是走路",
-      socialEnergy: "medium", relationshipProgression: "open", intimacyClass: "none",
-      informationGoalType: "self_preference", secondaryTopics: ["性格·习惯·小癖好"],
-      consentMode: "skip-anytime", boundaryTags: [],
-    },
+    // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-277` 内容弱 ⇒ 退役，
+    // 逐字归档在 lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts，不再进本锁值表。
     "PN-TRUTH-278": {
       // A7（Part 1 P0 FAIL）：换成「先溜 / 等某个人一起溜」，short_phrase → binary、infoGoalType → self_preference。
       text: "最后一圈，你想先溜的是自己，还是等某个人一起溜？",
@@ -267,17 +259,23 @@ describe("A6① 补卡 14 张逐卡值锁死", () => {
     },
   };
 
-  it("恰 14 张，ID 恰为 PN-TRUTH-270~283 连续且唯一", () => {
-    expect(PACK1_SUPPLEMENT_CARDS).toHaveLength(14);
-    expect(PACK1_SUPPLEMENT_CARD_IDS).toEqual(
-      Array.from({ length: 14 }, (_, index) => `PN-TRUTH-${270 + index}`),
-    );
-    expect(new Set(PACK1_SUPPLEMENT_CARD_IDS).size).toBe(14);
+  it("现役张数由卡源派生（A9-R6 退役 277 后为 13）；ID 落在 270~283 号段且唯一", () => {
+    expect(PACK1_SUPPLEMENT_CARDS.length).toBe(PACK1_SUPPLEMENT_CARD_IDS.length);
+    expect(PACK1_SUPPLEMENT_CARDS.length).toBeGreaterThan(0);
+    expect(new Set(PACK1_SUPPLEMENT_CARD_IDS).size).toBe(PACK1_SUPPLEMENT_CARD_IDS.length);
     for (const card of PACK1_SUPPLEMENT_CARDS) {
-      expect(card.number, card.cardId).toBe(parseTruthCardNumber(card.cardId));
+      const number = parseTruthCardNumber(card.cardId);
+      expect(number, card.cardId).not.toBeNull();
+      expect(number!, card.cardId).toBeGreaterThanOrEqual(270);
+      expect(number!, card.cardId).toBeLessThanOrEqual(283);
+      expect(card.number, card.cardId).toBe(number);
       expect(card.gameType, card.cardId).toBe("truth");
       expect(RETIRED_TRUTH_CARD_IDS, card.cardId).not.toContain(card.cardId);
+      expect(RETIRED_PACK1_R6_CARD_IDS, card.cardId).not.toContain(card.cardId);
     }
+    // A9-R6：277 已退役（号段内缺，不再回卡源）。
+    expect(PACK1_SUPPLEMENT_CARD_IDS).not.toContain("PN-TRUTH-277");
+    expect(RETIRED_PACK1_R6_CARD_IDS).toContain("PN-TRUTH-277");
   });
 
   it("逐卡锁值：题面 / Heat / intensity / planning 字段 / 全部必填质量字段与冻结表一致", () => {
@@ -399,12 +397,12 @@ describe("A6③ 结构：heatMin 分布派生对账 + 同档不同轴 / 不同�
   it("followUpHook / expectedAnswerShape 分布由卡源派生且各值合法（无卡落在枚举外）", () => {
     const hookDist = pack1SupplementFollowUpHookDistribution();
     const shapeDist = pack1SupplementAnswerShapeDistribution();
-    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(14);
-    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(14);
+    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_SUPPLEMENT_CARDS.length);
+    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_SUPPLEMENT_CARDS.length);
     expect(hookDist.none, "本批不应有 none 空钩子卡").toBe(0);
   });
 
-  it("矩阵 Markdown 含全部 14 个 cardId（报告可直接引用，不手抄）", () => {
+  it("矩阵 Markdown 含全部 cardId（报告可直接引用，不手抄）", () => {
     const markdown = pack1SupplementMatrixMarkdown();
     for (const id of PACK1_SUPPLEMENT_CARD_IDS) expect(markdown).toContain(id);
   });
@@ -461,9 +459,9 @@ describe("A6⑤ 去重：批内互不重复，且与全批次既有卡双向整�
     expect(others.length, `${label} 对照集为空，去重断言会失去依据`).toBeGreaterThan(0);
   }
 
-  it("14 张题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并）", () => {
+  it("题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并）", () => {
     const hanzi = PACK1_SUPPLEMENT_CARDS.map((card) => stripNonHanzi(card.text));
-    expect(new Set(hanzi).size).toBe(14);
+    expect(new Set(hanzi).size).toBe(PACK1_SUPPLEMENT_CARDS.length);
     for (let i = 0; i < hanzi.length; i += 1) {
       for (let j = 0; j < hanzi.length; j += 1) {
         if (i === j) continue;
@@ -481,7 +479,7 @@ describe("A6⑤ 去重：批内互不重复，且与全批次既有卡双向整�
       ...PACK1_REWRITE_CARDS.map((card) => [card.cardId, stripNonHanzi(card.text)] as const),
       ...PACK1_REPLACE_CARDS.map((card) => [card.cardId, stripNonHanzi(card.text)] as const),
     ];
-    expect(others).toHaveLength(12 + 7 + 19);
+    expect(others).toHaveLength(GOLDEN_12_CARDS.length + PACK1_REWRITE_CARDS.length + PACK1_REPLACE_CARDS.length);
     for (const card of PACK1_SUPPLEMENT_CARDS) {
       assertNoOverlap(stripNonHanzi(card.text), card.cardId, others, "Golden 12 + REWRITE + REPLACE");
     }
@@ -519,6 +517,7 @@ describe("A6⑥⑦ ID 号段 + planning-only 锁 + 不进 Formal", () => {
       ...ssotIds,
       ...keepIds,
       ...RETIRED_TRUTH_CARD_IDS,
+      ...RETIRED_PACK1_R6_CARD_IDS,
       ...GOLDEN_12_CARD_IDS,
       ...PACK1_REWRITE_CARD_IDS,
       ...PACK1_REPLACE_CARD_IDS,
@@ -531,9 +530,11 @@ describe("A6⑥⑦ ID 号段 + planning-only 锁 + 不进 Formal", () => {
     expect(report.suggestedNextTruthStart).toBe(284);
   });
 
-  it("本批与归档退役卡、KEEP 运行时卡、Golden 12、REWRITE / REPLACE 批无任何 ID 交集", () => {
+  it("本批与归档退役卡（A3 26 ＋ A9-R6 3）、KEEP、Golden、REWRITE / REPLACE 批无任何 ID 交集", () => {
     const mine = new Set(PACK1_SUPPLEMENT_CARD_IDS);
-    for (const id of RETIRED_TRUTH_CARD_IDS) expect(mine.has(id), id).toBe(false);
+    for (const id of [...RETIRED_TRUTH_CARD_IDS, ...RETIRED_PACK1_R6_CARD_IDS]) {
+      expect(mine.has(id), id).toBe(false);
+    }
     for (const id of [...GOLDEN_12_CARD_IDS, ...PACK1_REWRITE_CARD_IDS, ...PACK1_REPLACE_CARD_IDS]) {
       expect(mine.has(id), id).toBe(false);
     }
@@ -542,26 +543,41 @@ describe("A6⑥⑦ ID 号段 + planning-only 锁 + 不进 Formal", () => {
     }
   });
 
-  it("planning-only 锁：三字段未进 GameCard schema / 必填质量字段 / 桥接投影；本批不进运行时与 Formal", () => {
+  it("planning-only 锁（负向保留）：三字段未进 GameCard schema / 必填质量字段 / 桥接投影；本批卡已进运行时与 Formal 且逐张满足四条件", () => {
     const shapeKeys = Object.keys(gameCardSchema.shape);
     for (const field of PLANNING_ONLY_FIELDS) {
       expect(shapeKeys).not.toContain(field);
       expect(V2_REQUIRED_QUALITY_FIELDS as readonly string[]).not.toContain(field);
     }
     const mine = new Set(PACK1_SUPPLEMENT_CARD_IDS);
+    expect(mine.size).toBe(PACK1_SUPPLEMENT_CARD_IDS.length);
+    const runtimeCards = mainlineRuntimeCards();
+    const ssotIds = new Set(mainlineSsotCards().map((card) => card.id));
+    const runtimeIds = new Set(runtimeCards.map((card) => card.cardId));
+    // 正向（A9 准入后）：本批卡真在两个运行时投影里 ⇒ 下面那条「不转发三字段」自动覆盖到本批卡。
+    for (const id of PACK1_SUPPLEMENT_CARD_IDS) {
+      expect(ssotIds.has(id), `${id} 应已在 SSOT 卡池`).toBe(true);
+      expect(runtimeIds.has(id), `${id} 应已在运行时卡池`).toBe(true);
+    }
     for (const card of mainlineSsotCards()) {
-      expect(mine.has(card.id), `${card.id} 已进 SSOT 卡池`).toBe(false);
       for (const field of PLANNING_ONLY_FIELDS) expect(card, card.id).not.toHaveProperty(field);
     }
-    for (const card of mainlineRuntimeCards()) {
-      expect(mine.has(card.cardId), `${card.cardId} 已进运行时卡池`).toBe(false);
+    for (const card of runtimeCards) {
       for (const field of PLANNING_ONLY_FIELDS) expect(card, card.cardId).not.toHaveProperty(field);
     }
+    // 正向：在 manifest 两轨，且 Formal 四条件逐张成立。
+    const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
     const formalAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds);
-    const legacyAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds);
+    const legacyAllowed = new Set(legacy.allowedCardIds);
     for (const id of PACK1_SUPPLEMENT_CARD_IDS) {
-      expect(formalAllowed.has(id), `${id} 已在 formalFixed`).toBe(false);
-      expect(legacyAllowed.has(id), `${id} 已在 legacyCompatibility`).toBe(false);
+      expect(legacyAllowed.has(id), `${id} 应在 legacyCompatibility`).toBe(true);
+      expect(formalAllowed.has(id), `${id} 应在 formalFixed`).toBe(true);
+      const provenance = legacy.provenance[id];
+      expect(provenance, `${id} 缺 provenance`).toBeDefined();
+      expect(provenance!.metadataStatus, id).toBe("audited");
+      expect(provenance!.reviewed, id).toBe(true);
+      expect(provenance!.humanBarFit, id).toBe("PASS");
+      expect(provenance!.payloadHash, id).toMatch(/^[0-9a-f]{64}$/u);
     }
   });
 
@@ -652,16 +668,16 @@ describe("A6⑨ 5 条强制约束：同档不同轴 / 无外观二元对照 / �
 /* ------------------------------------------------------------------ */
 
 describe("A7⑩ 覆盖率按「卡面 category 真值」放行；重叠口径只作对照，禁止用于通过", () => {
-  it("本批真值（A7 收紧后）：follow_up_hook 9 张 + attraction 2 张 + quick_know 3 张（逐卡 re-count）", () => {
+  it("本批真值：follow_up_hook 9 张 + attraction 2 张 + quick_know 2 张（逐卡 re-count；A9-R6 退役 277 后）", () => {
     const truth = pack1SupplementCategoryTruth();
     expect(truth.follow_up_hook).toBe(9);
     expect(truth.attraction).toBe(2);
-    expect(truth.quick_know).toBe(3);
+    expect(truth.quick_know).toBe(2);
     expect(truth.flirt).toBe(0);
     expect(truth.body_preference).toBe(0);
   });
 
-  it("全批次真值达标：quick_know≥1 / attraction≥4 / flirt≥5 / body_preference≥3 / follow_up_hook≥9", () => {
+  it("全批次真值放行：quick_know≥1 / attraction≥4 / flirt≥5 / body_preference≥3（follow_up_hook 数量不作放行门）", () => {
     const { ok, gaps } = pack1UnionCategoryTruthRequirementsMet();
     expect(gaps, gaps.join("；")).toEqual([]);
     expect(ok).toBe(true);
@@ -670,16 +686,18 @@ describe("A7⑩ 覆盖率按「卡面 category 真值」放行；重叠口径只
     expect(truth.attraction).toBeGreaterThanOrEqual(PACK1_UNION_CATEGORY_REQUIREMENTS.attraction);
     expect(truth.flirt).toBeGreaterThanOrEqual(PACK1_UNION_CATEGORY_REQUIREMENTS.flirt);
     expect(truth.body_preference).toBeGreaterThanOrEqual(PACK1_UNION_CATEGORY_REQUIREMENTS.body_preference);
-    expect(truth.follow_up_hook).toBeGreaterThanOrEqual(PACK1_UNION_CATEGORY_REQUIREMENTS.follow_up_hook);
-    // 收紧后的目标锁死：follow_up_hook 门槛已由 12 降为 9（A7 裁决 1）。
-    expect(PACK1_UNION_CATEGORY_REQUIREMENTS.follow_up_hook).toBe(9);
+    // A9-R6 §4.7：`follow_up_hook` 数量**退出放行门**（降级为诊断基线）——requirement 表里不再有该键，
+    // 其真值只作诊断输出（下方精确真值锁仍如实记录 9，但不再当门槛）。
+    expect("follow_up_hook" in PACK1_UNION_CATEGORY_REQUIREMENTS).toBe(false);
+    expect(truth.follow_up_hook).toBe(9);
     // 精确真值锁（防止将来有人把统计口径改成「category 或 hook」仍报同一句话）。
-    // A8：`265` 由 follow_up_hook 降 quick_know ⇒ follow_up_hook 10→9、quick_know 21→22。
+    // A9-R6：退役 236（attraction）/ 263（quick_know）/ 277（quick_know）；
+    // A9-R7：退役 249（quick_know）＋ 241 改写（quick_know → body_preference，编排者裁决注入亲密元素）。
     expect(truth).toEqual({
-      quick_know: 22,
-      attraction: 8,
+      quick_know: 18,
+      attraction: 7,
       flirt: 8,
-      body_preference: 5,
+      body_preference: 6,
       follow_up_hook: 9,
     });
   });
@@ -692,14 +710,18 @@ describe("A7⑩ 覆盖率按「卡面 category 真值」放行；重叠口径只
     for (const card of PACK1_UNION_CARDS) manual[card.category] = (manual[card.category] ?? 0) + 1;
     expect(pack1UnionCategoryTruth()).toEqual(manual);
     // 反证：真值之和 = 卡数（每张卡只进一个桶）；若函数混入 hook，计数会 > 卡数。
-    expect(Object.values(pack1UnionCategoryTruth()).reduce((sum, n) => sum + n, 0)).toBe(52);
+    expect(Object.values(pack1UnionCategoryTruth()).reduce((sum, n) => sum + n, 0)).toBe(
+      PACK1_UNION_CARDS.length,
+    );
   });
 
   it("⛔ 重叠口径与真值口径**必须不同**（重叠口径把 follow_up_hook 报成「带钩子的张数」）", () => {
     const truth = pack1UnionCategoryTruth();
     const overlap = pack1UnionCategoryCoverageOverlap();
     expect(overlap.follow_up_hook).not.toBe(truth.follow_up_hook);
-    expect(overlap.follow_up_hook, "重叠口径下 follow_up_hook ＝ 全部带钩子的张数").toBe(52);
+    expect(overlap.follow_up_hook, "重叠口径下 follow_up_hook ＝ 全部带钩子的张数").toBe(
+      PACK1_UNION_CARDS.length,
+    );
     expect(truth.follow_up_hook, "真值口径下 follow_up_hook ＝ 归这一类的张数").toBe(9);
     // 各批重叠之和与全批次重叠一致（两处派生对账，防手填）。
     expect(pack1UnionCategoryCoverageOverlapByBatch()).toEqual(overlap);
@@ -723,24 +745,27 @@ describe("A7⑩ 覆盖率按「卡面 category 真值」放行；重叠口径只
 describe("A7⑪ followUpHook 枚举单列分布 + 全批次 H1~H4 余量", () => {
   it("全批次 followUpHook 分布（单列统计，8 值全集；none 归零）", () => {
     const dist = pack1UnionFollowUpHookDistribution();
-    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(52);
+    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_UNION_CARDS.length);
     expect(dist.none, "全批次不应有 none 空钩子卡").toBe(0);
+    // A9-R6 退役 236（attraction）/ 263（flirt_target）/ 277（social_style）；
+    // A9-R7 退役 249（social_style）＋ 241 改写（attraction → body_preference）后精确分布：
     expect(dist).toEqual({
       none: 0,
-      attraction: 9,
+      attraction: 7,
       initiative: 5,
       eye_contact: 1,
-      body_preference: 3,
+      body_preference: 4,
       contact_preference: 4,
-      flirt_target: 14,
-      social_style: 16,
+      flirt_target: 13,
+      social_style: 14,
     });
   });
 
   it("全批次 heatMin 分布：H3 ≥4 且 H4 ≥3（余量非零）", () => {
     const dist = pack1UnionHeatMinDistribution();
-    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(52);
-    expect(dist).toEqual({ 1: 11, 2: 19, 3: 16, 4: 6 });
+    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(PACK1_UNION_CARDS.length);
+    // A9-R6 退役 236/263/277（均 H2）：H2 19→16；A9-R7 退役 249（H1）：H1 11→10。
+    expect(dist).toEqual({ 1: 10, 2: 16, 3: 16, 4: 6 });
     expect(dist[3], "H3 未达 ≥4").toBeGreaterThanOrEqual(4);
     expect(dist[4], "H4 未达 ≥3").toBeGreaterThanOrEqual(3);
     // 余量：H3 / H4 都严格大于阈值（修「零余量」）。
@@ -749,21 +774,15 @@ describe("A7⑪ followUpHook 枚举单列分布 + 全批次 H1~H4 余量", () =>
   });
 
   it("强度不倒挂：全批次无 I4/I5，且 H3 档不得配 I1（约束④）", () => {
-    const intensityOf = (cardId: string) => {
-      const card = PACK1_UNION_CARDS.find((entry) => entry.cardId === cardId);
-      expect(card, cardId).toBeTruthy();
-      return card!.intensity;
-    };
     for (const card of PACK1_UNION_CARDS) {
       expect(card.intensity, `${card.cardId} 出现 I4/I5`).toBeLessThanOrEqual(3);
       expect(card.intensity, card.cardId).toBeGreaterThanOrEqual(1);
     }
-    // H3 是「明显暧昧」，配 I1 即档位高于强度的倒挂（277 修前正是 H3×I1）。
+    // H3 是「明显暧昧」，配 I1 即档位高于强度的倒挂（277 修前正是 H3×I1；277 已退役，判据仍保留）。
     const h3i1 = PACK1_UNION_CARDS
       .filter((card) => card.heatMin === 3 && card.intensity === 1)
       .map((card) => card.cardId);
     expect(h3i1, `H3×I1 倒挂：${h3i1.join(" / ")}`).toEqual([]);
-    expect(intensityOf("PN-TRUTH-277"), "277 已由 H3 降 H2，不再是倒挂").toBe(1);
   });
 });
 

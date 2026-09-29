@@ -22,6 +22,8 @@ import {
 } from "@/lib/v2-content/card-id-space";
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import { RETIRED_TRUTH_CARD_IDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
+import { RETIRED_PACK1_R6_CARD_IDS } from "@/lib/v2-content/archive/retired-pack1-r6-2026-09-29";
+import { RETIRED_PACK1_R7_CARD_IDS } from "@/lib/v2-content/archive/retired-pack1-r7-2026-09-29";
 import { GOLDEN_12_CARD_IDS } from "@/lib/v2-content/golden12/golden-12-cards";
 import { PACK1_REWRITE_CARD_IDS } from "@/lib/v2-content/pack1-rewrites/pack1-rewrite-cards";
 import { PACK1_REPLACE_CARD_IDS } from "@/lib/v2-content/pack1-replaces/pack1-replace-cards";
@@ -45,8 +47,15 @@ const NEW_BATCH_IDS = [
   ...PACK1_REPLACE_CARD_IDS,
   ...PACK1_SUPPLEMENT_CARD_IDS,
 ];
-/** 全库 ID（含归档退役卡；退役 ID 永不复用 ⇒ 必须计入 collision 域）。 */
-const LIBRARY_IDS = [...SSOT_IDS, ...RUNTIME_PACK_IDS, ...RETIRED_TRUTH_CARD_IDS, ...NEW_BATCH_IDS];
+/** 全库 ID（含 A3 归档 26 ＋ A9-R6 退役 3 ＋ A9-R7 退役 1；退役 ID 永不复用 ⇒ 必须计入 collision 域）。 */
+const LIBRARY_IDS = [
+  ...SSOT_IDS,
+  ...RUNTIME_PACK_IDS,
+  ...RETIRED_TRUTH_CARD_IDS,
+  ...RETIRED_PACK1_R6_CARD_IDS,
+  ...RETIRED_PACK1_R7_CARD_IDS,
+  ...NEW_BATCH_IDS,
+];
 
 describe("A4a｜全库 Truth ID 号段扫描（可复算）", () => {
   it("全库 ID 无 collision、无 malformed；Truth 编号 === 1~50 ∪ 201~283", () => {

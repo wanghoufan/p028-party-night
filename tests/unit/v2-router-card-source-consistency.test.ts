@@ -28,6 +28,10 @@ import {
 } from "@/lib/v2-content/v2-card-bridge";
 import { createV2MainlineRouter } from "@/lib/v2-relationship/v2-router";
 import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
+import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARD_IDS } from "@/lib/v2-content/pack1-admission";
+import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 import type { V2RouterInput } from "@/lib/v2-relationship/v2-session";
 import {
   createInitialRelationshipState,
@@ -59,33 +63,37 @@ const sortedIds = (cards: readonly { cardId: string }[]): string[] =>
   cards.map((card) => card.cardId).sort();
 
 /**
- * `PN-TRUTH-2*` 家族**运行时**卡（第一包 KEEP 3 + Bootstrap KEEP 2 = 5）。
+ * `PN-TRUTH-2*` 家族**运行时**卡逐张派生（第一包 3 ＋ Bootstrap 2 ＋ A9 重构批 52）。
  *
- * ⚠️ A3（2026-09-29）：这批卡里只有 5 张（KEEP 5）是 Formal。
- * ⚠️ A4a（2026-09-29）：其余 26 张已**移出运行时内容源**（逐字归档于
- * `lib/v2-content/archive/retired-truth-pack-2026-09-29.ts`，不进任何运行时卡池）
- * ⇒ 运行时 `PN-TRUTH-2*` 家族恒为这 5 张。
- * 因此**不得**再用 `PN-TRUTH-2*` 前缀冒充「全部 31 张」或「Formal」——判 Formal 一律走
- * `formalFixedIdSet()`。
+ * ⚠️ A4a（2026-09-29）：26 张退役 `PN-TRUTH-2*` 已**移出运行时内容源**（逐字归档于
+ * `lib/v2-content/archive/retired-truth-pack-2026-09-29.ts`，不进任何运行时卡池）。
+ * ⚠️ A9（2026-09-29）：52 张重构批经准入后与 KEEP 5 同形进入运行时卡源。
+ * 因此**不得**再用 `PN-TRUTH-2*` 前缀冒充「全部 31 张」或「全部 Formal」——判 Formal 一律走
+ * `formalFixedIdSet()`（本文件用两路派生互校：运行时家族 ⇄ manifest Formal）。
+ * 张数不写死：见下方用例里的逐 id 比对。
  */
 const P2_FAMILY_IDS = mainlineRuntimeCards()
   .map((card) => card.cardId)
   .filter((cardId) => cardId.startsWith("PN-TRUTH-2"));
 const FORMAL_IDS = formalFixedIdSet();
+/** A3/A4a 冻结的 KEEP 5（必须仍是运行时家族的一部分）。 */
+const KEEP_5_IDS = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"] as const;
 
 describe("C1-8｜双 Router 卡源一致性（共享 mainlineRuntimeCards）", () => {
   it("mainlineRuntimeCards() 与 mainlineSsotCards() 逐 id 一致（同一内容的两个投影）", () => {
     const runtimeIds = mainlineRuntimeCards().map((card) => card.cardId);
     const gameCardIds = mainlineSsotCards().map((card) => card.id);
     expect(runtimeIds).toEqual(gameCardIds);
-    expect(runtimeIds).toHaveLength(355); // 350 SSOT 主线 + 5 运行时 KEEP（A4a 后 26 张退役已移出卡源）
+    // 张数由内容源派生（SSOT 冻结主线 ＋ 运行时正式内容源；退役卡已移出卡源），不写死。
+    const extra = FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length + PACK1_ADMISSION_CARD_IDS.length;
+    expect(runtimeIds).toHaveLength(getV2ContentAdapter().mainlineCards.length + extra);
   });
 
-  it("审计 Router 现在能出运行时 PN-TRUTH-2* 家族卡（KEEP 5，出现在三层候选里）", () => {
-    expect(P2_FAMILY_IDS).toHaveLength(5);
-    expect([...P2_FAMILY_IDS].sort()).toEqual(
-      ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"].sort(),
-    );
+  it("审计 Router 现在能出运行时 PN-TRUTH-2* 家族卡（= manifest Formal 全集，出现在三层候选里）", () => {
+    // 两路派生互校：运行时家族 ⇄ manifest Formal（A9 后二者逐 id 相等）。
+    expect([...P2_FAMILY_IDS].sort()).toEqual([...FORMAL_IDS].sort());
+    expect(P2_FAMILY_IDS.length).toBeGreaterThan(0);
+    for (const id of KEEP_5_IDS) expect(P2_FAMILY_IDS, `${id}（KEEP）应在运行时家族里`).toContain(id);
     const router = createV2MainlineRouter({ packId: PACK_ID });
     const req = input({ drawSeed: 0 });
     for (const tier of ["bucket", "pack", "global"] as const) {
@@ -127,11 +135,16 @@ describe("C1-8｜双 Router 卡源一致性（共享 mainlineRuntimeCards）", (
     expect(h1.filter((cardId) => FORMAL_IDS.has(cardId))).toEqual(expectedH1Formal);
     expect(expectedH1Formal.length).toBeGreaterThan(0);
     expect(expectedH1Formal.length).toBeLessThan(FORMAL_IDS.size); // 确实收窄了，不再全量
-    expect(expectedH1Formal).toEqual(["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"]);
+    // KEEP 浅题必须仍在 H1 集合里（防「集合换了一批卡还照样绿」）。
+    for (const id of ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"]) {
+      expect(expectedH1Formal, `${id}（KEEP 浅题）应在 H1 集合里`).toContain(id);
+    }
 
-    // Formal 里 heatMin≥2 的卡（209）一张都不在 H1 桶内。
+    // Formal 里 heatMin≥2 的卡（含 KEEP 里唯一 heatMin=2 的 209）一张都不在 H1 桶内。
     const unreachable = [...FORMAL_IDS].filter((cardId) => !expectedH1Formal.includes(cardId));
-    expect(unreachable).toEqual(["PN-TRUTH-209"]);
+    expect(unreachable.length).toBeGreaterThan(0);
+    expect(unreachable, "KEEP 里唯一 heatMin=2 的 209 应受硬过滤").toContain("PN-TRUTH-209");
+    expect(h1).not.toContain("PN-TRUTH-209");
     expect(unreachable.some((cardId) => h1.includes(cardId))).toBe(false);
 
     // legacy 里存在 heatMin>1 的卡也在 H1 桶内（B3-4 的豁免口径没被本单改回）。

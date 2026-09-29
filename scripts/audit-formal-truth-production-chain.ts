@@ -217,7 +217,7 @@ const out = {
     "eventForRoundTerminal（卡侧 metadata 由 metadataForCard 读生产 sidecar；轮侧披露由正式信号提供）",
     "reduceV2SessionEvents → relationshipEffectiveCardCount / heatForEffectiveCount",
   ],
-  disclosure: `本文件与 integration 测试均不注入 metadata override；Formal ${FORMAL_CARDS.length} 张（A3 KEEP 5）与已退出 Formal 的 26 张旧卡的 informationGain/topic 都来自生产 sidecar 真实投影；无 §7.2 metadata 的 SSOT 旧卡 sidecar 恒 null（fail-closed 不计有效轮）。`,
+  disclosure: `本文件与 integration 测试均不注入 metadata override；Formal ${FORMAL_CARDS.length} 张（其中含 A3 KEEP 保留的 5 张）与已退出 Formal 的 26 张旧卡的 informationGain/topic 都来自生产 sidecar 真实投影；无 §7.2 metadata 的 SSOT 旧卡 sidecar 恒 null（fail-closed 不计有效轮）。`,
   seed: FIXED_DRAW_SEED,
   table: "2男2女（a男/b女/c男/d女，合法 pair 全程可用）",
   scenarioFullPack: {

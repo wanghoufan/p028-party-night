@@ -29,6 +29,13 @@
  *   `PACK1_PENDING_ADMISSION_OVERRIDES`（只准备不落地）；同时如实登记其**内容弱**问题未解决。
  * - `267`（属 REPLACE 批，不在本文件）同步登记 admission 取值，见 `pack1-admission-prep.ts`。
  *
+ * ## A9-R6（2026-09-29 内容裁决）
+ * - `277`：A8 登记的内容弱问题在 A9-R6 裁决为**退役** ⇒ 题面逐字归档在
+ *   `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`，移出运行时卡源；A8 的
+ *   `location-sensitive` 登记随卡作废（⛔ 不用泛标签给它续命）。
+ * - 本批现为 **13 张**（号段 270~283 内缺 277），`heatMin` 分布 **H2×5 + H3×8**（`H1/H4 = 0`）；
+ *   张数一律由 `PACK1_SUPPLEMENT_CARD_IDS.length` 派生。
+ *
  * ## 与既有批的关系
  * - 与 Golden 12（`232~243`）、第一包 REWRITE（`244~250`）、第一包 REPLACE（`251~269`）
  *   的题面/ID **两两双向整句包含 0 命中**（去标点口径，见 `tests/unit/pack1-supplements.test.ts`）。
@@ -37,9 +44,9 @@
  *   `PACK1_SUPPLEMENT_AXES` / `PACK1_SUPPLEMENT_SHOTS` 两表**降级为审计辅助**，不得再充当达成证据）；
  *   ②**禁「外观 A vs 外观 B」二元对照**；③`followUpHook` **当场可兑现**（见
  *   `PACK1_SUPPLEMENT_HOOK_REDEEM_LINES`）；④H4 统一 I3、禁价值倒挂；⑤元数据随题面同源。
- * - 本批 `heatMin` 只落 **H2×6 + H3×8**（`H1/H4 = 0`）：这两类补卡是**后续互动钩子/吸引偏好**，
+ * - 本批 `heatMin` 只落 **H2×5 + H3×8**（`H1/H4 = 0`，A9-R6 退役 277 后）：这两类补卡是**后续互动钩子/吸引偏好**，
  *   不是身体/亲密偏好题，**不硬抬到 H4**（抬了就是约束④ 的价值倒挂）。H3/H4 库存余量见矩阵派生。
- *   A7 后 `277` 的 `heatMin` 由 3 降为 2（消除约束④ 的 H3×I1 倒挂）。
+ *   A7 后 `277` 的 `heatMin` 由 3 降为 2（消除约束④ 的 H3×I1 倒挂）；A9-R6 后 277 退役。
  *
  * ## 安全与 consent（硬红线）
  * - 全部卡 `consentMode="skip-anytime"`（不愿意可无惩罚跳过）；本批**无**身体/亲密偏好卡
@@ -73,7 +80,7 @@ const SCHEMA = V2_SSOT_SCHEMA_VERSION;
 /**
  * A6 覆盖率补卡（`PN-TRUTH-270 ~ 283`，按 `cardId` 升序）。
  *
- * 以 `heatMin` 为档：**H2×6 / H3×8**（`H1/H4 = 0` —— 由内容自然决定，不硬抬）。
+ * 以 `heatMin` 为档：**H2×5 / H3×8**（`H1/H4 = 0` —— 由内容自然决定，不硬抬；A9-R6 退役 277）。
  */
 export const PACK1_SUPPLEMENT_CARDS: readonly GoldenTruthCard[] = [
   /* ─────────────── H2：轻量「今晚接下来怎么过」 ─────────────── */
@@ -329,47 +336,10 @@ export const PACK1_SUPPLEMENT_CARDS: readonly GoldenTruthCard[] = [
     followUpHook: "flirt_target",
     expectedAnswerShape: "short_phrase",
   },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-277",
-    gameType: "truth",
-    number: 277,
-    text: "散场后你打算怎么回：打车、地铁，还是走路？",
-    intensity: 1,
-    heatMin: 2,
-    heatMax: 4,
-    relationStage: "know",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    // A7（Part 2）：回程方式是**风格 / 后勤偏好**，不点名对象/动作 ⇒ **如实降为 `quick_know`**
-    // （不再是 `follow_up_hook` 扩义）；同时 `heatMin` 3 → 2，消除主审点名的约束④ 倒挂（H3×I1）。
-    // A8（Part 1，主审 Round-3 §1/§8）：主审最终判 **不必须改题面** —— 「走路」暴露的是**距离量级＋方向**
-    // （不是地址），不构成 consent 违规，且真正卡住本张进 Formal 的是**内容弱**（Q4 弱／Q5✗／Q6△，
-    // 全批最弱），选项①「去掉走路」只去掉一格、**同轴仍弱**、反而缩窄答案空间 ⇒ 本单**选主审备选②**：
-    // **题面不动**，把 `boundaryTags:["location-sensitive"]`（泛安全元数据）登记到内容侧的
-    // `PACK1_PENDING_ADMISSION_OVERRIDES`（只准备不落地，与 `259` 同处置）。
-    // ⚠ 如实登记：本张**内容弱**问题本单**未解决**，需主审/后续批次裁决去留。
-    // 题面真实谈「微信 / 账号交换」的卡才挂 social-account；本张不涉，故 `boundaryTags` 现值仍为 `[]`。
-    topic: "生活方式",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道散场后他打算打车、地铁还是走路",
-    socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["性格·习惯·小癖好"],
-    category: "quick_know",
-    followUpHook: "social_style",
-    expectedAnswerShape: "ternary",
-  },
+  // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-277`（散场后你打算怎么回：打车、地铁，还是走路？）
+  // 内容本身不好玩（几乎无吸引 / 人物信息 / 后续玩法价值）⇒ 退役，逐字归档在
+  // `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`，**不再回运行时卡源**；
+  // A8 曾登记的 `location-sensitive` 泛安全标签随本卡一并作废（不为续命加治理复杂度）。
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-278",

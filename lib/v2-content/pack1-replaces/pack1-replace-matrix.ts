@@ -1,5 +1,8 @@
 /**
- * A5｜第一包 REPLACE 19 张换向新卡的派生矩阵（**从卡源派生，不手写数字**；planning-only 审计视图）。
+ * A5｜第一包 REPLACE 换向新卡的派生矩阵（**从卡源派生，不手写数字**；planning-only 审计视图）。
+ *
+ * ⚠️ A9-R6（2026-09-29）：`263` 已退役 ⇒ 本批卡源现为 **18 张**（号段 251~269 内缺 263）、
+ * `heatMin` 分布 H1×3 / H2×7 / H3×5 / H4×3；张数一律由 `PACK1_REPLACE_CARD_IDS.length` 派生。
  *
  * 「派生优先」纪律：热度分档 / 类别覆盖 / hook / shape 分布的每个数字都由 `PACK1_REPLACE_CARDS`
  * 现算得出，不做第二份手填副本 —— 卡源一改，矩阵与单测期望同步变化，不会出现「数据说没有、
@@ -15,7 +18,7 @@
  * ## 「同档不同轴」的落地方式（`GOLDEN12-REVIEW-2.md` 约束①）
  * 每张卡的「轴」是**编辑判定的内容轴**（不是卡字段，故不进 Runtime），逐卡登记在
  * `PACK1_REPLACE_AXES`；单测断言**同一 `heatMin` 档内轴值互不相同**。
- * 本批档位张数（H1×3 / H2×8 / H3×5 / H4×3）由内容自然决定，不设「每档 ≤3 张」上限。
+ * 本批档位张数（H1×3 / H2×7 / H3×5 / H4×3，A9-R6 退役 263 后）由内容自然决定，不设「每档 ≤3 张」上限。
  *
  * ## 「钩子当场可兑现」的落地方式（约束③）
  * 逐卡登记一句**旁人/对方立刻能说出口的反问**到 `PACK1_REPLACE_HOOK_REDEEM_LINES`；
@@ -36,17 +39,19 @@ import {
 /* 汇总阈值（A5 派工单 Part 2 冻结的结构指标）                                    */
 /* -------------------------------------------------------------------------- */
 
-/** A5 对本批的类别覆盖下界（follow_up_hook 可与其它类别重叠）。 */
-export const PACK1_REPLACE_CATEGORY_REQUIREMENTS: Readonly<Record<GoldenCategory, number>> = {
+/**
+ * A5 对本批的类别覆盖下界（**放行门**；A9-R6 §4.7 起不含 `follow_up_hook`——
+ * 其数量降级为**诊断基线**，当前真值由 `pack1ReplaceCategoryCoverage().follow_up_hook` 派生）。
+ */
+export const PACK1_REPLACE_CATEGORY_REQUIREMENTS: Readonly<Record<Exclude<GoldenCategory, "follow_up_hook">, number>> = {
   quick_know: 1,
   // A7：`256` 由 `attraction` 改 `quick_know`（题面问排斥偏好，`category` 真值口径不再计 attraction）；
   // 本批 `attraction` 的**卡面 `category` 真值**只剩 254（= 1），**重叠口径**（含 256 的 `attraction` hook）
-  // 为 2。本批目标随之为 1；**全批次** `attraction` 真值 ≥4 由 UNION 口径把关
+  // 为 2。本批目标随之为 1；**全批次** `attraction` 真值 ≥4 由真值口径把关
   // （`pack1UnionCategoryTruthRequirementsMet()`），本批不再承担 `attraction` 主指标。
   attraction: 1,
   flirt: 5,
   body_preference: 3,
-  follow_up_hook: 12,
 };
 
 /**
@@ -67,16 +72,17 @@ export const PACK1_REPLACE_HEAT_TIER_TARGETS = {
 export const PACK1_REPLACE_AXES: Readonly<Record<string, string>> = {
   // H1
   "PN-TRUTH-261": "当前感情状态",
-  // A8（Part 1，主审 Round-3 §1/§7）：262 换轴到「被一句话突然击中」，轴名随之更新。
-  "PN-TRUTH-262": "情绪触发（被一句话突然击中）",
-  "PN-TRUTH-266": "一直想做还没做的小事",
+  // A9-R7（2026-09-29 内容返工）：262 换轴到「被夸的偏好（夸到点上 / 夸得夸张）」、266 三选项
+  // 统一到「抽空想做的休闲小事」、252 C 选项改具体并把三选项统一到「局的熟悉度」；轴名随之更新。
+  "PN-TRUTH-262": "被夸的偏好（夸到点上 / 夸得夸张）",
+  "PN-TRUTH-266": "抽空想做的休闲小事（补觉 / 散步 / 看剧）",
   // H2
-  "PN-TRUTH-252": "社交场合触发（何时更放得开）",
+  "PN-TRUTH-252": "局的熟悉度（全是熟人 / 半熟不熟 / 谁也不认识）",
   "PN-TRUTH-254": "吸引对象气质（心跳 / 安心）",
   "PN-TRUTH-255": "当下摩擦的容忍阈值（这桌谁最不能惹）",
   "PN-TRUTH-256": "搭讪方式的减分点",
   "PN-TRUTH-259": "异性朋友消息的回复节奏",
-  "PN-TRUTH-263": "快散场时的去留",
+  // A9-R6：263（快散场时的去留）已退役，轴登记随卡删除。
   "PN-TRUTH-264": "被开玩笑的雷点",
   "PN-TRUTH-265": "今晚剩余时间的用法",
   // H3
@@ -95,7 +101,7 @@ export const PACK1_REPLACE_AXES: Readonly<Record<string, string>> = {
 /** 逐卡的「当场可兑现钩子」（约束③用）：一句旁人/对方立刻能说出口的反问。 */
 export const PACK1_REPLACE_HOOK_REDEEM_LINES: Readonly<Record<string, string>> = {
   "PN-TRUTH-251": "那我算被你注意到的吗？",
-  "PN-TRUTH-252": "那今晚这种场合，你放开了吗？",
+  "PN-TRUTH-252": "那今晚这局，你放得开吗？",
   "PN-TRUTH-253": "那我现在要，你给不给？",
   "PN-TRUTH-254": "那我现在算让你心跳的吗？",
   "PN-TRUTH-255": "那这桌最不能惹的，是我吗？",
@@ -105,12 +111,12 @@ export const PACK1_REPLACE_HOOK_REDEEM_LINES: Readonly<Record<string, string>> =
   "PN-TRUTH-259": "那我半夜发，你回不回？",
   "PN-TRUTH-260": "那我现在找人聊两句，你会过来吗？",
   "PN-TRUTH-261": "那我今晚算有机会吗？",
-  // A8（Part 1）：262 兑现句随新题面同步（当场反问、与新题面同源，无「更气」耦合）。
-  "PN-TRUTH-262": "那我说一句，你会不会突然安静？",
-  "PN-TRUTH-263": "那你想聊完的那个，是不是我？",
+  // A9-R7：262 兑现句随新题面同步（当场反问、与新题面同源，无「安静 / 气 / 哭」残留）。
+  "PN-TRUTH-262": "那我现在夸你一句，你吃哪种？",
+  // A9-R6：263 已退役，兑现句登记随卡删除。
   "PN-TRUTH-264": "那我拿这点逗你，会翻车吗？",
   "PN-TRUTH-265": "那找人聊那档，算我一个？",
-  "PN-TRUTH-266": "那约人那件，加我一个？",
+  "PN-TRUTH-266": "那散步那件，算我一个？",
   "PN-TRUTH-267": "那我先问一句，算加分吗？",
   "PN-TRUTH-268": "那我碰你手这一下，算第几种？",
   "PN-TRUTH-269": "那我现在，算主动的那个吗？",

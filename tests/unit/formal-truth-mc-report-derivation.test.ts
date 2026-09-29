@@ -2,9 +2,10 @@
  * B6｜第一包 MC / 报告的**可复算护栏**（沿用 `formal-truth-production-chain-note.test.ts` 的思路，
  * 把「note 必须由实测派生」这条纪律扩展到 MC 产物与 `FORMAL-TRUTH-MC.md` 的 summary/结论）。
  *
- * 背景：A3（2026-09-29）后 26 张旧版本退出 Formal，Formal 由 31 → 5（KEEP 5）。旧的 MC 报告/产物
- * 里残留的「仅 Formal 31 张 / H1 可计数 11 / 四档全部有货」等结论在数据上已全部为假。
- * 本文件把「报告与产物不得自相矛盾」编成红灯会亮的门禁，五组断言：
+ * 背景：A3（2026-09-29）后 26 张旧版本退出 Formal，Formal 曾由 31 → 5（KEEP 5）；
+ * A9（2026-09-29）第一包重构批 52 张经准入后 Formal 扩容（52 ＋ KEEP 5）。
+ * 本文件的期望值一律由**内容源 / manifest 真源 / 重刷后的 MC 产物**派生 —— 张数与档位不写死，
+ * 只把「报告与产物不得自相矛盾」编成红灯会亮的门禁，五组断言：
  *
  * 1. **口径 B（当前真实 UI）不变式**：无披露 ⇒ effective 恒 0、Heat 恒 H1、互选窗口 0；
  * 2. **口径 A（Engine）**：H2 reach > 0、effective > 0——证明「A 离开 H1」且**不把 A 当 B**；
@@ -21,6 +22,9 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
+import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARDS } from "@/lib/v2-content/pack1-admission";
 import { mainlineRuntimeCards } from "@/lib/v2-content/v2-card-bridge";
 import { HEAT_THRESHOLDS } from "@/lib/v2-relationship/v2-state";
 
@@ -56,6 +60,7 @@ interface McArtifact {
 }
 
 const thresholdOf = (heat: string): number => HEAT_THRESHOLDS.find((band) => band.heat === heat)!.min;
+const HEAT_ORDER = HEAT_THRESHOLDS.map((band) => band.heat);
 const H2_MIN = thresholdOf("H2");
 const ENGINE = mc.modeB;
 const UI = mc.modeA;
@@ -86,7 +91,20 @@ const reportIdsUIIndex = uiLine.indexOf("——");
 const reportClaimedCount = Number(/当前 UI 实际可抽到的 Formal 张数\*\*：\*\*(\d+) 张\*\*/u.exec(uiLine)?.[1]);
 const reportClaimedIds = (uiLine.slice(reportIdsUIIndex).match(/PN-TRUTH-\d+/gu) ?? []).sort();
 
-const h1Expected = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"];
+/**
+ * 内容源派生的 heatMin=1 Formal 集合（与 manifest / MC 产物无关的**独立**一路）：
+ * 第一包 ＋ Bootstrap ＋ A9 重构批里 `heatMin <= 1 <= heatMax` 的卡（不写死张数）。
+ */
+const h1Expected = [
+  ...FORMAL_TRUTH_CARDS,
+  ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
+  ...PACK1_ADMISSION_CARDS,
+]
+  .filter((card) => card.heatMin <= 1 && 1 <= card.heatMax)
+  .map((card) => card.cardId)
+  .sort();
+/** A3/A4a 的 KEEP 浅题（203/205/227/229）必须仍在这个集合里（防「集合换了一批卡还照样绿」）。 */
+const H1_KEEP_IDS = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"];
 
 describe("B6① 口径 B（当前真实 UI）不变式：无披露 ⇒ effective 恒 0 / Heat 恒 H1 / 互选窗口 0", () => {
   it("modeA 的 heatAtDraw 全部落在 H1，H2/H3/H4 均为 0", () => {
@@ -113,7 +131,7 @@ describe("B6① 口径 B（当前真实 UI）不变式：无披露 ⇒ effective
 });
 
 describe("B6② 口径 A（Engine / 显式 disclosure）：H2 reach > 0 且 effective > 0（不把 A 当 B）", () => {
-  it("modeB：到达 H2 的局 > 0，effective/局 > 0（A3 后 H1 可计数 Formal 4 张 = H2 门槛，冷启门在 Engine 侧仍跨得过）", () => {
+  it("modeB：到达 H2 的局 > 0，effective/局 > 0（H1 可计数 Formal ≥ H2 门槛，冷启门在 Engine 侧跨得过）", () => {
     expect(ENGINE.sessionsReachingH2).toBeGreaterThan(0);
     expect(ENGINE.effectivePerSession).toBeGreaterThan(0);
   });
@@ -148,8 +166,10 @@ describe("B6④ heatMin=1 的 Formal（H1 桶可抽）集合与产物、报告�
     expect(mc.h1Formal.count).toBe(H1_FORMAL_COUNT);
   });
 
-  it("该集合 === Formal 里 heatMin=1<=heatMax 的卡（A3 后 = {203,205,227,229}）——与内容侧护栏同源", () => {
-    expect(H1_FORMAL_IDS_MC).toEqual([...h1Expected].sort());
+  it("该集合 === Formal 里 heatMin=1<=heatMax 的卡（逐 id 由内容源派生）——与内容侧护栏同源", () => {
+    expect(H1_FORMAL_IDS_MC).toEqual(h1Expected);
+    expect(H1_FORMAL_IDS_MC.length).toBeGreaterThan(0);
+    for (const id of H1_KEEP_IDS) expect(H1_FORMAL_IDS_MC, `${id}（KEEP 浅题）应仍在 H1 集合里`).toContain(id);
     expect(mc.formalCountableUpTo.heatMinLe1).toBe(H1_FORMAL_COUNT);
     // 该集合由 manifest 真源 ∩ 卡源 heatMin/heatMax 派生（不写死张数）。
     for (const id of H1_FORMAL_IDS_MC) expect(formalFixedIdSet().has(id), `${id} 应为 Formal`).toBe(true);
@@ -186,12 +206,18 @@ describe("B6⑤ 报告不得含与实测数据矛盾的硬编码结论（旧口�
   });
 
   it("报告的生产链表「仅 Formal」行张数 === MC 的 formalTotal，且终态 Heat === 链产物实测", () => {
-    const fo = chain.scenarioFormalOnly as { finalHeat: string; finalEffective: number };
+    const fo = chain.scenarioFormalOnly as {
+      finalHeat: string;
+      finalEffective: number;
+      firstReachRoundByHeat: Record<string, number | null>;
+    };
     expect(REPORT).toContain(`| 仅 Formal ${mc.cardSource.formalTotal} 张 |`);
-    // 终态行的 Heat / effective 两格必须与链产物实测逐字一致（A3 后 = H2 / 5）。
+    // 终态行的 Heat / effective 两格必须与链产物实测逐字一致。
     expect(REPORT).toContain(`| ${fo.finalHeat} | ${fo.finalEffective} |`);
-    expect(fo.finalHeat).toBe("H2");
-    expect(fo.finalEffective).toBe(5);
+    // 终态 Heat 一律由实测的逐档首达派生（不写死档位：A3 中间态到 H2，A9 准入后可达更高档）。
+    const reached = HEAT_ORDER.filter((heat) => (fo.firstReachRoundByHeat[heat] ?? null) !== null);
+    expect(reached.length, "formalOnly 至少到达 H1").toBeGreaterThan(0);
+    expect(fo.finalHeat).toBe(reached.at(-1));
     expect(fo.finalEffective).toBeGreaterThan(0);
   });
 

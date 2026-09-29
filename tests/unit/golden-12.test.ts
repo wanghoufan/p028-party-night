@@ -7,11 +7,12 @@
  * ② **字数**：题面 ≤30 个中文字（`countHanzi` 可复算）；
  * ③ **结构**：`heatMin` 分布由实际产出派生（不硬编码 3/3/3/3），与逐卡锁值表二次对账；
  *    类别覆盖按矩阵模块的重叠口径复算达标；
- * ④ **ID 号段**：`PN-TRUTH-232~243` 连续 12 个、全库（SSOT＋KEEP 运行时＋归档退役＋本批）
- *    经 `analyzeTruthIdSpace` 扫描 0 collision；
+ * ④ **ID 号段**：`PN-TRUTH-232~243` 号段（A9-R6 退役 236 后现 11 张，号段内含缺号）、全库
+ *    （SSOT＋KEEP 运行时＋A3 归档＋A9-R6 退役＋本批）经 `analyzeTruthIdSpace` 扫描 0 collision；
  * ⑤ **planning-only 锁**：`category / followUpHook / expectedAnswerShape` **未进入**
  *    `GameCard` 正式 schema、`V2_REQUIRED_QUALITY_FIELDS`、桥接转发卡（Runtime 投影）；
- *    且 Golden 12 本轮**不进任何运行时卡池 / Formal 清单**（等 Product Reviewer 内部闸）；
+ *    Golden 12 **已随 A9 准入进运行时卡池 / manifest 两轨**（正向断言：在卡池 + 在 Formal +
+ *    逐张满足准入四条件），故上面的三字段负向锁自动覆盖到本批卡（比准入前更强）。
  * ⑥ **consent**：`body_preference` 卡全部 `consentMode="skip-anytime"`、卡面源码带
  *    「偏好 ≠ 授权」注释（逐卡一条，删注释即红）。
  * ⑦ **A4b-fix 改写锁**（按 `temp/GOLDEN12-REVIEW-1.md` 内部风格闸结论）：233 `followUpHook`
@@ -48,6 +49,7 @@ import { FIXED_CONTENT_MANIFEST } from "@/lib/v2-content/fixed-content-manifest"
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { RETIRED_TRUTH_CARD_IDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
+import { RETIRED_PACK1_R6_CARD_IDS } from "@/lib/v2-content/archive/retired-pack1-r6-2026-09-29";
 import { V2_REQUIRED_QUALITY_FIELDS } from "@/lib/v2-content/v2-card-metadata";
 import { validateFixedCardMetadataStrict } from "@/lib/v2-content/v2-card-metadata";
 import {
@@ -133,16 +135,8 @@ describe("A4b① Golden 12 逐卡值锁死", () => {
       informationGoalType: "self_preference", secondaryTopics: ["性格·习惯·小癖好"],
       consentMode: "skip-anytime", boundaryTags: [],
     },
-    "PN-TRUTH-236": {
-      text: "刚认识时，你更看对方的谈吐还是打扮？",
-      intensity: 2, heatMin: 2, heatMax: 3,
-      category: "attraction", followUpHook: "attraction", expectedAnswerShape: "binary",
-      topic: "择偶偏好", informationGain: "medium",
-      informationGoal: "知道他一见面更先看对方的谈吐还是打扮",
-      socialEnergy: "medium", relationshipProgression: "open", intimacyClass: "none",
-      informationGoalType: "self_preference", secondaryTopics: ["生活方式"],
-      consentMode: "skip-anytime", boundaryTags: [],
-    },
+    // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-236` 与 235 同轴 ⇒ 退役，
+    // 逐字归档在 lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts，不再进本锁值表。
     "PN-TRUTH-237": {
       text: "你更容易被话多的人吸引，还是安静的人？",
       intensity: 2, heatMin: 2, heatMax: 3,
@@ -184,14 +178,15 @@ describe("A4b① Golden 12 逐卡值锁死", () => {
       consentMode: "skip-anytime", boundaryTags: [],
     },
     "PN-TRUTH-241": {
-      text: "你最常被人夸的是哪一点？",
+      // A9-R7（2026-09-29 内容返工）：241 由「最常被人夸什么」自夸向改为**亲密距离偏好**题
+      // （注入亲密/暧昧元素、保留 H4 定档）；六字段随题面同源换。
+      text: "跟喜欢的人独处，你是越靠越近，还是越坐越远？",
       intensity: 3, heatMin: 4, heatMax: 4,
-      // A4c（Reviewer 复议一）：题面已改自夸向，四字段随题面同源换。
-      category: "quick_know", followUpHook: "attraction", expectedAnswerShape: "short_phrase",
-      topic: "择偶偏好", informationGain: "medium",
-      informationGoal: "知道他最常被人夸的是哪一点",
-      socialEnergy: "high", relationshipProgression: "deepen", intimacyClass: "none",
-      informationGoalType: "self_preference", secondaryTopics: ["择偶偏好"],
+      category: "body_preference", followUpHook: "body_preference", expectedAnswerShape: "binary",
+      topic: "亲密边界", informationGain: "medium",
+      informationGoal: "知道他跟喜欢的人独处时是越靠越近还是越坐越远",
+      socialEnergy: "medium", relationshipProgression: "deepen", intimacyClass: "attitude",
+      informationGoalType: "self_preference", secondaryTopics: ["性观念·亲密态度"],
       consentMode: "skip-anytime", boundaryTags: [],
     },
     "PN-TRUTH-242": {
@@ -216,16 +211,21 @@ describe("A4b① Golden 12 逐卡值锁死", () => {
     },
   };
 
-  it("恰 12 张，ID 恰为 PN-TRUTH-232~243 连续且唯一", () => {
-    expect(GOLDEN_12_CARDS).toHaveLength(12);
-    expect(GOLDEN_12_CARD_IDS).toEqual(
-      Array.from({ length: 12 }, (_, index) => `PN-TRUTH-${232 + index}`),
-    );
-    expect(new Set(GOLDEN_12_CARD_IDS).size).toBe(12);
+  it("现役张数由卡源派生（A9-R6 退役 236 后为 11）；ID 落在 232~243 号段且唯一", () => {
+    // 张数派生，不写死 11/12（A9-R6 退役 236 ⇒ 号段内缺 236）。
+    expect(GOLDEN_12_CARDS.length).toBe(GOLDEN_12_CARD_IDS.length);
+    expect(GOLDEN_12_CARDS.length).toBeGreaterThan(0);
+    expect(new Set(GOLDEN_12_CARD_IDS).size).toBe(GOLDEN_12_CARD_IDS.length);
     for (const card of GOLDEN_12_CARDS) {
-      expect(card.number, card.cardId).toBe(parseTruthCardNumber(card.cardId));
+      const number = parseTruthCardNumber(card.cardId);
+      expect(number, card.cardId).not.toBeNull();
+      expect(number!, card.cardId).toBeGreaterThanOrEqual(232);
+      expect(number!, card.cardId).toBeLessThanOrEqual(243);
+      expect(card.number, card.cardId).toBe(number);
       expect(card.gameType, card.cardId).toBe("truth");
     }
+    // A9-R6：236 已退役（号段内缺，不再回卡源）。
+    expect(GOLDEN_12_CARD_IDS).not.toContain("PN-TRUTH-236");
   });
 
   it("逐卡锁值：题面 / Heat / intensity / planning 字段 / 全部必填质量字段与冻结表一致", () => {
@@ -300,11 +300,11 @@ describe("A4b③ 结构：heatMin 分布按实际产出派生 + 类别覆盖达�
   it("followUpHook / expectedAnswerShape 分布由卡源派生且各值合法（无卡落在枚举外）", () => {
     const hookDist = goldenFollowUpHookDistribution();
     const shapeDist = goldenAnswerShapeDistribution();
-    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(12);
-    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(12);
+    expect(Object.values(hookDist).reduce((sum, count) => sum + count, 0)).toBe(GOLDEN_12_CARDS.length);
+    expect(Object.values(shapeDist).reduce((sum, count) => sum + count, 0)).toBe(GOLDEN_12_CARDS.length);
   });
 
-  it("矩阵 Markdown 含全部 12 个 cardId（报告可直接引用，不手抄）", () => {
+  it("矩阵 Markdown 含全部 cardId（报告可直接引用，不手抄）", () => {
     const markdown = golden12MatrixMarkdown();
     for (const id of GOLDEN_12_CARD_IDS) expect(markdown).toContain(id);
   });
@@ -317,23 +317,38 @@ describe("A4b③ 结构：heatMin 分布按实际产出派生 + 类别覆盖达�
 describe("A4b④ ID 号段：经 card-id-space 扫描器全库校验 0 碰撞", () => {
   const adapter = getV2ContentAdapter();
 
-  it("全库（SSOT + KEEP 运行时 + 归档退役 + Golden 12）0 collision；本批占满 232~243", () => {
+  it("全库（SSOT + KEEP 运行时 + A3 归档 + A9-R6 退役 + Golden）0 collision；本批最高号 243", () => {
     const ssotIds = [...adapter.mainlineCards, ...adapter.expansionCards].map((card) => card.cardId);
     const keepIds = [
       ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
       ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
     ];
-    const libraryIds = [...ssotIds, ...keepIds, ...RETIRED_TRUTH_CARD_IDS, ...GOLDEN_12_CARD_IDS];
+    const libraryIds = [
+      ...ssotIds,
+      ...keepIds,
+      ...RETIRED_TRUTH_CARD_IDS,
+      ...RETIRED_PACK1_R6_CARD_IDS,
+      ...GOLDEN_12_CARD_IDS,
+    ];
     const report = analyzeTruthIdSpace(libraryIds);
     expect(report.collisions, report.collisions.join(",")).toEqual([]);
     expect(report.malformed, report.malformed.join(",")).toEqual([]);
-    expect(report.maxTruthNumber).toBe(243);
-    expect(report.suggestedNextTruthStart).toBe(244);
+    // 最高号 / 新起点由扫描集派生（含 A9-R6 退役 236/263/277 ⇒ 最高号不再是本批的 243）。
+    const scanned = libraryIds
+      .map((id) => parseTruthCardNumber(id))
+      .filter((n): n is number => n !== null);
+    const maxScanned = Math.max(...scanned);
+    expect(report.maxTruthNumber).toBe(maxScanned);
+    expect(report.suggestedNextTruthStart).toBe(maxScanned + 1);
+    // 本批最高号仍是 243（Golden 号段上界）。
+    expect(Math.max(...GOLDEN_12_CARD_IDS.map((id) => parseTruthCardNumber(id)!))).toBe(243);
   });
 
-  it("Golden 12 与归档退役卡、KEEP 运行时卡无任何 ID 交集", () => {
+  it("Golden 与归档退役卡（A3 26 ＋ A9-R6 3）、KEEP 运行时卡无任何 ID 交集", () => {
     const golden = new Set(GOLDEN_12_CARD_IDS);
-    for (const id of RETIRED_TRUTH_CARD_IDS) expect(golden.has(id), id).toBe(false);
+    for (const id of [...RETIRED_TRUTH_CARD_IDS, ...RETIRED_PACK1_R6_CARD_IDS]) {
+      expect(golden.has(id), id).toBe(false);
+    }
     for (const card of [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS]) {
       expect(golden.has(card.cardId), card.cardId).toBe(false);
     }
@@ -371,15 +386,32 @@ describe("A4b⑤ planning-only 锁：三个设计字段未进 Runtime / GameCard
     }
   });
 
-  it("Golden 12 本轮不进任何运行时卡池 / manifest 两轨（先不进 Formal，等内部闸）", () => {
+  it("Golden 12 已随 A9 准入进运行时卡池 / manifest 两轨，且逐张满足准入四条件（负向三字段锁见上一用例）", () => {
     const golden = new Set(GOLDEN_12_CARD_IDS);
-    for (const card of mainlineSsotCards()) expect(golden.has(card.id), card.id).toBe(false);
-    for (const card of mainlineRuntimeCards()) expect(golden.has(card.cardId), card.cardId).toBe(false);
-    const formalAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds);
-    const legacyAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds);
+    expect(golden.size).toBe(GOLDEN_12_CARD_IDS.length);
+    // 正向：真在运行时两个投影里（下一句的「不转发 planning 字段」因此自动覆盖到本批卡）。
+    const ssotIds = new Set(mainlineSsotCards().map((card) => card.id));
+    const runtimeIds = new Set(mainlineRuntimeCards().map((card) => card.cardId));
     for (const id of GOLDEN_12_CARD_IDS) {
-      expect(formalAllowed.has(id), `${id} 已在 formalFixed`).toBe(false);
-      expect(legacyAllowed.has(id), `${id} 已在 legacyCompatibility`).toBe(false);
+      expect(ssotIds.has(id), `${id} 应已在 SSOT 卡池`).toBe(true);
+      expect(runtimeIds.has(id), `${id} 应已在运行时卡池`).toBe(true);
+    }
+    // 正向：在 manifest 两轨，且 Formal 四条件逐张成立（strict metadata ∧ reviewed ∧ PASS ∧ hash 完整）。
+    const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
+    const formalAllowed = new Set(FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds);
+    const legacyAllowed = new Set(legacy.allowedCardIds);
+    for (const id of GOLDEN_12_CARD_IDS) {
+      expect(legacyAllowed.has(id), `${id} 应在 legacyCompatibility`).toBe(true);
+      expect(formalAllowed.has(id), `${id} 应在 formalFixed`).toBe(true);
+      const provenance = legacy.provenance[id];
+      expect(provenance, `${id} 缺 provenance`).toBeDefined();
+      expect(provenance!.metadataStatus, id).toBe("audited");
+      expect(provenance!.reviewed, id).toBe(true);
+      expect(provenance!.humanBarFit, id).toBe("PASS");
+      expect(provenance!.payloadHash, id).toMatch(/^[0-9a-f]{64}$/u);
+      // 逐卡必须仍是完整 Plan §3 metadata（本批卡的 feature 字段面未因准入而丢）。
+      const card = mainlineRuntimeCards().find((item) => item.cardId === id)!;
+      expect(validateFixedCardMetadataStrict(card).ok, id).toBe(true);
     }
   });
 
@@ -422,15 +454,16 @@ describe("A4b⑥ consent：body_preference 卡可跳过且卡面带「偏好 ≠
   it("卡面源码逐张 body_preference 卡带一行 consent 注释（删注释即红）", () => {
     const source = readFileSync(CARDS_SOURCE_PATH, "utf8");
     const noteCommentCount = source.split("// 偏好 ≠ 授权").length - 1;
-    // A4c（REVIEW-2 复议一）：241 已离开 body_preference（category=quick_know），
-    // 其上方那条 consent 注释按「保守留存」保留，并在注释里补写「本卡已非身体偏好类」。
-    // 故注释条数 = body_preference 卡数 + 保守留存 1 条。
-    const CONSERVATIVE_RETAINED = 1;
+    // A9-R7（2026-09-29 内容返工）：241 由 quick_know 如实改 body_preference（注入亲密元素、保 H4），
+    // 其上方注释随之成为**真正的身体卡 consent 注释** ⇒ 不再有「保守留存」的额外一条。
+    // 故注释条数 = body_preference 卡数（241 / 242 / 243），删任一条即红。
+    const CONSERVATIVE_RETAINED = 0;
     expect(
       noteCommentCount,
       `consent 注释 ${noteCommentCount} 条 ≠ body_preference 卡 ${GOLDEN_BODY_INTIMACY_CARD_IDS.length} 张 + 保守留存 ${CONSERVATIVE_RETAINED} 条`,
     ).toBe(GOLDEN_BODY_INTIMACY_CARD_IDS.length + CONSERVATIVE_RETAINED);
-    expect(source).toContain("本卡已非身体偏好类");
+    // body_preference 卡集合现含 241（派生对账，不写死清单）。
+    expect([...GOLDEN_BODY_INTIMACY_CARD_IDS].sort()).toEqual(["PN-TRUTH-241", "PN-TRUTH-242", "PN-TRUTH-243"]);
   });
 });
 
@@ -450,9 +483,9 @@ describe("A4b⑦ 改写锁：233 hook 换出 / 题面去重 / 分布不退化", 
     expect(c233!.followUpHook, "233 不得与 234 同 hook").not.toBe(cardById.get("PN-TRUTH-234")!.followUpHook);
   });
 
-  it("12 张题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并）", () => {
+  it("题面互不重复（去标点后仍唯一，且无一张整句被另一张吞并）", () => {
     const hanzi = GOLDEN_12_CARDS.map((card) => stripNonHanzi(card.text));
-    expect(new Set(hanzi).size).toBe(12);
+    expect(new Set(hanzi).size).toBe(GOLDEN_12_CARDS.length);
     for (let i = 0; i < hanzi.length; i += 1) {
       for (let j = 0; j < hanzi.length; j += 1) {
         if (i === j) continue;
@@ -504,9 +537,9 @@ describe("A4b⑦ 改写锁：233 hook 换出 / 题面去重 / 分布不退化", 
     expect(dist.none, "233 已换出 none，本批不应再有冷卡占位").toBe(0);
   });
 
-  it("intensity 分布由卡源派生：12 张全覆盖、上界压平到 I3（241 已由 4 降 3）", () => {
+  it("intensity 分布由卡源派生：全覆盖、上界压平到 I3（241 已由 4 降 3）", () => {
     const dist = goldenIntensityDistribution();
-    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(12);
+    expect(Object.values(dist).reduce((sum, count) => sum + count, 0)).toBe(GOLDEN_12_CARDS.length);
     for (const card of GOLDEN_12_CARDS) {
       expect(card.intensity, card.cardId).toBeGreaterThanOrEqual(1);
       expect(card.intensity, card.cardId).toBeLessThanOrEqual(5);

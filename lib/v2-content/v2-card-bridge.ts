@@ -248,7 +248,8 @@ export function mainlineSsotCards(): readonly GameCard[] {
       // R3 已过两轮独立审查 ⇒ 已是 Formal（manifest `tracks.formalFixed` 收纳）；
       // 准入与否由 manifest 独立审查输入决定，这里只保证卡源与质量侧车同源。
       ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
-      // A9｜第一包重构批（`PN-TRUTH-232~283`，52 张）：Golden 12 + REWRITE 7 + REPLACE 19 + 补卡 14，
+      // A9｜第一包重构批（`PN-TRUTH-232~283` 号段，现役）：Golden 11 + REWRITE 7 + REPLACE 18 + 补卡 13，
+      // （A9-R6 内容裁决退役 236/263/277 后张数由卡源派生，⛔ 不写死）
       // **追加在末尾**（保 `[0]` 稳定、既有取卡顺序逐字不变）。卡来自聚合模块 `pack1-admission.ts`
       // （已按 A8 登记落地待收 `responseMode` / `boundaryTags`）。是否进 Formal 由 manifest 独立
       // 审查输入决定，这里只保证卡源与质量侧车同源。
@@ -325,7 +326,7 @@ export function mainlineRuntimeCards(): readonly MainlineRuntimeCard[] {
     ...(getV2ContentAdapter().mainlineCards as readonly V13MainlineCard[]),
     ...FORMAL_TRUTH_CARDS,
     ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
-    // A9｜第一包重构批 52 张（`PN-TRUTH-232~283`），追加在末尾，与 `mainlineSsotCards()` 同一份内容；
+    // A9｜第一包重构批（`PN-TRUTH-232~283` 号段，现役），追加在末尾，与 `mainlineSsotCards()` 同一份内容；
     // 用**剥掉 planning-only 三字段**的运行期投影，保证设计字段不泄漏到运行时。
     ...PACK1_ADMISSION_RUNTIME_CARDS,
   ];

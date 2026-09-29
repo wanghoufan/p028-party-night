@@ -7,9 +7,12 @@
  *
  * ## A5 口径变更（2026-09-29，编排者裁决；卡源见 `pack1-rewrite-cards.ts` 文件头）
  * `248 / 249 / 250` 回退到旧 `230 / 231 / 226` 的**原始方向**（H1 生活 / 社交），本批因此：
- * - `heatMin` = **H1×5 + H2×2**（`H3/H4` 在本批为 0，由 19 张 REPLACE 新卡承担）；
+ * - `heatMin` = **H1×4 + H2×2**（A9-R7 退役 249 后；`H3/H4` 在本批为 0，由 REPLACE 新卡承担）；
  * - 类别覆盖下界随之改由派工单 Part 1 口径给出：`quick_know≥1 / attraction≥1 / follow_up_hook≥3`；
  *   `flirt / body_preference` 在本批**按设计为 0**（⛔ 不得为覆盖指标抬 Heat 或改题向）。
+ *
+ * ⚠️ A9-R7（2026-09-29 内容返工）：`249` 经内容裁决退役（与 250 同轴）⇒ 移出卡源并逐字归档，
+ * 其轴 / 兑现句登记随之删除；本批卡源现为 **6 张**（号段 244~250 内缺 249）。
  *
  * ## 类别覆盖口径（与 Golden 12 同一套重叠口径，便于两批合并统计）
  * - `quick_know`      = `category === "quick_know"`
@@ -44,16 +47,16 @@ import {
 /* -------------------------------------------------------------------------- */
 
 /**
- * A5 对本批的类别覆盖下界（follow_up_hook 可与其它类别重叠）。
+ * A5 对本批的类别覆盖下界（**放行门**；A9-R6 §4.7 起不含 `follow_up_hook`——
+ * 其数量降级为**诊断基线**，当前真值由 `pack1CategoryCoverage().follow_up_hook` 派生）。
  * `flirt` / `body_preference` 为 **0 是设计值**：本批是按旧方向 1:1 重写的 H1/H2 生活·社交题，
- * 这两项覆盖由 19 张 REPLACE 新卡承担（见 `pack1-replace-matrix.ts`）。
+ * 这两项覆盖由 REPLACE 新卡承担（见 `pack1-replace-matrix.ts`）。
  */
-export const PACK1_REWRITE_CATEGORY_REQUIREMENTS: Readonly<Record<GoldenCategory, number>> = {
+export const PACK1_REWRITE_CATEGORY_REQUIREMENTS: Readonly<Record<Exclude<GoldenCategory, "follow_up_hook">, number>> = {
   quick_know: 1,
   attraction: 1,
   flirt: 0,
   body_preference: 0,
-  follow_up_hook: 3,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -69,7 +72,7 @@ export const PACK1_REWRITE_AXES: Readonly<Record<string, string>> = {
   "PN-TRUTH-246": "吸引对象类型（像自己 / 反差）",
   "PN-TRUTH-247": "心动触发速度（一眼 / 相处）",
   "PN-TRUTH-248": "与新人相处的容忍点",
-  "PN-TRUTH-249": "这周哪天最像在放假",
+  // A9-R7：249（这周哪天最像在放假）已退役，轴登记随卡删除。
   // A8（主审 Round-3 §1）：250 的时间轴绑到今晚，轴名随之更新（仍属「休息时间怎么放」语义族）。
   "PN-TRUTH-250": "攒的劲什么时候放（今晚一次放完 / 留着明天）",
 };
@@ -81,7 +84,7 @@ export const PACK1_REWRITE_HOOK_REDEEM_LINES: Readonly<Record<string, string>> =
   "PN-TRUTH-246": "那我算像你的，还是不一样的？",
   "PN-TRUTH-247": "那我现在这条，算一眼吗？",
   "PN-TRUTH-248": "那我这样，算太热情吗？",
-  "PN-TRUTH-249": "那你哪天放假，我挑那天约你？",
+  // A9-R7：249 已退役，兑现句登记随卡删除。
   // A8：兑现句随 250 新题面同步（当场反问，与「今晚一次放完 / 留着明天」同源）。
   "PN-TRUTH-250": "那你今晚算一次放完，还是留一点？",
 };

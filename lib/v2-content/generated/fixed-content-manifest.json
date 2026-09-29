@@ -6,7 +6,7 @@
       "isFormalFixedContent": false,
       "purpose": "旧局读取 / 恢复 / 迁移；可缺 Plan §3 新 metadata；明确不是正式 Fixed Content",
       "admission": "legacy-compatibility",
-      "snapshotHash": "f621701227df11fdc99438598b28050711b135b4080869975585275bc6a0c056",
+      "snapshotHash": "e4fffc31af0633b5ba48265147e66a116598c2ccac460754623c02c2fa8a5701",
       "allowedCardIds": [
         "PN-CHEM-001",
         "PN-CHEM-002",
@@ -407,7 +407,6 @@
         "PN-TRUTH-233",
         "PN-TRUTH-234",
         "PN-TRUTH-235",
-        "PN-TRUTH-236",
         "PN-TRUTH-237",
         "PN-TRUTH-238",
         "PN-TRUTH-239",
@@ -420,7 +419,6 @@
         "PN-TRUTH-246",
         "PN-TRUTH-247",
         "PN-TRUTH-248",
-        "PN-TRUTH-249",
         "PN-TRUTH-250",
         "PN-TRUTH-251",
         "PN-TRUTH-252",
@@ -434,7 +432,6 @@
         "PN-TRUTH-260",
         "PN-TRUTH-261",
         "PN-TRUTH-262",
-        "PN-TRUTH-263",
         "PN-TRUTH-264",
         "PN-TRUTH-265",
         "PN-TRUTH-266",
@@ -448,7 +445,6 @@
         "PN-TRUTH-274",
         "PN-TRUTH-275",
         "PN-TRUTH-276",
-        "PN-TRUTH-277",
         "PN-TRUTH-278",
         "PN-TRUTH-279",
         "PN-TRUTH-280",
@@ -3611,10 +3607,10 @@
           "cardId": "PN-TRUTH-203",
           "cardSet": "mainline",
           "reviewed": true,
-          "machineVerdict": "PASS",
+          "machineVerdict": "SUSPECT",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "0d17da2616bb9991c15d5467e4fb18ca8e0e20247215f4c3ffa2537a23f71299"
+          "payloadHash": "e463328221c50863a73e85e232d8ffd761120bf3f87391b9d9a1cbdb62b04e82"
         },
         "PN-TRUTH-205": {
           "cardId": "PN-TRUTH-205",
@@ -3688,15 +3684,6 @@
           "metadataStatus": "audited",
           "payloadHash": "d25dd1dc7421f177bd10c9650ccaabd5cf58b2f2b1daa1bca4e26d516fcc35f0"
         },
-        "PN-TRUTH-236": {
-          "cardId": "PN-TRUTH-236",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "a5ea6127ac2cf78540c9700b78d6ed8d4f08b44f04347046e95f24fd18e2c150"
-        },
         "PN-TRUTH-237": {
           "cardId": "PN-TRUTH-237",
           "cardSet": "mainline",
@@ -3740,7 +3727,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "6805c5daa187b12f9e1dfdfe6ff23b6f6dbd6e4dd63c60039b0134096d4fc056"
+          "payloadHash": "92b0f4859fb5872c6ed3ad47df3d729952235ad83ae47663c148cd7f60f70f7b"
         },
         "PN-TRUTH-242": {
           "cardId": "PN-TRUTH-242",
@@ -3805,15 +3792,6 @@
           "metadataStatus": "audited",
           "payloadHash": "49a3f63dfbfafc79e73fb24dc8cf2ebe8ec8d4c5a03ee99cd6523d5371a2fd00"
         },
-        "PN-TRUTH-249": {
-          "cardId": "PN-TRUTH-249",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "745964b93c1f700d4a97f1028b7f5df09d53e64f50afd570f33b93ae47ccae49"
-        },
         "PN-TRUTH-250": {
           "cardId": "PN-TRUTH-250",
           "cardSet": "mainline",
@@ -3839,7 +3817,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "c4372f6db88c058e44b707f94a00c3ede446b46ac123c32b6cabeae73ed59d07"
+          "payloadHash": "ae98e14d3a34ee1e32b59c292f7deab2e569262efa1668837f6ed32d55c79b1d"
         },
         "PN-TRUTH-253": {
           "cardId": "PN-TRUTH-253",
@@ -3929,16 +3907,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "66d748cfd9cc3c6c688e1656238406e68dc503d7fc1aebdde662dde92b03c21e"
-        },
-        "PN-TRUTH-263": {
-          "cardId": "PN-TRUTH-263",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "32153747b6ae48af51abc84cf9bc88e2229625a141b5c553254c9b75aafb9f61"
+          "payloadHash": "0d99aed575b873a8c24d29777496847425b9a6bf2d974e80c50495b618ec96fd"
         },
         "PN-TRUTH-264": {
           "cardId": "PN-TRUTH-264",
@@ -3965,7 +3934,7 @@
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "48d371c3668c00bbfe9d13a09d25d1e53ac3cf5e00b226ceacd066d302959753"
+          "payloadHash": "eb7deb97795a43a6dd4c1fe98da68312ae36620997ac1ed7be0a6d06b525adff"
         },
         "PN-TRUTH-267": {
           "cardId": "PN-TRUTH-267",
@@ -4056,15 +4025,6 @@
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
           "payloadHash": "12527d203d349eaf772308885b7c5c4350df2e65ec5d23ad62cf7173b27fbcd2"
-        },
-        "PN-TRUTH-277": {
-          "cardId": "PN-TRUTH-277",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "a869bda033faf6924143242e7c05d1d8372a973f84847216d14495f17732196e"
         },
         "PN-TRUTH-278": {
           "cardId": "PN-TRUTH-278",
@@ -4482,11 +4442,11 @@
         }
       },
       "counts": {
-        "total": 447,
-        "mainline": 407,
+        "total": 443,
+        "mainline": 403,
         "expansion": 40,
         "legacyMetadata": 390,
-        "auditedMetadata": 57
+        "auditedMetadata": 53
       }
     },
     "formalFixed": {
@@ -4500,7 +4460,7 @@
         "reviewed = true（独立审查完成：有一个独立 reviewer 已逐卡审查并给出明确结论，身份见 buildInfo.reviewerKind；不得由 metadata 齐全或 machineVerdict 推高）",
         "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）"
       ],
-      "snapshotHash": "e24bf1f7a1e5af38da21de64ea008eec7dec53683dd7c561342ef3942bc344b7",
+      "snapshotHash": "d911d0b8239c7de29a9d5b14a8a4915472415375845bf845d4b64ffcc1832115",
       "allowedCardIds": [
         "PN-TRUTH-203",
         "PN-TRUTH-205",
@@ -4511,7 +4471,6 @@
         "PN-TRUTH-233",
         "PN-TRUTH-234",
         "PN-TRUTH-235",
-        "PN-TRUTH-236",
         "PN-TRUTH-237",
         "PN-TRUTH-238",
         "PN-TRUTH-239",
@@ -4524,7 +4483,6 @@
         "PN-TRUTH-246",
         "PN-TRUTH-247",
         "PN-TRUTH-248",
-        "PN-TRUTH-249",
         "PN-TRUTH-250",
         "PN-TRUTH-251",
         "PN-TRUTH-252",
@@ -4538,7 +4496,6 @@
         "PN-TRUTH-260",
         "PN-TRUTH-261",
         "PN-TRUTH-262",
-        "PN-TRUTH-263",
         "PN-TRUTH-264",
         "PN-TRUTH-265",
         "PN-TRUTH-266",
@@ -4552,7 +4509,6 @@
         "PN-TRUTH-274",
         "PN-TRUTH-275",
         "PN-TRUTH-276",
-        "PN-TRUTH-277",
         "PN-TRUTH-278",
         "PN-TRUTH-279",
         "PN-TRUTH-280",
@@ -4561,11 +4517,11 @@
         "PN-TRUTH-283"
       ],
       "counts": {
-        "total": 57,
-        "mainline": 57,
+        "total": 53,
+        "mainline": 53,
         "expansion": 0,
         "legacyMetadata": 0,
-        "auditedMetadata": 57
+        "auditedMetadata": 53
       },
       "rejectedFromFormal": {
         "total": 390,
@@ -4583,8 +4539,8 @@
     "contentVersion": "content-v2.3",
     "legacyReviewStage": "machine-prescreen",
     "barFitSource": "lib/v2-content/bar-fit-input.ts lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput（正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染））→ bar-fit.ts judgeBarFit → provenance.machineVerdict（机器预筛，非双人模拟噪声计时）；provenance.humanBarFit 机器阶段恒 UNREVIEWED；text-only 扫描为 forensic，不参与 admission",
-    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，原文一字未改（历史归档指纹锁定见 FROZEN_REVIEW_HISTORY_SHA256）。【A3 状态推进】Human 冻结的酒吧新内容基线逐卡审计判 26 张（7 REWRITE + 19 REPLACE）旧版本不合格 ⇒ 活跃 entry 置 UNREVIEWED / reviewed=false 退出 Formal，KEEP 5（203/205/209/227/229）保持 PASS；原独立审查结论逐字归档在 history，未删除。 ｜ 【A9 admission】第一包重构批 52 张（PN-TRUTH-232~PN-TRUTH-283）经内容主审 Round-1/2/3 三轮 ＋ A4b~A8 四轮返工后逐卡判 PASS，已由本脚本按既有准入路径写入活跃 entry（reviewed=true / humanBarFit=PASS）；审计来源 temp/BAR-AUDIT-PACK1-31.md，分批构成见逐卡 note。KEEP 5 与 26 张退役历史结论一字未改。",
-    "humanReviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）（A9 追加：第一包重构批 52 张 PN-TRUTH-232~PN-TRUTH-283 经内容主审 Round-1/2/3 ＋ A4b~A8 返工后逐卡 PASS，结论已回填；KEEP 5 与 26 张退役结论时间不变）",
+    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，原文一字未改（历史归档指纹锁定见 FROZEN_REVIEW_HISTORY_SHA256）。【A3 状态推进】Human 冻结的酒吧新内容基线逐卡审计判 26 张（7 REWRITE + 19 REPLACE）旧版本不合格 ⇒ 活跃 entry 置 UNREVIEWED / reviewed=false 退出 Formal，KEEP 5（203/205/209/227/229）保持 PASS；原独立审查结论逐字归档在 history，未删除。 ｜ 【A9 admission】第一包重构批 52 张（PN-TRUTH-232~PN-TRUTH-283）经内容主审 Round-1/2/3 三轮 ＋ A4b~A8 四轮返工后逐卡判 PASS，已由本脚本按既有准入路径写入活跃 entry（reviewed=true / humanBarFit=PASS）；审计来源 temp/BAR-AUDIT-PACK1-31.md，分批构成见逐卡 note。KEEP 5 与 26 张退役历史结论一字未改。 ｜ 【A9-R6 内容裁决】3 张（PN-TRUTH-236 / PN-TRUTH-263 / PN-TRUTH-277）经内容裁决退役（277 内容弱；263 与 278 重复去重；236 与 235 同轴）⇒ 已移出运行时卡源、逐字归档在 lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts；其活跃 entry 置 UNREVIEWED / reviewed=false 退出 Formal，原 A9 admission 结论逐字保留在 history 归档（未删除）。KEEP 5 与 A9 其余 48 张仍 Formal。 ｜ 【A9-R7 内容返工】Product Reviewer 对裁决后终池（Formal 54）独立重审（docs/review/RESEARCH_REVIEW-PACK1-FINAL-54.md，PASS 48 / BORDERLINE 6 / FAIL 0）⇒ 6 张 BORDERLINE 返工：203 / 241 / 252 / 262 / 266 按审查处方**改写题面**（题面同源的 category / followUpHook / expectedAnswerShape / topic / intimacyClass / informationGoal 同步更新，241 保留 H4 定档、改注入亲密元素；203 属 KEEP 包）；1 张（PN-TRUTH-249）经裁决**退役**（与 250 同轴，二选一留 250）⇒ 移出运行时卡源、逐字归档在 lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts；其活跃 entry 置 UNREVIEWED /reviewed=false 退出 Formal，原 A9 admission 结论逐字保留在 history 归档（未删除）。其余 48 张仍 Formal。 ｜ 【A9-R8 记录层修正】Product Reviewer 复核（docs/review/RESEARCH_REVIEW-PACK1-FINAL-53.md 专项 3）指出两处记录层事实漂移：① PN-TRUTH-203 活跃 note 仍描述已退役旧题面 ⇒ 已随改写后新题面（封闭二选一）重写，history 旧结论逐字保留未删；② packMachineVerdictSummary 分组 note 手写「全部 PASS」与同组实测 SUSPECT=1 矛盾 ⇒ 三个分组 note 改由逐卡机器档位实测派生（lib/v2-content/bar-fit-review-input.ts#deriveMachineVerdictNoteFragment），并新增 group-note-consistent 防回归自校验（非 0 非 PASS 不许写「全部 PASS」；非 PASS 必须点名卡号）。203 的 humanBarFit=PASS 维持不变（BR-DEVICE-STEP「刷手机」命中经独立复核判为误报：答案选项内容、不要求设备动作），内容零改动。",
+    "humanReviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）（A9 追加：第一包重构批 52 张 PN-TRUTH-232~PN-TRUTH-283 经内容主审 Round-1/2/3 ＋ A4b~A8 返工后逐卡 PASS，结论已回填；KEEP 5 与 26 张退役结论时间不变）（A9-R6 追加：内容裁决退役 3 张，活跃 entry 退出 Formal、history 归档未删）（A9-R7 追加：内容返工 5 张改写 ＋ 退役 1 张，活跃 entry 退出 Formal、history 归档未删）（A9-R8 追加：记录层 note 修正——203 活跃 note 随新题面重写、分组汇总 note 派生化；审查结论与定档时间均不变）",
     "reviewerKind": "ai-role",
     "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（独立审查完成，reviewer 身份见 reviewerKind；不参与准入判定）∧ provenance/hash 完整；无任何宽松开关",
     "ssotMainlineSha256": "6b6c43f870fe22a86c98423db483cc99734090b1f70c48c31dc3fc6b47c75f33",

@@ -12,9 +12,9 @@
  * 3. 产物未被手改：note 必须能由本情形的 `rounds` + 库存 + 阈值现算出来（逐字比对）；
  * 4. 构造性反例：受控 fixture 里某档已到达 ⇒ note 必须提到它；原因非「库存不足」时不得写成库存不足。
  *
- * ⚠️ B5 口径（2026-09-29）：Bootstrap 7 张过独立审查后曾全部属 Formal；**A3（同日）后只剩
- * 227/229 仍是 Formal**，其余 5 张已退出 ⇒ 产物里 `scenarioBootstrapOnly` 是「Bootstrap 7 张」子集证据，
- * 但 Formal 归属须按 manifest 真源逐张判，不得整批当成 Formal。
+ * ⚠️ A9 口径（2026-09-29）：`FORMAL-TRUTH-PRODUCTION-CHAIN.json` 已按**当前卡源**重刷
+ * （第一包 3 ＋ Bootstrap 2 ＋ 重构批 52，逐张 Formal 归属按 manifest 真源判）。本文件不再重建
+ * A3 时代的历史卡源；牌堆、可计数库存、期望档位一律由**运行时卡源 + manifest 真源**派生。
  *
  * 只读产物 + 纯函数：不写盘、不跑模拟、不改任何判定/阈值。
  */
@@ -25,7 +25,6 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { mainlineRuntimeCards, mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
-import { RETIRED_TRUTH_CARDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
 import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { HEAT_THRESHOLDS } from "@/lib/v2-relationship/v2-state";
@@ -59,60 +58,47 @@ const scenario = (key: string): ChainScenario => chain[key] as ChainScenario;
 
 const HEAT_ORDER = HEAT_THRESHOLDS.map((band) => band.heat);
 const H2_MIN = HEAT_THRESHOLDS.find((band) => band.heat === "H2")!.min;
+/** ⑤ 的构造性反例（受控 fixture，与真实产物无关）用到 H3 门槛。 */
 const H3_MIN = HEAT_THRESHOLDS.find((band) => band.heat === "H3")!.min;
 
 /**
- * 历史（A3 时代）卡侧元数据视图：运行时卡源 **∪ 归档 26 张**。
- *
- * ⚠️ A4a（2026-09-29）：本文件校验的 `FORMAL-TRUTH-PRODUCTION-CHAIN.json` 是 A3 时代冻结的 QA 产物，
- * 当时 31 张 `PN-TRUTH-2*` 全在运行时卡源里。26 张退役后，产物**不改**（docs 冻结），
- * 故这里按「运行时 KEEP 5 + 归档 26 = 31」重建历史卡源，才能与冻结产物逐字对账。
- * 归档卡的 metadata 直接取逐字快照（退役前它们经桥接进过质量侧车，档位与此一致）。
+ * 卡侧元数据视图 = **运行时卡源**（与落盘脚本 `audit-formal-truth-production-chain.ts` 同一份卡源）。
+ * A9 后产物已按当前卡源重刷，故不再重建 A3 时代「运行时 KEEP 5 ∪ 归档 26」的历史视图。
  */
-const historicalMeta = new Map<
+const metaById = new Map<
   string,
   { heatMin: number; heatMax: number; informationGain?: string | null; topic?: string | null }
->([
-  ...mainlineRuntimeCards().map((card) => [card.cardId, card] as const),
-  ...RETIRED_TRUTH_CARDS.map((entry) => [entry.cardId, entry.card] as const),
-]);
+>(mainlineRuntimeCards().map((card) => [card.cardId, card] as const));
 
 /** 卡侧「可形成有效信息轮」的前置条件（与 `isEffectiveInformationRound` 同源，测试内独立判定）。 */
 const isCountable = (cardId: string): boolean => {
-  const meta = historicalMeta.get(cardId);
+  const meta = metaById.get(cardId);
   if (!meta) return false;
   const informationGain = meta.informationGain ?? null;
   const topic = meta.topic ?? null;
   return informationGain !== null && informationGain !== "zero" && informationGain !== "low" && topic !== null;
 };
 
-/** 历史牌堆（A3 时代）= SSE 主线 truth-dare + 全部 31 张 `PN-TRUTH-2*`（运行时 5 + 归档 26）。 */
-const HISTORICAL_PACK: readonly { id: string }[] = [
-  ...mainlineSsotCardsByPack(PACK_ID),
-  ...RETIRED_TRUTH_CARDS.map((entry) => ({ id: entry.cardId })),
-];
+/** 真实生产牌堆（与落盘脚本同口径）= truth-dare 全部运行时卡（SSOT 主线 ＋ 第一包 ＋ Bootstrap ＋ A9 重构批）。 */
+const PACK_DECK: readonly { id: string }[] = mainlineSsotCardsByPack(PACK_ID);
 /**
  * 各情形牌堆与落盘脚本**同口径**（Formal 用 manifest 真源，不用 `PN-TRUTH-2*` 前缀）：
- * Formal（manifest 轨全部 5 张 KEEP）/ Bootstrap（历史 Bootstrap 7 张 = 运行时 2 + 归档 5）/
- * Legacy（SSOT 主线卡，无 metadata）。
+ * Formal（manifest 轨全部）/ Bootstrap（Bootstrap 内容源）/ Legacy（SSOT 主线卡，无 metadata）。
  */
 const FORMAL_ID_SET = formalFixedIdSet();
-const BOOTSTRAP_ID_SET: ReadonlySet<string> = new Set([
-  ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
-  ...RETIRED_TRUTH_CARDS.filter((entry) => Number(entry.cardId.slice("PN-TRUTH-".length)) >= 225).map((entry) => entry.cardId),
-]);
+const BOOTSTRAP_ID_SET: ReadonlySet<string> = new Set(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId));
 const deckOf = (which: "full" | "formal" | "bootstrap" | "legacy") => {
-  if (which === "full") return HISTORICAL_PACK;
-  if (which === "formal") return HISTORICAL_PACK.filter((card) => FORMAL_ID_SET.has(card.id));
-  if (which === "bootstrap") return HISTORICAL_PACK.filter((card) => BOOTSTRAP_ID_SET.has(card.id));
-  return HISTORICAL_PACK.filter((card) => !card.id.startsWith(FORMAL_PREFIX));
+  if (which === "full") return PACK_DECK;
+  if (which === "formal") return PACK_DECK.filter((card) => FORMAL_ID_SET.has(card.id));
+  if (which === "bootstrap") return PACK_DECK.filter((card) => BOOTSTRAP_ID_SET.has(card.id));
+  return PACK_DECK.filter((card) => !card.id.startsWith(FORMAL_PREFIX));
 };
 
 /** 独立复算：牌堆里「可计数」且 Heat 合法区间覆盖 H1 的卡数（= 冷启能累积的有效轮上限）。 */
 const h1CountableOf = (deck: readonly { id: string }[]): number =>
   deck.filter((card) => {
     if (!isCountable(card.id)) return false;
-    const meta = historicalMeta.get(card.id);
+    const meta = metaById.get(card.id);
     if (!meta) return false;
     return meta.heatMin <= 1 && 1 <= meta.heatMax;
   }).length;
@@ -157,46 +143,57 @@ describe("R0-2｜production-chain 的 note 必须由实测结果派生（不得�
     }
   });
 
-  it("② formalOnly：H1 可计数 Formal = 4（203/205/227/229）≥ H2 门槛 ⇒ H1→H2 可达；抽满 5 张后交 Host（H3/H4 断档）", () => {
+  it("② formalOnly：Formal 可计数库存全部可用、H1 浅题 ≥ H2 门槛 ⇒ 逐档可达（档位由实测派生）", () => {
     const s = scenario("scenarioFormalOnly");
     const h1Countable = h1CountableOf(deckOf("formal"));
+    const countableFormal = deckOf("formal").filter((card) => isCountable(card.id));
 
-    // A3 口径：Formal 只剩 KEEP 5 ⇒ 可计数 5 张、其中 heatMin=1 的 4 张 ≥ H2 门槛 4。
-    expect(deckOf("formal").filter((card) => isCountable(card.id))).toHaveLength(5);
-    expect(h1Countable).toBe(4);
+    // Formal 每张都带 metadata ⇒ 可计数张数 = Formal 全集（逐张派生，不写死）。
+    expect(countableFormal).toHaveLength(FORMAL_ID_SET.size);
+    expect(h1Countable).toBeGreaterThan(0);
     expect(h1Countable).toBeGreaterThanOrEqual(H2_MIN);
 
-    // 与同份 JSON 的实测结论互证：只到 H2（首达 1/4），抽满 5 张即交 Host ⇒ H3/H4 不可达。
-    expect(s.firstReachRoundByHeat).toMatchObject({ H1: 1, H2: 4, H3: null, H4: null });
-    expect(s.finalHeat).toBe("H2");
-    expect(s.finalEffective).toBe(5);
+    // 终态一律由实测的逐档首达派生（不写死档位：A3 的断档态是 {1,4,null,null}，A9 准入后可达更高档）。
+    const reached = actualReached(s);
+    expect(s.firstReachRoundByHeat.H1).toBe(1);
+    expect(reached.length).toBeGreaterThan(0);
+    expect(s.finalHeat).toBe(reached.at(-1));
+    // 牌堆全是 Formal 且每张可计数、局局给合法披露 ⇒ 每一轮都是有效信息轮。
+    expect(s.finalEffective).toBeGreaterThan(0);
+    expect(s.finalEffective).toBe(s.rounds.length);
 
-    // note 文本层：如实写「已到达 H1/H2、未到达 H3/H4」，且不得再有旧口径谎报。
-    expect(sortedEq(reachedClaimedBy(s.note), actualReached(s))).toBe(true);
-    expect(sortedEq(reachedClaimedBy(s.note), ["H1", "H2"])).toBe(true);
-    expect(sortedEq(unreachedClaimedBy(s.note), ["H3", "H4"])).toBe(true);
+    // note 文本层：与实测档位逐档一致，且不得再有旧口径谎报。
+    expect(sortedEq(reachedClaimedBy(s.note), reached)).toBe(true);
+    expect(sortedEq(unreachedClaimedBy(s.note), actualUnreached(s))).toBe(true);
     expect(s.note).not.toMatch(/逐档\s*H1→H2→H3→H4/);
   });
 
-  it("②b bootstrapOnly：Bootstrap 7 张里只有 227/229 仍是 Formal；7 张可计数、能到 H2，但 7 < H3 门槛 ⇒ note 如实写缺口", () => {
+  it("②b bootstrapOnly：Bootstrap 内容源可计数、但张数 < H2 门槛 ⇒ 首个断档门如实写缺口（不写死张数）", () => {
     const s = scenario("scenarioBootstrapOnly");
     const countable = deckOf("bootstrap").filter((card) => isCountable(card.id)).length;
-    expect(countable).toBe(7);
-    // A3：这 7 张里只有 2 张（227/229）仍是 Formal，其余 5 张已随 A3 退出。
+    expect(countable).toBe(BOOTSTRAP_ID_SET.size);
+    expect(countable).toBeGreaterThan(0);
+    // Bootstrap 内容源全部仍属 Formal（逐张按 manifest 真源判，不整批假设）。
     const bootstrapFormal = deckOf("bootstrap").filter((card) => FORMAL_ID_SET.has(card.id)).map((card) => card.id).sort();
-    expect(bootstrapFormal).toEqual(["PN-TRUTH-227", "PN-TRUTH-229"]);
-    expect(s.firstReachRoundByHeat.H2).not.toBeNull();
-    expect(s.finalHeat).toBe("H2");
-    expect(s.finalEffective).toBe(7);
-    expect(sortedEq(reachedClaimedBy(s.note), ["H1", "H2"])).toBe(true);
-    expect(sortedEq(unreachedClaimedBy(s.note), ["H3", "H4"])).toBe(true);
-    // 7 < H3 门槛 8 ⇒ 缺口 1（机械差，不写死）。
+    expect(bootstrapFormal).toEqual([...BOOTSTRAP_ID_SET].sort());
+
+    // 张数 < H2 门槛 ⇒ H2 不可达（首个断档门 = H2），Heat 停在 H1。
+    expect(countable).toBeLessThan(H2_MIN);
+    expect(s.firstReachRoundByHeat.H2).toBeNull();
+    expect(s.finalHeat).toBe("H1");
+    expect(s.finalEffective).toBe(countable);
+    expect(sortedEq(reachedClaimedBy(s.note), ["H1"])).toBe(true);
+    expect(sortedEq(unreachedClaimedBy(s.note), ["H2", "H3", "H4"])).toBe(true);
+
+    // 缺口数由实算派生（门槛真源 − 可计数库存），不写死。
+    const firstUnreached = actualUnreached(s)[0]!;
+    const threshold = HEAT_THRESHOLDS.find((band) => band.heat === firstUnreached)!.min;
     const available = /可计数卡 (\d+) 张/.exec(s.note);
-    const threshold = /H3 门槛 (\d+)/.exec(s.note);
+    const gateThreshold = /门槛 (\d+)/.exec(s.note);
     const gap = /缺口 (\d+) 张/.exec(s.note);
-    expect(available?.[1]).toBe("7");
-    expect(threshold?.[1]).toBe(String(H3_MIN));
-    expect(Number(gap![1])).toBe(H3_MIN - 7);
+    expect(available?.[1]).toBe(String(countable));
+    expect(gateThreshold?.[1]).toBe(String(threshold));
+    expect(Number(gap![1])).toBe(threshold - countable);
   });
 
   it("③ legacyOnly：可计数库存为 0 时如实写「0 张」，不编造缺口，也不谎报到达", () => {
@@ -214,7 +211,7 @@ describe("R0-2｜production-chain 的 note 必须由实测结果派生（不得�
       const countableCards = deckOf(which)
         .filter((card) => isCountable(card.id))
         .map((card) => {
-          const meta = historicalMeta.get(card.id)!;
+          const meta = metaById.get(card.id)!;
           return { cardId: card.id, heatMin: meta.heatMin, heatMax: meta.heatMax };
         });
 

@@ -12,7 +12,9 @@
  *
  * ## 硬约束（由 `tests/unit/retired-truth-archive.test.ts` 复核）
  * - ⛔ **本文件不得被任何运行时路径 import**：`lib/**` 运行时模块、`app/**`、MC / 生产链脚本
- *   一律不许引用；唯一合法消费者是测试与只读号段扫描脚本。
+ *   一律不许引用；合法消费者是测试、只读号段扫描脚本（`audit-card-id-space`）与审计/裁决脚本
+ *   （`audit-pack1-a2-adjudication`，仅取退役 ID 常量或逐字快照作号段域、note 文案与 A2 裁决对照）
+ *   ——以上均不属运行时路径，退役卡内容不进任何运行时。
  * - 每张卡的 `card` 字段是**原卡逐字快照**（全部 metadata 原样保留，含 `text` / `heatMin` /
  *   `heatMax`），可用于复算落地前的 sha256 指纹（口径见 `tests/unit/formal-truth-heat-labels.test.ts`）。
  * - `retiredAt` / `retireReason` / `auditSource` / `reviewConclusionPointer` 为显式退役标注；
@@ -21,8 +23,9 @@
  *   不复制结论（禁止出现第二份可漂移的真源）。
  *
  * ## 与运行时内容源的关系
- * 运行时只保留 KEEP 5（`formal-truth-pack.ts` 的 203/205/209 + `formal-truth-bootstrap-pack.ts`
- * 的 227/229）。本归档**不进** `mainlineSsotCards()` / `mainlineRuntimeCards()` / 质量侧车 /
+ * A4a 时点运行时只保留 KEEP 5（`formal-truth-pack.ts` 的 203/205/209 + `formal-truth-bootstrap-pack.ts`
+ * 的 227/229；这是 A4a 历史口径，A9 准入后运行时另起重构批，见 `pack1-admission.ts`）。本归档**不进**
+ * `mainlineSsotCards()` / `mainlineRuntimeCards()` / 质量侧车 /
  * manifest 允许清单 —— 即不在任何会被抽到的地方。旧 350 题 SSOT 一字未动。
  */
 

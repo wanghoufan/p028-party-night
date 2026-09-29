@@ -31,10 +31,21 @@
  *    `270-A7`（再战 / 先撤）vs `278-A7`（先溜 / 等某人）→ 同签名。
  *    整改后的 `274/275-new`、`270-new/278` 必须**不再同签名**。
  * 2. **三维合取**：`axis` 相同时仍要 `referent` 与 `answerSpace` 也相同才判重复 ——
- *    所以 H3「跟谁」簇里 8 张（`273/274/275/276/279/280/281` ＋ `278`）虽然都问「跟谁」，
+ *    所以 H3「跟谁」簇里 7 张（`273/274/275/276/279/280/281` ＋ `278`）虽然都问「跟谁」，
  *    但动作轴不同（同行·走／组队／单挑／透气／要微信／点歌／喝完这杯／走留），不会被一刀切误杀。
  * 3. **`axis` 是**规则派生**、不是**逐卡手写**：`PACK1_SEMANTIC_AXIS_RULES` 是 (轴, token) 列表，
  *    单测断言**每张卡都能被规则命中**（无 `unclassified`），且轴值来自**闭集**。
+ *
+ * ## A9-R6（2026-09-29 内容裁决）
+ * 退役 `236`（消解残留 `235 vs 236`）与 `263`（消解邻接 `263 vs 278`）后，本判据对现役批次
+ * 实测**同档重复 0 对 / 跨档邻接 0 对**；故 `PACK1_SEMANTIC_RESIDUALS` 与
+ * `PACK1_SEMANTIC_ADJACENCY_REGISTRY` 均为空表（判据结果必须与登记表逐项相等）。
+ *
+ * ## A9-R7（2026-09-29 内容返工）
+ * 退役 `249`（`holiday_day` 轴唯一使用者）＋ `262` 换轴（`emotion_trigger` 轴唯一使用者）
+ * ⇒ 两条轴随卡删除；`241` 由「被人夸」改为**亲密距离偏好** ⇒ 新增 `intimacy_distance` 轴
+ * （`compliment_point` 轴改由 262 承载）；`266` 换三选项后 `todo_small` 轴 token 补 `抽空做`。
+ * 现役批次（48 张）实测仍为**同档重复 0 对 / 跨档邻接 0 对**。
  *
  * ## 边界的诚实声明（**这是必要条件，不是充分证明**）
  * 规则派生仍是**词面/词法近似**：它能抓住「同对象 + 同答案空间 + 同动作轴」的**结构性重复**，
@@ -61,10 +72,8 @@ export type SemanticAxis =
   | "invite_next_round"
   | "social_initiative"
   | "newcomer_tolerance"
-  | "holiday_day"
   | "energy_release"
   | "relationship_status"
-  | "emotion_trigger"
   | "todo_small"
   | "first_look"
   | "talk_amount"
@@ -81,7 +90,6 @@ export type SemanticAxis =
   | "drink_style"
   | "venue_taste"
   | "continue_chat"
-  | "go_home_way"
   | "flirt_style"
   | "role_play"
   | "gaze_response"
@@ -103,20 +111,21 @@ export type SemanticAxis =
   | "hug_or_hand"
   | "intimacy_bonus"
   | "touch_part"
-  | "intimacy_initiative";
+  | "intimacy_initiative"
+  | "intimacy_distance";
 
 /** 轴值闭集（单测据此断言无 `unclassified`、无表外值）。 */
 export const PACK1_SEMANTIC_AXIS_IDS: readonly SemanticAxis[] = [
   "newcomer_intro", "drunk_state", "arrival_source", "invite_next_round", "social_initiative",
-  "newcomer_tolerance", "holiday_day", "energy_release", "relationship_status", "emotion_trigger",
+  "newcomer_tolerance", "energy_release", "relationship_status",
   "todo_small", "first_look", "talk_amount", "similar_vs_contrast", "heartbeat_speed",
   "scene_openness", "heartbeat_vs_calm", "table_friction", "opener_flaw", "reply_rhythm",
   "leave_or_stay", "joke_limit", "remaining_time", "drink_style", "venue_taste",
-  "continue_chat", "go_home_way", "flirt_style", "role_play", "gaze_response",
+  "continue_chat", "flirt_style", "role_play", "gaze_response",
   "contact_willingness", "sit_beside", "first_notice_person", "contact_response", "whisper",
   "opener_strategy", "rival_present", "group_play", "duel", "private_air",
   "contact_on_spot", "point_song", "finish_drink", "compliment_point", "body_notice",
-  "hug_or_hand", "intimacy_bonus", "touch_part", "intimacy_initiative",
+  "hug_or_hand", "intimacy_bonus", "touch_part", "intimacy_initiative", "intimacy_distance",
 ];
 
 /**
@@ -130,11 +139,11 @@ export const PACK1_SEMANTIC_AXIS_RULES: ReadonlyArray<readonly [SemanticAxis, re
   ["invite_next_round", ["下一场"]],
   ["social_initiative", ["先开口"]],
   ["newcomer_tolerance", ["查户口", "爱答不理"]],
-  ["holiday_day", ["在放假"]],
+  // A9-R7：原 `holiday_day`（在放假）轴随 249 退役删去（唯一使用者）。
   ["energy_release", ["攒"]],
   ["relationship_status", ["单身", "有主"]],
-  ["emotion_trigger", ["弄哭", "突然安静"]],
-  ["todo_small", ["还没做"]],
+  // A9-R7：原 `emotion_trigger`（弄哭 / 突然安静）轴随 262 换轴删去（唯一使用者）。
+  ["todo_small", ["还没做", "抽空做"]],
   // 「第一眼先注意到的是谁」是**点名对象**，先于通用「第一眼」类。
   ["first_notice_person", ["第一眼先注意"]],
   ["first_look", ["穿着", "气质", "谈吐", "打扮"]],
@@ -152,7 +161,7 @@ export const PACK1_SEMANTIC_AXIS_RULES: ReadonlyArray<readonly [SemanticAxis, re
   ["finish_drink", ["把这杯喝完", "喝完"]],
   ["venue_taste", ["换个地方"]],
   ["continue_chat", ["接着聊", "原本就在聊"]],
-  ["go_home_way", ["怎么回", "打车", "地铁"]],
+  // A9-R6：原 `go_home_way`（回程方式）轴随 277 退役删去（唯一使用者）。
   ["flirt_style", ["撒娇", "嘴硬"]],
   ["role_play", ["逗别人", "被别人逗"]],
   ["gaze_response", ["回看"]],
@@ -174,9 +183,13 @@ export const PACK1_SEMANTIC_AXIS_RULES: ReadonlyArray<readonly [SemanticAxis, re
   ["intimacy_bonus", ["最加分"]],
   ["touch_part", ["碰你哪一下"]],
   ["intimacy_initiative", ["更想当主动"]],
-  // 去留/离场族**刻意不细分**：`263`（留下聊完还是先走）、`270-A7`（再战 / 先撤）、
-  // `278-A7`（先溜 / 等某人一起溜）、`273`（散了跟谁走）都落这里；它们靠 `referent`/`answerSpace`
-  // 或（`273` 的）同轴不同答案空间区分 —— 而 `270-A7` vs `278-A7` 签名完全相同 ⇒ 必须判重复。
+  // A9-R7：241 由「被人夸」自夸向改为**亲密距离偏好**（越靠越近 / 越坐越远）⇒ 新增本轴；
+  // 同批「被人夸」轴（`compliment_point`）改由 262 承载（262 换轴到「被夸的偏好」）。
+  ["intimacy_distance", ["越靠越近", "越坐越远"]],
+  // 去留/离场族**刻意不细分**：`270-A7`（再战 / 先撤）、`278-A7`（先溜 / 等某人一起溜）、
+  // `273`（散了跟谁走）都落这里；它们靠 `referent`/`answerSpace` 或（`273` 的）同轴不同答案空间区分
+  // —— 而 `270-A7` vs `278-A7` 签名完全相同 ⇒ 必须判重复。
+  // A9-R6：原落本轴的 `263`（留下聊完还是先走）已退役，故现无在册卡纯靠本轴。
   ["leave_or_stay", ["先走", "留下来", "先溜", "先撤", "散了"]],
 ];
 
@@ -237,7 +250,7 @@ export function deriveSemanticSignature(card: GoldenTruthCard, text: string = ca
   };
 }
 
-/** 全批次（Golden 12 ＋ REWRITE ＋ REPLACE ＋ 补卡）52 张的语义签名。 */
+/** 全批次（Golden 12 ＋ REWRITE ＋ REPLACE ＋ 补卡，A9-R6 退役 236/263/277 后现 49 张）的语义签名。 */
 export const PACK1_SEMANTIC_SIGNATURES: readonly Pack1SemanticSignature[] = PACK1_UNION_CARDS.map((card) =>
   deriveSemanticSignature(card),
 );
@@ -249,8 +262,10 @@ export function semanticSignatureKey(sig: Pack1SemanticSignature): string {
 
 /**
  * 同档语义重复的**残留登记**（只允许**冻结批**内的既存对；⛔ 不得登记本单/新批次）。
- * 每条须：①两卡都属 `batch` 声明的冻结号段；②给出人工裁决 verdict 与依据。
- * 判据结果必须与本表**逐项相等**（见单测），因此「多一对」或「少一对」都会红。
+ *
+ * A9-R6（2026-09-29 内容裁决）：原唯一残留 `235 vs 236`（`self|binary|first_look`）随 `236`
+ * 退役而消解 ⇒ 当前**残留为空**（`pack1SemanticDuplicatePairs()` 实测 0 对）。判据结果必须与本表
+ * **逐项相等**（见单测），因此「多一对」或「少一对」都会红。
  */
 export interface Pack1SemanticResidual {
   readonly a: string;
@@ -262,28 +277,15 @@ export interface Pack1SemanticResidual {
   readonly note: string;
 }
 
-export const PACK1_SEMANTIC_RESIDUALS: readonly Pack1SemanticResidual[] = [
-  {
-    a: "PN-TRUTH-235",
-    b: "PN-TRUTH-236",
-    heatMin: 2,
-    signature: "self|binary|first_look",
-    batch: "golden12",
-    verdict: "pre_existing_mild_overlap",
-    note:
-      "两卡都问「对方身上你最先看重什么」（235 穿着/气质、236 谈吐/打扮），判据判同轴。**既有 Golden 12、非本单范围**：" +
-      "本单范围 8 张零命中；Golden 12 有独立冻结审查（GOLDEN12-REVIEW-2），A8 不擅自改。**交编排者裁决**" +
-      "（若以「视觉瞬间吸引 vs 评价维度」细分轴，则判为可区分/误杀；两种读法都如实记录，不藏）。",
-  },
-];
+export const PACK1_SEMANTIC_RESIDUALS: readonly Pack1SemanticResidual[] = [];
 
 /**
  * 跨档邻接登记（**只报不判**，供人工裁决）：签名完全相同但不同档。
- * `263 vs 278` 同为「散场走还是留」的自我决策（H2 / H3），给编排者知悉。
+ *
+ * A9-R6（2026-09-29 内容裁决）：原唯一邻接 `263 vs 278`（同为「散场走还是留」的自我决策）
+ * 随 `263` 退役而消解 ⇒ 当前**邻接为空**（`pack1SemanticAdjacentPairs()` 实测 0 对）。
  */
-export const PACK1_SEMANTIC_ADJACENCY_REGISTRY: ReadonlyArray<readonly [string, string]> = [
-  ["PN-TRUTH-263", "PN-TRUTH-278"],
-];
+export const PACK1_SEMANTIC_ADJACENCY_REGISTRY: ReadonlyArray<readonly [string, string]> = [];
 
 export interface SemanticDuplicatePair {
   readonly a: string;

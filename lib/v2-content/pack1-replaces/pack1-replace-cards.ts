@@ -19,6 +19,9 @@
  * 258←213(H3) 259←214(H2) 260←215(H3) 261←216(H1) 262←217(H1) 263←218(H2) 264←219(H2)
  * 265←220(H2) 266←221(H1) 267←222(H4) 268←223(H4) 269←224(H4)
  * ```
+ * ⚠️ A9-R6（2026-09-29 内容裁决）：`263` 因与 `278` 去重**已退役**（移出运行时，逐字归档在
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`），上表保留的是退役前的 ID 血缘；
+ * 本批现为 **18 张**（号段 251~269 内缺 263），张数一律由 `PACK1_REPLACE_CARD_IDS.length` 派生。
  * 卡源按 `cardId` 升序排列（与 Golden 12 / 第一包 REWRITE 同约定），故档位在文件内交错出现。
  *
  * ## 本批承担的结构指标（A5 派工单 Part 2；覆盖口径见 `pack1-replace-matrix.ts`）
@@ -132,7 +135,10 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     cardId: "PN-TRUTH-252",
     gameType: "truth",
     number: 252,
-    text: "哪种场合你会比平时放得开：熟人局、音乐够燥，还是气氛一起来？",
+    // A9-R7（2026-09-29 内容返工，RESEARCH_REVIEW-PACK1-FINAL-54 §1 252 行）：旧 C 选项
+    // 「气氛一起来」与题干同义反复（何时放得开 → 气氛起来时）＝凑数选项 ⇒ C 改**具体场景**，
+    // 三个选项统一到**同一个轴：局的熟悉度**（全是熟人 / 半熟不熟 / 谁也不认识），答案可比。
+    text: "哪种局你会比平时放得开：全是熟人、半熟不熟，还是谁也不认识？",
     intensity: 2,
     heatMin: 2,
     heatMax: 4,
@@ -150,7 +156,7 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     topic: "性格·习惯·小癖好",
     barFit: "PASS",
     informationGain: "medium",
-    informationGoal: "知道他在哪种场合会比平时更放得开",
+    informationGoal: "知道他在哪种熟悉度的局里会比平时更放得开",
     socialEnergy: "medium",
     relationshipProgression: "open",
     intimacyClass: "none",
@@ -497,7 +503,12 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     cardId: "PN-TRUTH-262",
     gameType: "truth",
     number: 262,
-    text: "哪句话会让你突然安静：一句当众的夸奖，还是一句没说出口的话？",
+    // A9-R7（2026-09-29 内容返工，RESEARCH_REVIEW-PACK1-FINAL-54 §1 262 行）：旧题面
+    // 「哪句话会让你突然安静：一句当众的夸奖，还是一句没说出口的话？」偏走心抽象，
+    //「没说出口的话」3 秒理解吃力、H1 出走心情题偏沉，且兑现句与题面耦合脆
+    // ⇒ 按审查处方**改具体、去掉抽象选项**（保住 H1 轻量破冰定位）；`followUpHook=social_style`
+    // 按既有裁决**保留**（⛔ 不改回 attraction）；兑现句随新题面同步，⛔ 无任何「哭点 / 气 / attraction」残留。
+    text: "被人夸的时候，你更吃哪种：夸到点上，还是夸得夸张？",
     intensity: 1,
     heatMin: 1,
     heatMax: 3,
@@ -511,22 +522,11 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     fallbackPolicy: "skip-card",
     signalEffects: [],
     postAction: "none",
-    // H1｜旧 217（上一段关系最难放下的时刻）→ 换向：只留一个轻量的情绪出口二选一，不提旧关系。
-    // A6（主审 §7.2）：旧题面「电影 vs 被自己气到」Q4/Q5 弱 ⇒ 改为「电影 vs 一句人话」，
-    // 「一句人话」直接引出「谁说的」⇒ 指名追问成立，Q4/Q5 同时抬起。hook 保持 `attraction`
-    // （兑现句改为真·吸引向「那我说句人话，能打动你吗？」）；轴仍为「情绪出口（哭的触发）」。
-    // A7（Part 2，主审 §A/§F）：`followUpHook:"attraction"` 与题面（哭点）**不同源** ——
-    // 「哭点」不是吸引钩 ⇒ 如实改 `social_style`；兑现句随之换成当场反问
-    // 「那你现在要不要听我讲一段更气的？」（原 §F 例句含「以后」，违反约束③，故不采用）。
-    // A8（Part 1，主审 Round-3 §1/§7）：A7 只做了两条必改里的一条（hook），**题面换轴未做**；
-    // 且 A6 版题面的「气」字是兑现句唯一支点（题面一改兑现句即失效，可维护性脆）。
-    // 本单按主审处方换轴到**「被一句话击中 / 突然安静」**（去掉「哭」与「气」），
-    // 兑现句同步改为「那我说一句，你会不会突然安静？」（当场可兑现、与新题面同源、不含「以后」）。
-    // 题面字数按本仓 `≤30 中文字` 口径收敛（主审例句计 31 字，超口径，故改写）。topic/infoGoal 同步。
+    // A9-R7：题面换轴到「被夸的偏好（夸到点上 / 夸得夸张）」；topic 仍 性格·习惯·小癖好。
     topic: "性格·习惯·小癖好",
     barFit: "PASS",
     informationGain: "medium",
-    informationGoal: "知道哪句话最容易让他突然安静",
+    informationGoal: "知道他被人夸的时候更吃夸到点上的还是夸得夸张的",
     socialEnergy: "medium",
     relationshipProgression: "open",
     intimacyClass: "none",
@@ -536,43 +536,9 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     followUpHook: "social_style",
     expectedAnswerShape: "binary",
   },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-263",
-    gameType: "truth",
-    number: 263,
-    text: "快散场了，你会留下来把最想聊的人聊完，还是先走？",
-    intensity: 2,
-    heatMin: 2,
-    heatMax: 3,
-    relationStage: "know",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    // H2｜旧 218（关系里踩到哪条线你会直接结束）→ 换向：保留「到哪一步我就撤」的决策内核，绑现场＋绑人。
-    // A6（主审 §7.2）：旧题面「能在酒吧待多久」信息增量为零（他在场坐着，答案当场可观察）⇒ 换成
-    // 「快散场时留下把最想聊的人聊完还是先走」，Q5 立刻成立；`intensity` 由 1 同步提到 2
-    // （与 `heatMin=2` 对齐，修掉主审 §4 约束④ 记的「档位高于强度」）；hook 由 `social_style` 改
-    // `flirt_target`；轴改为「快散场时的去留」。
-    topic: "生活方式",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道快散场时他会留下把最想聊的人聊完还是先走",
-    socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["性格·习惯·小癖好"],
-    category: "quick_know",
-    followUpHook: "flirt_target",
-    expectedAnswerShape: "binary",
-  },
+  // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-263`（快散场了，你会留下来把最想聊的人聊完，还是先走？）
+  // 与 `PN-TRUTH-278` 玩家感受层高度接近（同为「散场时走 / 留 / 等某个人」）⇒ 退役，
+  // 逐字归档在 `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`，**不再回运行时卡源**。
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-264",
@@ -595,7 +561,7 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     // H2｜旧 219（身上哪一点希望对方永远别拿来开玩笑 = 长期相处禁区）→ 换向：改成当场可试的三选一雷点。
     // 选项全部是**习惯 / 性格**，不落外观（约束②），也不要求现场表演（避 BAR-FIT 表演类硬失败）。
     // A6（主审 §4 约束⑤ 轻度）：`secondaryTopics` 由 生活方式 改 相处规则（开玩笑的雷点＝相处方式）；
-    // hook 保持 `attraction`（B3 批的 `attraction` 重叠口径需 ≥4，改 hook 会跌破，故只把兑现句改成真·吸引向）。
+    // ⚠️ A6 当时 hook 仍写 `attraction`；**A7 已如实改 `social_style`**（见下），以 A7 为准。
     // A7（Part 2，主审 §A/§F）：`followUpHook:"attraction"` 与题面（玩笑雷点）**不同源** ——
     // 「玩笑雷点」不是吸引钩 ⇒ 如实改 `social_style`（B3 批的 `attraction` **重叠口径**不再是放行依据，
     // A7 已把 `attraction` 放行口径收紧为**卡面 `category` 真值** ≥4，本卡的 `category` 仍是 `quick_know`，
@@ -657,7 +623,10 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     cardId: "PN-TRUTH-266",
     gameType: "truth",
     number: 266,
-    text: "你最近一直想做、还没做的是哪件小事：收拾、剪头，还是约人？",
+    // A9-R7（2026-09-29 内容返工，RESEARCH_REVIEW-PACK1-FINAL-54 §1 266 行）：旧三选项
+    // 「收拾（家务）/ 剪头（形象）/ 约人（社交）」＝**拼盘**、轴不统一 ⇒ 改**同轴三选一**：
+    // 三个选项统一到「抽空想做的休闲小事」（补觉 / 散步 / 看剧），答案可比。
+    text: "你最近一直想抽空做的，是补觉、散步，还是看剧？",
     intensity: 1,
     heatMin: 1,
     heatMax: 3,
@@ -671,13 +640,12 @@ export const PACK1_REPLACE_CARDS: readonly GoldenTruthCard[] = [
     fallbackPolicy: "skip-card",
     signalEffects: [],
     postAction: "none",
-    // H1｜旧 221（人生最想完成的一件事 + 举证追问）→ 换向：降到低门槛的「一直想做的小事」三选一。
-    // A6（主审 §4 约束⑤ 轻度）：选项「收拾 / 剪头 / 约人」中「约人」不是兴趣爱好 ⇒
-    // `secondaryTopics` 由 兴趣爱好 改 性格·习惯·小癖好（题面问的是个人待办习惯）。
+    // H1｜旧 221（人生最想完成的一件事 + 举证追问）→ 换向：降到低门槛的「想做还没做的小事」三选一。
+    // A9-R7：三选项换成同轴的休闲小事；`secondaryTopics` 仍 性格·习惯·小癖好（个人待办习惯）。
     topic: "生活方式",
     barFit: "PASS",
     informationGain: "medium",
-    informationGoal: "知道他最近一直想做还没做的那件小事",
+    informationGoal: "知道他最近一直想抽空做的是补觉、散步还是看剧",
     socialEnergy: "medium",
     relationshipProgression: "open",
     intimacyClass: "none",

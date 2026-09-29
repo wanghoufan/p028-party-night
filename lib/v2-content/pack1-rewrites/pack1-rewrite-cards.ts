@@ -1,5 +1,11 @@
 /**
- * A4c｜第一包 REWRITE 7 张重写批（`PN-TRUTH-244 ~ 250`，**新 ID**；planning-only，先不进 Formal）。
+ * A4c｜第一包 REWRITE 重写批（`PN-TRUTH-244 ~ 250` 号段，**新 ID**；planning-only）。
+ *
+ * ## A9-R7（2026-09-29 内容返工）
+ * 原 7 张中的 `PN-TRUTH-249` 经内容裁决**退役**（与 250 同轴「本周状态」，趣味/吸引/钩子三弱，
+ * 审查建议二选一留 250）⇒ 逐字归档在 `lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts`，
+ * **移出运行时卡源**。故本批现为 **6 张**（号段 244~250 内缺 249）；张数一律由
+ * `PACK1_REWRITE_CARDS.length` 派生，⛔ 不得写死 6/7。
  *
  * ## 这是什么
  * Human 2026-09-29 冻结的酒吧新内容基线逐卡审计（`temp/BAR-AUDIT-PACK1-31.md`）把第一包
@@ -56,7 +62,7 @@
  *
  * ## ID
  * 号段由 `scripts/audit-card-id-space.ts` 复算得出（A4c 落地时全库最大 = Golden 12 的 243，起点 = 244），
- * **禁止自己猜号段**；A5 后本批仍占 `244~250`（未动 ID）。
+ * **禁止自己猜号段**；A5 后本批占 `244~250`（未动 ID）；A9-R7 退役 249 后现役 6 张占同号段。
  */
 
 import { type GoldenTruthCard } from "../golden12/golden-12-cards";
@@ -243,41 +249,11 @@ export const PACK1_REWRITE_CARDS: readonly GoldenTruthCard[] = [
     followUpHook: "social_style",
     expectedAnswerShape: "ternary",
   },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-249",
-    gameType: "truth",
-    number: 249,
-    text: "你这周哪天最像在放假：工作日的晚上、周六，还是周一？",
-    intensity: 1,
-    heatMin: 1,
-    heatMax: 3,
-    relationStage: "notice",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    // A6（主审 §7.2）：旧题面「一天里最自在的哪一段」与 203 邻接、与 250 同族，且现场反应弱。
-    // 改成「这周哪天最像在放假」，把时段绑到「在不在状态」的可笑点（「周一」自带起哄），轴随之换为
-    // 「这周哪天最像在放假」；topic 同步由 性格·习惯·小癖好 换 `生活方式`。
-    topic: "生活方式",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道他这周哪天最像在放假",
-    socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["性格·习惯·小癖好"],
-    category: "quick_know",
-    followUpHook: "social_style",
-    expectedAnswerShape: "ternary",
-  },
+  // A9-R7（2026-09-29 内容返工，按 RESEARCH_REVIEW-PACK1-FINAL-54 §1/§专项1 P1）：
+  // 原 `PN-TRUTH-249`（你这周哪天最像在放假：工作日的晚上、周六，还是周一？）与 `PN-TRUTH-250`
+  // 同轴（本周状态），且趣味/吸引/钩子三弱 —— 审查建议「与 250 二选一，留 250」，编排者裁决
+  // **退出 Formal 并逐字归档**（⛔ 不许改写保留）。逐字快照见
+  // `lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts`，**不再回运行时卡源**。
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-250",

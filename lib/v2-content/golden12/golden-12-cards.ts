@@ -1,5 +1,12 @@
 /**
- * A4b｜Golden 12 —— 12 张新酒吧真心话样板卡（`PN-TRUTH-232 ~ 243`，新 ID，内部风格基准）。
+ * A4b｜Golden 12 —— 新酒吧真心话样板卡（`PN-TRUTH-232 ~ 243` 号段，新 ID，内部风格基准）。
+ *
+ * ## A9-R6 去重（2026-09-29 内容裁决）
+ * 原 12 张中的 `PN-TRUTH-236`（第一印象 / 谈吐 vs 打扮）与 `PN-TRUTH-235` 同轴，
+ * 样板位不应展示两条相近轴 ⇒ **236 退役**、逐字归档在
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`（不再回运行时卡源）。
+ * 故本批现为 **11 张**（号段 232~243 内缺 236）；模块名与号段标识保留（历史批次身份），
+ * 张数一律由 `GOLDEN_12_CARDS.length` 派生，⛔ 不得写死 11/12。
  *
  * ## 这是什么、不是什么
  * - **是** Human 冻结的「酒吧新内容基线」的**内部风格闸样板**：给后续 Builder / Reviewer 一个
@@ -102,10 +109,10 @@ export const GOLDEN_BODY_INTIMACY_CONSENT_NOTE =
 const SCHEMA = V2_SSOT_SCHEMA_VERSION;
 
 /**
- * Golden 12 卡（`PN-TRUTH-232 ~ 243`，按 `cardId` 升序）。
+ * Golden 卡（`PN-TRUTH-232 ~ 243` 号段，按 `cardId` 升序；A9-R6 起 236 已退役 ⇒ 现 11 张）。
  *
- * 结构（以 `heatMin` 为档）：H1×3 / H2×3 / H3×3 / H4×3 —— 每档的题都真实自然，无凑数；
- * 若某档写不出真实题则少写并如实说明（本批判定四档俱全，见矩阵模块与报告）。
+ * 结构（以 `heatMin` 为档）：原定 H1×3 / H2×3 / H3×3 / H4×3；`236`（H2）退役后 H2×2。
+ * 若某档写不出真实题则少写并如实说明（本批档位分布由矩阵模块与报告派生）。
  */
 export const GOLDEN_12_CARDS: readonly GoldenTruthCard[] = [
   /* ───────────────────────────── H1：轻破冰 / 快速了解 ───────────────────────────── */
@@ -239,38 +246,9 @@ export const GOLDEN_12_CARDS: readonly GoldenTruthCard[] = [
     followUpHook: "attraction",
     expectedAnswerShape: "binary",
   },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-236",
-    gameType: "truth",
-    number: 236,
-    text: "刚认识时，你更看对方的谈吐还是打扮？",
-    intensity: 2,
-    heatMin: 2,
-    heatMax: 3,
-    relationStage: "know",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "preference",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "择偶偏好",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道他一见面更先看对方的谈吐还是打扮",
-    socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["生活方式"],
-    category: "attraction",
-    followUpHook: "attraction",
-    expectedAnswerShape: "binary",
-  },
+  // A9-R6（2026-09-29 内容裁决）：原 `PN-TRUTH-236`（刚认识时，你更看对方的谈吐还是打扮？）
+  // 与 `PN-TRUTH-235` 同轴（第一印象 / 外在 vs 气质谈吐 / binary / H2 attraction）⇒ 退役，
+  // 逐字归档在 `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`，**不再回运行时卡源**。
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-237",
@@ -405,42 +383,45 @@ export const GOLDEN_12_CARDS: readonly GoldenTruthCard[] = [
   },
 
   /* ─────────────────── H4：更大胆但仍简单（身体 / 亲密偏好） ─────────────────── */
+  // A9-R7（2026-09-29 内容返工，按 RESEARCH_REVIEW-PACK1-FINAL-54 §1/§专项3 P1）：
+  // 旧题面「你最常被人夸的是哪一点？」是轻量自我展示、无身体/亲密元素，却 heatMin=4（全池唯一
+  // `quick_know` H4）⇒ Heat 错配。按编排者裁决**改题面注入亲密/暧昧元素、保留 H4 定档**
+  // （不降档：241 是 Golden H4 三张之一），category 由 `quick_know` 如实改 `body_preference`。
+  // 题面真实只问**偏好**（距离偏好），不要求任何身体接触 ⇒ boundaryTags 仍为空、不挂 exact
+  // `physical-contact`；consentMode=skip-anytime 不变。
   // 偏好 ≠ 授权：本卡只收集偏好，任何后续身体/亲密动作需独立同意（consentMode=skip-anytime 可随时跳过）。
-  // A4c（按 temp/GOLDEN12-REVIEW-2.md 复议一整改）：241 题面已改为「最常被人夸什么」自夸向，
-  // **本卡已非身体偏好类**（category=quick_know / intimacyClass=none），此行注释为保守留存，
-  // 不是因为本卡仍受身体档约束。
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-241",
     gameType: "truth",
     number: 241,
-    text: "你最常被人夸的是哪一点？",
+    text: "跟喜欢的人独处，你是越靠越近，还是越坐越远？",
     intensity: 3,
     heatMin: 4,
     heatMax: 4,
     relationStage: "flirt",
     targetMode: "choose-opposite-sex",
     responseMode: "public",
-    interactionType: "expression",
+    interactionType: "preference",
     consentMode: "skip-anytime",
     matchRequired: false,
     boundaryTags: [],
     fallbackPolicy: "skip-card",
     signalEffects: [],
     postAction: "none",
-    // A4c：四字段随题面同源换（Reviewer 复议一）；题面 / intensity / heat / shape 不再动。
-    topic: "择偶偏好",
+    // A9-R7：六字段随新题面同源换（category/hook/shape/topic/intimacyClass/socialEnergy）。
+    topic: "亲密边界",
     barFit: "PASS",
     informationGain: "medium",
-    informationGoal: "知道他最常被人夸的是哪一点",
-    socialEnergy: "high",
+    informationGoal: "知道他跟喜欢的人独处时是越靠越近还是越坐越远",
+    socialEnergy: "medium",
     relationshipProgression: "deepen",
-    intimacyClass: "none",
+    intimacyClass: "attitude",
     informationGoalType: "self_preference",
-    secondaryTopics: ["择偶偏好"],
-    category: "quick_know",
-    followUpHook: "attraction",
-    expectedAnswerShape: "short_phrase",
+    secondaryTopics: ["性观念·亲密态度"],
+    category: "body_preference",
+    followUpHook: "body_preference",
+    expectedAnswerShape: "binary",
   },
   // 偏好 ≠ 授权：本卡只收集偏好，任何后续身体/亲密动作需独立同意（consentMode=skip-anytime 可随时跳过）。
   {

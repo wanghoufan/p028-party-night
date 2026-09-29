@@ -7,8 +7,8 @@
  * （本包 24 张 + 整库 4 个 hard-fail 被写进同一对象，被误读成四项同属一个集合）。
  * 本模块把两件事变成**可由逐卡数据复算**的纯函数：
  * 1. `tallyVerdicts()`：从逐卡 `machineVerdict` 行算出某组的 `total/PASS/SUSPECT/HARD_FAIL_PATTERN`；
- * 2. `checkReviewInput()`：四条自校验（条目数 = 候选总数 / cardId 唯一 / `reviewed` 与
- *    `humanBarFit` 自洽 / 各组求和自洽）。
+ * 2. `checkReviewInput()`：六条自校验（条目数 = 候选总数 / cardId 唯一 / `reviewed` 与
+ *    `humanBarFit` 自洽 / 各组求和自洽 / 历史覆盖 / 分组 note 与计数不矛盾）。
  *
  * 生成脚本与单测**共用同一份实现**，避免「脚本算一遍、测试另写一遍」的口径漂移。
  *
@@ -75,6 +75,26 @@ export interface ReviewRetirement {
 /** 退出 Formal 的卡在活跃 `entries` 里的统一 note（只记事实与流程状态，不做质量评价）。 */
 export const RETIRED_FROM_FORMAL_NOTE =
   "Human 新酒吧基线判定不合格，已退出 Formal，待重构后重新审查（原独立审查结论见本文件 history 归档，未删除）。";
+
+/**
+ * A9-R6（2026-09-29 内容裁决）退出 Formal 的卡在活跃 `entries` 里的统一 note。
+ *
+ * 与 A3 的 `RETIRED_FROM_FORMAL_NOTE` 分开：本批是**内容裁决**（弱卡退役 / 重复卡去重），
+ * 不是「方向不适合酒吧主线待重构」，理由与去向都不同（逐字归档见
+ * `lib/v2-content/archive/retired-pack1-r6-2026-09-29.ts`）。
+ */
+export const RETIRED_FROM_FORMAL_R6_NOTE =
+  "A9-R6 内容裁决判定不合格（内容弱 或 与既有卡重复），已退出本轮 Formal 并移出运行时卡源；原独立审查结论见本文件 history 归档，未删除。";
+
+/**
+ * A9-R7（2026-09-29 内容返工）退出 Formal 的卡在活跃 `entries` 里的统一 note。
+ *
+ * 与 R6 分开：本批是**内容主审 BORDERLINE 返工**（`249` 与 `250` 同轴，二选一留 250），
+ * 不是「内容弱 / 与既有卡重复」的裁决去重；逐字归档见
+ * `lib/v2-content/archive/retired-pack1-r7-2026-09-29.ts`。其余 5 张为**题面改写**（仍在 Formal）。
+ */
+export const RETIRED_FROM_FORMAL_R7_NOTE =
+  "A9-R7 内容返工判定不合格（与既有卡同轴，二选一保留另一张），已退出本轮 Formal 并移出运行时卡源；原独立审查结论见本文件 history 归档，未删除。";
 
 /** 一组机器档位的计数（`total` 必须等于三项之和）。 */
 export interface VerdictTally {
@@ -163,6 +183,32 @@ export function tallyVerdicts(rows: readonly VerdictRow[], ids: readonly string[
 /** 一组计数是否自洽：`total === PASS + SUSPECT + HARD_FAIL_PATTERN`。 */
 export function isTallySelfConsistent(tally: VerdictTally): boolean {
   return tally.total === tally.PASS + tally.SUSPECT + tally.HARD_FAIL_PATTERN;
+}
+
+/**
+ * 由逐卡机器档位**派生**分组 note 的事实片段（A9-R8）。
+ *
+ * 背景：truthFirstPack 曾手写「本组机器档位全部 PASS」，而同组实测 `SUSPECT=1`（203），
+ * 构成自相矛盾谎报。本函数把「是否全部 PASS / 非 PASS 有哪几张」变成由逐卡数据算出：
+ * - 全部 PASS 时才允许出现「全部 PASS」字样（并带 実测计数）；
+ * - 有非 PASS 时必须逐张点名卡号与档位。
+ *
+ * 防回归：`checkReviewInput()` 的 `group-note-consistent` 项按同一口径校验产物 note
+ * （写「全部 PASS」而非 0 非 PASS、或非 PASS 未点名卡号，均判不自洽）。
+ */
+export function deriveMachineVerdictNoteFragment(
+  rows: readonly VerdictRow[],
+  ids: readonly string[],
+): string {
+  const byId = new Map(rows.map((row) => [row.cardId, row.machineVerdict]));
+  const tally = tallyVerdicts(rows, ids);
+  const flagged = ids
+    .filter((id) => byId.get(id) !== "PASS")
+    .map((id) => `${id}=${byId.get(id)}`);
+  if (flagged.length === 0) {
+    return `机器档位全部 PASS（${tally.PASS}/${tally.total}，逐卡实读）`;
+  }
+  return `机器档位 PASS ${tally.PASS}/${tally.total}，非 PASS ${flagged.length} 张（${flagged.join("、")}，逐卡实读）`;
 }
 
 /** 构造一组汇总（数字一律来自 `tallyVerdicts`）。 */
@@ -292,7 +338,7 @@ export function countEntryKeyOccurrences(rawJson: string, ids: readonly string[]
 const sortedIds = (ids: readonly string[]): string[] => [...ids].sort();
 
 /**
- * 审查输入结构自校验（五条；任一条不成立即 `ok=false`，脚本据此非零退出）。
+ * 审查输入结构自校验（六条；任一条不成立即 `ok=false`，脚本据此非零退出）。
  *
  * 1. `entries-count`：逐卡条目数 = 候选总数（且键集恰为候选集，不多不少）。
  * 2. `card-id-unique`：cardId 唯一（给了 `rawJson` 时按磁盘原文数键出现次数，抓 JSON 重复键）。
@@ -301,6 +347,9 @@ const sortedIds = (ids: readonly string[]): string[] => [...ids].sort();
  *    各组数字 == 由逐卡行重算的值；`packMachineVerdictSummary` 父级 == 各子组之和。
  * 5. `history-coverage`：历史归档恰好覆盖全部候选（每卡一条）；`retirement.cardIds` == 活跃
  *    `reviewed=false` 集合；退出 + 存活互补覆盖全部候选（退出 Formal 只改活跃 entries，不抹历史）。
+ * 6. `group-note-consistent`：`packMachineVerdictSummary` 各分组的 note 与机器档位计数不得矛盾——
+ *    note 写「全部 PASS」时该组实测非 PASS 必须为 0；实测非 PASS > 0 时 note 必须逐张点名卡号
+ *    （A9-R8：防「全部 PASS」与 `SUSPECT=1` 并存的谎报）。
  *    （历史指纹的 sha256 比对在拥有 `node:crypto` 的调用方：生成脚本 + 单测。）
  */
 export function checkReviewInput(
@@ -458,6 +507,37 @@ export function checkReviewInput(
         bad.length === 0
           ? `history ${history.length} 条覆盖 ${expected.length} 候选；退出 ${declaredRetired.length} / 存活 ${activeReviewed.length}`
           : bad.join("；"),
+    });
+  }
+
+  /* ⑥ 分组 note 与机器档位计数不得矛盾（A9-R8：非 0 非 PASS 不许写「全部 PASS」；非 PASS 必须点名卡号） */
+  {
+    const bad: string[] = [];
+    const expectedGroups: Record<string, readonly string[]> = {
+      [TRUTH_FIRST_PACK_GROUP]: expectation.firstPackIds,
+      [TRUTH_BOOTSTRAP_GROUP]: expectation.bootstrapIds,
+      ...(expectation.extraGroups ?? {}),
+    };
+    const byId = new Map(expectation.verdictRows.map((row) => [row.cardId, row.machineVerdict]));
+    for (const [key, group] of Object.entries(payload.packMachineVerdictSummary?.groups ?? {})) {
+      const ids = expectedGroups[key];
+      if (!ids) continue; // 多余分组已由 ④ 报过，这里不重复计。
+      const nonPass = ids.filter((id) => byId.get(id) !== "PASS");
+      const note = group.note ?? "";
+      if (nonPass.length === 0) continue; // 全 PASS 组无此约束（写不写「全部 PASS」均不算矛盾）。
+      if (note.includes("全部 PASS")) {
+        bad.push(`${key} note 写「全部 PASS」但机器档位实测非 PASS ${nonPass.length} 张（${nonPass.join(",")}）`);
+      }
+      const unnamed = nonPass.filter((id) => !note.includes(id));
+      if (unnamed.length > 0) {
+        bad.push(`${key} note 未逐张点名非 PASS 卡号：${unnamed.join(",")}`);
+      }
+    }
+    items.push({
+      id: "group-note-consistent",
+      label: "分组 note 与机器档位计数不矛盾（非 0 不许写「全部 PASS」；非 PASS 必须点名卡号）",
+      ok: bad.length === 0,
+      detail: bad.length === 0 ? `pack ${Object.keys(payload.packMachineVerdictSummary?.groups ?? {}).length} 组 note 与逐卡实测一致` : bad.join("；"),
     });
   }
 

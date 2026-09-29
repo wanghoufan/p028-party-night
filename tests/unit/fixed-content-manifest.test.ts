@@ -31,15 +31,16 @@ import {
 import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { PACK1_ADMISSION_CARD_IDS } from "@/lib/v2-content/pack1-admission";
 import type { GameCard } from "@/lib/domain/schemas";
 
 /**
  * P1-3 + Human Step 4｜FixedContentManifest 两轨（Legacy Compatibility / Formal Fixed）。
  *
  * 锁死四件事：
- * ① 两轨结构分明：legacy = 冻结快照 390 + 运行时保留的 KEEP 5（共 395；可缺新 metadata 者仍 390），
- *    formal = 已有独立审查且 `humanBarFit=PASS` 的卡（A3/A4a 后 = KEEP 5）；
- *    （A4a 2026-09-29：26 张退役卡已移出运行时卡源，故 legacy 由 421 → 395。）
+ * ① 两轨结构分明：legacy = 冻结快照全量（SSOT 390 ＋ 运行时正式内容源，含 KEEP 5 与 A9 重构批；
+ *    可缺新 metadata 者仍 390），formal = 已有独立审查且 `humanBarFit=PASS` 的卡；
+ *    （A4a 2026-09-29：26 张退役卡已移出运行时卡源；A9 2026-09-29：52 张重构批经准入进 Formal。）
  *    **数量不写死在断言里**，一律从独立审查输入 `docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`
  *    ＋冻结卡派生（下一轮人审改动不会再让测试变红）；
  * ② Formal 准入是**严格四条件**、**无任何宽松开关**——缺 strict metadata / humanBarFit≠PASS /
@@ -52,6 +53,16 @@ import type { GameCard } from "@/lib/domain/schemas";
  */
 
 const frozenCards = (): GameCard[] => [...mainlineSsotCards(), ...expansionSsotCards()];
+
+/**
+ * 运行时正式内容源（第一包 3 ＋ Bootstrap 2 ＋ A9 重构批 52）的 id 全集。
+ * 数量与清单一律由内容源派生（不写死张数）：下一轮补卡 / 人审改动不会再让断言变红。
+ */
+const FORMAL_SOURCE_IDS: string[] = [
+  ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+  ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+  ...PACK1_ADMISSION_CARD_IDS,
+].sort();
 
 /** 人审输入真源（只读，构建期与测试共用）：`reviewed` / `humanBarFit` 的唯一合法来源。 */
 const HUMAN_REVIEW_PATH = "docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json";
@@ -66,7 +77,11 @@ const loadHumanReviewFile = (): HumanReviewFile =>
   JSON.parse(readFileSync(join(process.cwd(), HUMAN_REVIEW_PATH), "utf8")) as HumanReviewFile;
 
 /** 第一包正式内容的 cardId 集合（顺序与内容源一致）。 */
-const PACK_IDS = FORMAL_TRUTH_CARDS.map((card) => card.cardId);
+/**
+ * TRUTH 正式内容源分组（第一包 ＋ Bootstrap ＋ A9 重构批 = `FORMAL_SOURCE_IDS`）。
+ * 用它做「humanBarFit=PASS ⇔ 入 Formal」的**逐卡双向**断言，新准入卡自动纳入覆盖（不写死张数）。
+ */
+const PACK_IDS = FORMAL_SOURCE_IDS;
 
 const adapter = getV2ContentAdapter();
 const buildOptions = (overrides: Partial<BuildFixedContentManifestOptions> = {}): BuildFixedContentManifestOptions => ({
@@ -111,7 +126,7 @@ const audited = (id: string): GameCard => card({
 } as Partial<GameCard> & Pick<GameCard, "id">);
 
 describe("Human Step 4｜两轨在代码与产物结构上分开", () => {
-  it("Legacy Compatibility 轨 = 冻结快照 390 + 运行时保留的 KEEP 5（共 395），逐卡有 provenance，且明确不是正式 Fixed Content", () => {
+  it("Legacy Compatibility 轨 = 冻结快照全量（SSOT 390 ＋ 运行时正式内容源），逐卡有 provenance，且明确不是正式 Fixed Content", () => {
     const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
     const frozen = frozenCards();
     expect(FIXED_CONTENT_MANIFEST.snapshotVersion).toBe(`fixed-snapshot@content-v${adapter.provenance.mainline.schemaVersion}`);
@@ -128,8 +143,8 @@ describe("Human Step 4｜两轨在代码与产物结构上分开", () => {
       legacyMetadata: frozen.length - auditedCount,
       auditedMetadata: auditedCount,
     });
-    // 运行时保留的 KEEP 5（第一包 3 + Bootstrap 2）带齐 Plan §3 必填字段（audited）；旧 390 张仍为 legacy。
-    expect(auditedCount).toBe(FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length);
+    // 运行时正式内容源（第一包 ＋ Bootstrap ＋ A9 重构批）全部带齐 Plan §3 必填字段（audited）；旧 390 张仍为 legacy。
+    expect(auditedCount).toBe(FORMAL_SOURCE_IDS.length);
     for (const id of legacy.allowedCardIds) {
       expect(legacy.provenance[id], `${id} 缺 provenance`).toBeTruthy();
       expect(legacy.provenance[id]!.payloadHash).toMatch(FIXED_PAYLOAD_HASH_PATTERN);
@@ -170,10 +185,12 @@ describe("Human Step 4｜两轨在代码与产物结构上分开", () => {
     // 故 `auditedUnreviewed` 现为 0（退役前它们仍是 audited/unreviewed）。退出事实改由
     // `tests/unit/bar-fit-review-input.test.ts` 对审查输入 + `retired-truth-archive.test.ts` 对归档核验。
     expect(auditedUnreviewed).toEqual([]);
-    // KEEP 5 冻结：保持 Formal 的恰为 KEEP 5（逐张）。
-    expect(auditedReviewed).toEqual(
-      ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"].sort(),
-    );
+    // A9（2026-09-29）：带齐 Plan §3 metadata 且已过独立审查的卡 = 运行时正式内容源全集（逐 id 派生，
+    // 含 KEEP 5 与 52 张重构批）；KEEP 5 仍是其中一部分，未被退役/降级。
+    expect(auditedReviewed).toEqual(FORMAL_SOURCE_IDS);
+    for (const id of ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"]) {
+      expect(auditedReviewed, `${id}（KEEP）应仍在已审集合里`).toContain(id);
+    }
     // KEEP 5（带齐 Plan §3 质量字段）＝metadataStatus=audited；旧 390 张仍为 legacy。
     // ⚠️ A4a（2026-09-29）：26 张退役卡已移出运行时卡源 ⇒ 不在 manifest 任何轨内，
     // 故这里改用仍属 Formal 的 KEEP 卡（203）作 audited 例证。
@@ -483,7 +500,7 @@ describe("Change C｜reviewerKind 身份如实标注（准入身份对称；缺�
     );
   });
 
-  it("真实审查输入：reviewerKind=ai-role 如实写入；Formal 恰为审查输入判 PASS 者（A3 后 = KEEP 5），human 身份行为完全对称", () => {
+  it("真实审查输入：reviewerKind=ai-role 如实写入；Formal 恰为审查输入判 PASS 者（逐 id 派生），human 身份行为完全对称", () => {
     const review = loadHumanReviewFile();
     expect(review.reviewerKind).toBe("ai-role");
     const frozen = frozenCards();
@@ -508,10 +525,12 @@ describe("Change C｜reviewerKind 身份如实标注（准入身份对称；缺�
     });
     expect(asAi.manifest.buildInfo.reviewerKind).toBe("ai-role");
     expect(asHuman.manifest.buildInfo.reviewerKind).toBe("human");
-    // A3 后 Formal = KEEP 5（逐张）；身份不改变准入集合。
-    expect(expectedPass).toEqual(
-      ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"].sort(),
-    );
+    // A9 后 Formal = 审查输入判 PASS 的全部正式内容源卡（逐 id 派生，含 KEEP 5 与 52 张重构批）；身份不改变准入集合。
+    expect(expectedPass).toEqual(FORMAL_SOURCE_IDS);
+    for (const id of ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"]) {
+      expect(expectedPass, `${id}（KEEP）应仍在 Formal`).toContain(id);
+    }
+    expect(expectedPass.length).toBeGreaterThan(0);
     expect([...asAi.manifest.tracks.formalFixed.allowedCardIds]).toEqual(expectedPass);
     expect([...asHuman.manifest.tracks.formalFixed.allowedCardIds]).toEqual(expectedPass);
     expect(asAi.formalCount).toBe(expectedPass.length);

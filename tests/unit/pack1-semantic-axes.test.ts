@@ -2,15 +2,15 @@
  * A8｜「同档不同轴」**语义级判据**的机器门禁（`lib/v2-content/pack1-supplements/pack1-semantic-axes.ts`）。
  *
  * ## 本文件锁死什么（对照派工单 Part 2）
- * ① **签名可派生**：52 张全部被 token 规则命中（无 `unclassified`），`axis` 取自闭集；
- * ② **判据可执行且给真数**：`pack1SemanticDuplicatePairs()`（同档同签名）对现有 52 张的**真实结果**
- *    ＝ **1 对**（`235 vs 236`，既有 Golden 12，非本单范围）⇒ 与 `PACK1_SEMANTIC_RESIDUALS` **逐项相等**；
+ * ① **签名可派生**：现役全批次全部被 token 规则命中（无 `unclassified`），`axis` 取自闭集；
+ * ② **判据可执行且给真数**：`pack1SemanticDuplicatePairs()`（同档同签名）对现役批次的**真实结果**
+ *    ＝ **0 对**（A9-R6 退役 `236` 后原残留 `235 vs 236` 消解）⇒ 与 `PACK1_SEMANTIC_RESIDUALS`（空表）**逐项相等**；
  * ③ **非空壳（敏感性）**：把**整改前的历史题面**喂进判据，必须判出真重复 ——
  *    `274-old(跟谁一队)/275-old(跟谁玩一局狼人杀)`、`270-A7(再战/先撤)/278-A7(先溜/等某人)`；
  * ④ **非空壳（特异性）**：整改后的 `274/275-new`、`270-new/278` **不再同签名**；
  * ⑤ **`SHOTS` 降级**：约束①的达成证据**只能是本判据**；`SHOTS`/`AXES` 在 `pack1-supplements` 侧
  *    已标「审计辅助」，不得再当唯一证据（见该测试文件同名断言）；
- * ⑥ **跨档邻接登记**：`263 vs 278`（同为「散场走留」自决策）登记为邻接（只报不判，交编排者）。
+ * ⑥ **跨档邻接登记**：A9-R6 退役 `263` 后邻接为空（原 `263 vs 278` 消解）。
  */
 
 import { describe, expect, it } from "vitest";
@@ -36,9 +36,9 @@ import { PACK1_UNION_CARDS } from "@/lib/v2-content/pack1-supplements/pack1-supp
 /* ① 签名可派生 + 闭集                                                 */
 /* ------------------------------------------------------------------ */
 
-describe("A8① 语义签名可派生：52 张全部命中、轴取自闭集", () => {
-  it("52 张全批次的签名数量与卡源一致、cardId 一一对应", () => {
-    expect(PACK1_SEMANTIC_SIGNATURES).toHaveLength(52);
+describe("A8① 语义签名可派生：全批次全部命中、轴取自闭集", () => {
+  it("全批次（现役）签名数量与卡源一致、cardId 一一对应（张数由卡源派生，不写死）", () => {
+    expect(PACK1_SEMANTIC_SIGNATURES).toHaveLength(PACK1_UNION_CARDS.length);
     expect(PACK1_SEMANTIC_SIGNATURES.map((sig) => sig.cardId)).toEqual(
       PACK1_UNION_CARDS.map((card) => card.cardId),
     );
@@ -75,7 +75,7 @@ describe("A8① 语义签名可派生：52 张全部命中、轴取自闭集", (
     expect(deriveSemanticAxis("跟谁比一局？")).toBe("duel");
     expect(deriveSemanticAxis("这件事完全没提过的词")).toBe("unclassified");
     // 规则数显著少于卡数（闭集分类，靠复用收敛，不是一卡一标签）。
-    expect(PACK1_SEMANTIC_AXIS_RULES.length).toBeLessThan(52);
+    expect(PACK1_SEMANTIC_AXIS_RULES.length).toBeLessThan(PACK1_UNION_CARDS.length);
   });
 });
 
@@ -84,28 +84,17 @@ describe("A8① 语义签名可派生：52 张全部命中、轴取自闭集", (
 /* ------------------------------------------------------------------ */
 
 describe("A8②③④ 同档语义重复判据：真实结果 + 非空壳（敏感性/特异性）", () => {
-  it("② 现有 52 张的真实判定结果：同档同签名恰 1 对（235 vs 236，既有 Golden 12）", () => {
+  it("② 现有全批次真实判定结果：同档同签名 **0 对**（A9-R6 退役 236 后残留消解）", () => {
     const pairs = pack1SemanticDuplicatePairs();
-    // 真实数字：全批 52 张里**同档**同签名仅 1 对，且**不含本单 8 张改动卡中的任何一张**。
-    expect(pairs).toHaveLength(1);
-    expect(`${pairs[0]!.a}|${pairs[0]!.b}|${pairs[0]!.heatMin}|${pairs[0]!.signature}`).toBe(
-      "PN-TRUTH-235|PN-TRUTH-236|2|self|binary|first_look",
-    );
-    // 与本单改动卡无交集（本单 8 张零命中）。
-    const A8_CARDS = [
-      "PN-TRUTH-250", "PN-TRUTH-256", "PN-TRUTH-262", "PN-TRUTH-265",
-      "PN-TRUTH-267", "PN-TRUTH-270", "PN-TRUTH-275", "PN-TRUTH-277",
-    ];
-    for (const pair of pairs) {
-      expect(A8_CARDS, `${pair.a}/${pair.b} 命中本单改动卡`).not.toContain(pair.a);
-      expect(A8_CARDS, `${pair.a}/${pair.b} 命中本单改动卡`).not.toContain(pair.b);
-    }
+    // A9-R6（2026-09-29 内容裁决）：原唯一同档残留 `235 vs 236` 随 236 退役消解 ⇒ 现役批次 0 对。
+    expect(pairs).toEqual([]);
   });
 
   it("②' 判据结果与 PACK1_SEMANTIC_RESIDUALS 逐项相等（残留只能显式登记，不能默默放过）", () => {
     const derived = pack1SemanticDuplicatePairs().map((p) => `${p.a}|${p.b}|${p.heatMin}|${p.signature}`);
     const registered = PACK1_SEMANTIC_RESIDUALS.map((r) => `${r.a}|${r.b}|${r.heatMin}|${r.signature}`);
     expect(derived).toEqual(registered);
+    expect(PACK1_SEMANTIC_RESIDUALS).toEqual([]);
   });
 
   it("②'' 残留只允许落在**冻结批（Golden 12, 232~243）**内 —— 本单批次/新卡不得塞进残留", () => {
@@ -117,6 +106,8 @@ describe("A8②③④ 同档语义重复判据：真实结果 + 非空壳（敏�
         expect(number, `${id} 不在 Golden 12 号段（残留只准登记冻结批）`).toBeLessThanOrEqual(243);
       }
     }
+    // A9-R6 后残留为空（236 退役）；本断言锁「不会有人偷偷把新批次塞进残留」。
+    expect(PACK1_SEMANTIC_RESIDUALS).toEqual([]);
   });
 
   it("③ 敏感性：整改前历史题面必须判真重复（否则判据是空壳）", () => {
@@ -141,10 +132,9 @@ describe("A8②③④ 同档语义重复判据：真实结果 + 非空壳（敏�
     // 250（攒劲怎么放）vs 270（喝法）/278（走留）——派工单点名要自查的跨批邻接。
     expect(sigOf("PN-TRUTH-250")).not.toBe(sigOf("PN-TRUTH-270"));
     expect(sigOf("PN-TRUTH-250")).not.toBe(sigOf("PN-TRUTH-278"));
-    // 263（走留）vs 270（喝法）——同档（H2），换轴后必须不同。
-    expect(sigOf("PN-TRUTH-263")).not.toBe(sigOf("PN-TRUTH-270"));
     // 256（搭讪减分）vs 265（剩余时间）——同档同 shape 但轴不同。
     expect(sigOf("PN-TRUTH-256")).not.toBe(sigOf("PN-TRUTH-265"));
+    // A9-R6：263（走留）已退役 ⇒ 不再参与现役签名集（其与 278 的邻接随之消解，见 ⑥）。
   });
 
   it("④' 三维合取：H3「跟谁」簇不会因都问对象被一刀切误杀", () => {
@@ -156,9 +146,11 @@ describe("A8②③④ 同档语义重复判据：真实结果 + 非空壳（敏�
     expect(new Set(keys).size, `H3 簇签名撞车：${keys.join(" / ")}`).toBe(cluster.length);
   });
 
-  it("⑥ 跨档邻接（只报不判）：恰为登记集 263 vs 278", () => {
+  it("⑥ 跨档邻接（只报不判）：A9-R6 退役 263 后为空（派生 == 登记集）", () => {
     const adj = pack1SemanticAdjacentPairs().map((p) => `${p.a}|${p.b}`);
     expect(adj).toEqual(PACK1_SEMANTIC_ADJACENCY_REGISTRY.map(([a, b]) => `${a}|${b}`));
+    // A9-R6：原唯一邻接 263 vs 278 随 263 退役消解 ⇒ 现役批次 0 对。
+    expect(adj).toEqual([]);
   });
 
   it("豁免说明：判据是**必要条件**，不是语义不同的充分证明（诚实声明存在且非空）", () => {

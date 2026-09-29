@@ -14,18 +14,21 @@
  * 且**禁止**再用重叠口径通过。故本模块提供：
  * - `pack1UnionCategoryTruth()`：全批次（Golden 12 ＋ REWRITE ＋ REPLACE ＋ 补卡）**逐卡 re-count 真值**；
  * - `pack1UnionCategoryCoverageOverlap()`：同集合的**重叠口径**（仅供对照/自证差异，**不得用于放行**）；
- * - `PACK1_UNION_CATEGORY_REQUIREMENTS`：A7 收紧后的真值目标
- *   （`quick_know≥1 / attraction≥4 / flirt≥5 / body_preference≥3 / follow_up_hook≥9`）。
+ * - `PACK1_UNION_CATEGORY_REQUIREMENTS`：A9-R6 §4.7 收紧后的**真值放行门**
+ *   （`quick_know≥1 / attraction≥4 / flirt≥5 / body_preference≥3`；`follow_up_hook` 数量**退出放行门**、
+ *   降级为诊断基线）。
  *
- * ## A7 `follow_up_hook` 定义收紧（编排者裁决 1）
+ * ## A7 `follow_up_hook` 定义收紧（编排者裁决 1）＋ A9-R6 数量退出放行门
  * `follow_up_hook` **只允许**用于「题面本身点名对象或动作、能当场产生后续互动」的卡；
  * 「今晚想接着玩还是先歇」这类**风格偏好**不得标此 category。据此本批 `270 / 271 / 277`
- * 如实降为 `quick_know`（`272` 改为点名两人后仍成立）；阈值由 12 下调为 **9**。
- * 可机检护栏：`PACK1_FOLLOW_UP_HOOK_TARGET_TOKENS`（题面须命中对象/动作指向词）。
+ * 如实降为 `quick_know`（`272` 改为点名两人后仍成立）。
+ * ⚠️ A9-R6（§4.7）：数量阈值（曾 12→9）**不再作放行门**，降级为诊断基线；放行只看其余 4 类真值，
+ * hook 由**语义门禁**把关（`PACK1_FOLLOW_UP_HOOK_TARGET_TOKENS`：题面须命中对象/动作指向词）。
  *
  * ## 五个 category 的真值语义（逐卡只算一个）
- * `category` 定**主类**，必须如实反映题面：本批 9 张 follow_up_hook（答案本身就是下一步玩法/邀约）
- * ＋ 2 张 attraction（问「哪种人/哪种互动方式更打动你」）＋ 3 张 quick_know（风格偏好）；
+ * `category` 定**主类**，必须如实反映题面：补卡批现为 follow_up_hook（答案本身就是下一步玩法/邀约）
+ * ＋ attraction（问「哪种人/哪种互动方式更打动你」）＋ quick_know（风格偏好）三类构成
+ * （2026-09-29 A9-R6 退役 277 后现 13 张，逐类张数一律由卡源派生）；
  * ⛔ 不为凑数改既有卡标签、⛔ 不为达标扩义。
  */
 
@@ -52,16 +55,33 @@ import { goldenCategoryCoverage } from "../golden12/golden-12-matrix";
 /* -------------------------------------------------------------------------- */
 
 /**
- * 全批次（Golden 12 ＋ REWRITE ＋ REPLACE ＋ 补卡）**卡面 `category` 真值**下界。
+ * 全批次（Golden 12 ＋ REWRITE ＋ REPLACE ＋ 补卡）**卡面 `category` 真值**下界（**放行门**）。
+ *
+ * ## A9-R6 §4.7｜`follow_up_hook` 退出放行门
+ * Human 冻结的是「hook 很重要、必须是真钩子」，**没有**冻结「必须 12」或「必须 9」。
+ * 旧做法「阈值 12→9 然后宣布 PASS」属**指标追着现状跑** ⇒ 本单取消这个放行门：
+ * `follow_up_hook` 的**数量**降级为**诊断基线**（当前真值由 `pack1UnionCategoryTruth().follow_up_hook`
+ * 派生，报告如实引用）；其**语义门禁**保留并加强为「`category="follow_up_hook"` 的卡题面必须直接
+ * 产出下一步对象 / 动作 / 可兑现互动」（见 `PACK1_FOLLOW_UP_HOOK_TARGET_TOKENS` 与
+ * `pack1FollowUpHookCardsMissingTarget()`）。
+ *
  * ⛔ 只按真值判定；**不得**用重叠口径替代（重叠口径会把 `follow_up_hook` 报成「带钩子张数」）。
  */
-export const PACK1_UNION_CATEGORY_REQUIREMENTS: Readonly<Record<GoldenCategory, number>> = {
+export const PACK1_UNION_CATEGORY_REQUIREMENTS: Readonly<Record<Exclude<GoldenCategory, "follow_up_hook">, number>> = {
   quick_know: 1,
   attraction: 4,
   flirt: 5,
   body_preference: 3,
-  follow_up_hook: 9,
 };
+
+/**
+ * `follow_up_hook` 数量的**诊断基线**说明（A9-R6 §4.7）。
+ * 数量本身不再作放行门；真实值一律从 `pack1UnionCategoryTruth()` 派生后由报告引用。
+ */
+export const PACK1_FOLLOW_UP_HOOK_DIAGNOSTIC_NOTE =
+  "`follow_up_hook` 数量为**诊断基线**（当前真值由卡面 category 真值派生），⛔ 不作单批/全批放行条件；" +
+  "放行只看全批次 category 真值（quick_know / attraction / flirt / body_preference），" +
+  "语义门禁由「category=follow_up_hook 的卡题面须点名对象/动作」承担。";
 
 /**
  * A7 `follow_up_hook` 收紧口径的**可机检护栏**：`category="follow_up_hook"` 的卡，题面必须
@@ -85,7 +105,7 @@ export const PACK1_SUPPLEMENT_AXES: Readonly<Record<string, string>> = {
   "PN-TRUTH-270": "喝法（接着干杯 / 改喝点软的）",
   "PN-TRUTH-271": "换场口味（安静 / 吵）",
   "PN-TRUTH-272": "下一轮续聊对象（刚坐过来的 / 原本在聊的）",
-  "PN-TRUTH-277": "回程方式",
+  // A9-R6：277（回程方式）已退役，轴登记随卡删除。
   "PN-TRUTH-282": "心动风格（撒娇 / 嘴硬）",
   "PN-TRUTH-283": "角色位（主动逗 / 被逗）",
   // H3
@@ -116,7 +136,7 @@ export const PACK1_SUPPLEMENT_SHOTS: Readonly<Record<string, string>> = {
   "PN-TRUTH-270": "喝法（干杯 / 换软的）",
   "PN-TRUTH-271": "换场",
   "PN-TRUTH-272": "续聊",
-  "PN-TRUTH-277": "回程",
+  // A9-R6：277 已退役，镜头登记随卡删除。
   "PN-TRUTH-282": "风格偏好（撒娇 / 嘴硬）",
   "PN-TRUTH-283": "角色位（逗 / 被逗）",
   // H3
@@ -140,7 +160,7 @@ export const PACK1_SUPPLEMENT_HOOK_REDEEM_LINES: Readonly<Record<string, string>
   "PN-TRUTH-274": "那分队的时候，我能跟你一队吗？",
   "PN-TRUTH-275": "那这局飞镖，我先手？",
   "PN-TRUTH-276": "那这口气，陪我一起透？",
-  "PN-TRUTH-277": "那你走的时候，顺路带上我？",
+  // A9-R6：277 已退役，兑现句登记随卡删除。
   "PN-TRUTH-278": "那你要等的某人，是我吗？",
   "PN-TRUTH-279": "那我现在要你的微信，给不给？",
   "PN-TRUTH-280": "那这首歌，我先点给你？",

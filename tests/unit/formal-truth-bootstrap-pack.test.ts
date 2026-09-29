@@ -15,8 +15,8 @@
  * ③ **全库不变量**：ID 唯一且与既有 390 张 + 运行时第一包 3 张无碰撞、编号段不重叠；
  *    枚举合法、strict 必填零缺失；精确重复 0；近似（bigram Jaccard）全部 < 阈值；三红线 0 命中；
  * ④ **可达性**：H1 桶内 `PN-TRUTH-2*` 集合 = 卡源派生（Formal 只在 `heatMin=1` 时过关）——两 Router 同口径；
- * ⑤ **入轨状态**：运行时 `PN-TRUTH-2*` 恰为 KEEP 5，`formalFixedIdSet()` = KEEP 5，
- *    `heatMin=1` 的 Formal 集合 = {203,205,227,229}。
+ * ⑤ **入轨状态**：运行时 `PN-TRUTH-2*` = 第一包 ＋ Bootstrap ＋ A9 重构批（逐 id 由内容源派生），
+ *    `formalFixedIdSet()` 与之逐 id 同集，`heatMin=1` 的 Formal 集合 = 内容源派生（KEEP 浅题 ∪ 重构批浅题）。
  *
  * 只读真源 + 走生产 Router；不改 SSOT / 生成产物 / 认识阈值 / 窗口 / Heat 契约。
  */
@@ -33,6 +33,10 @@ import {
 } from "@/lib/v2-content/fixed-content-manifest";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import {
+  PACK1_ADMISSION_CARDS,
+  PACK1_ADMISSION_CARD_IDS,
+} from "@/lib/v2-content/pack1-admission";
 import {
   V2_INFORMATION_GOAL_TYPES,
   V2_INFORMATION_GAIN,
@@ -119,6 +123,20 @@ const SHALLOW_TOPICS: readonly V2Topic[] = [
 ];
 
 const BOOTSTRAP_IDS = FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId);
+
+/**
+ * 内容源派生的 heatMin=1 集合（与 manifest 无关的**独立**一路）：由
+ * `FORMAL_TRUTH_CARDS ∪ FORMAL_TRUTH_BOOTSTRAP_CARDS ∪ PACK1_ADMISSION_CARDS` 里 `heatMin === 1`
+ * 的卡组成。与「运行时卡源 ∩ manifest」派生集合双向比对 ⇒ 两条真源合流才算过（不写死张数）。
+ */
+const HEAT_MIN_1_IDS = [
+  ...FORMAL_TRUTH_CARDS,
+  ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
+  ...PACK1_ADMISSION_CARDS,
+]
+  .filter((card) => card.heatMin === 1 && card.heatMax >= 1)
+  .map((card) => card.cardId)
+  .sort();
 
 /** 值锁定：具体字段 === 期望（`toEqual` 报错信息带 cardId）。 */
 const expectField = (cardId: string, field: keyof ExpectedCard, actual: unknown): void => {
@@ -355,15 +373,25 @@ describe("R2/A4a④ H1 可达性：H1 桶内 PN-TRUTH-2* === 卡源派生集合�
     .filter((card) => !formalFixedIdSet().has(card.cardId) || (card.heatMin <= 1 && 1 <= card.heatMax))
     .map((card) => card.cardId)
     .sort();
-  /** A9 后 H1 桶 = 全部 heatMin=1 的 Formal 卡（KEEP 5 里的 4 张 ＋ 重构批的 11 张）。 */
+  /** A9 后 H1 桶 = 全部 heatMin=1 的 Formal 卡（KEEP 5 里的浅题 ＋ 重构批里的浅题）。 */
   const HEAT_MIN_1_FORMAL = mainlineRuntimeCards()
     .filter((card) => card.heatMin === 1 && formalFixedIdSet().has(card.cardId))
     .map((card) => card.cardId)
     .sort();
 
-  it("H1 桶内 PN-TRUTH-2* 家族 === 卡源里 heatMin=1 的 Formal 卡（209 heatMin=2 被硬过滤；26 张退役已不在卡源）", () => {
+  /**
+   * 内容源派生的 heatMin=1 集合（与 manifest 无关的**独立**一路）：
+   * = `FORMAL_TRUTH_CARDS ∪ BOOTSTRAP ∪ PACK1_ADMISSION_CARDS` 里 `heatMin === 1` 的卡。
+   * 与「运行时 ∩ manifest」派生集合双向比对 ⇒ 两条真源合流才算过（不写死张数）。
+   */
+  const HEAT_MIN_1_IDS_LOCAL = HEAT_MIN_1_IDS;
+
+  it("H1 桶内 PN-TRUTH-2* 家族 === 卡源里 heatMin=1 的 Formal 卡（heatMin≥2 被硬过滤；退役卡已不在卡源）", () => {
     expect(EXPECTED_H1).toEqual(HEAT_MIN_1_FORMAL);
-    expect(EXPECTED_H1).toHaveLength(15);
+    // 张数由内容源派生（不写死）；且必须真收窄（不是把整个 Formal 集合都算进来）。
+    expect(EXPECTED_H1).toEqual(HEAT_MIN_1_IDS_LOCAL);
+    expect(EXPECTED_H1.length).toBeGreaterThan(0);
+    expect(EXPECTED_H1.length).toBeLessThan(formalFixedIdSet().size);
     for (const id of BOOTSTRAP_IDS) expect(EXPECTED_H1, `${id} 未进 H1 桶`).toContain(id);
   });
 
@@ -393,23 +421,23 @@ describe("R2/A4a④ H1 可达性：H1 桶内 PN-TRUTH-2* === 卡源派生集合�
 /* ⑤ 已入 Formal（A3/A4a：运行时 KEEP 5）                                 */
 /* ------------------------------------------------------------------ */
 
-describe("R2/A4a⑤ 运行时 PN-TRUTH-2* === 内容源派生 57；Formal === 57；Legacy 轨质量档位真实可用", () => {
+describe("R2/A4a⑤ 运行时 PN-TRUTH-2* === 内容源派生集合；Formal 逐 id 同集；Legacy 轨质量档位真实可用", () => {
   const formalIds = [...formalFixedIdSet()].sort();
-  /** A3/A4a｜Human 冻结的 KEEP 5（A9 前唯一的 Formal 卡）。 */
+  /** A3/A4a｜Human 冻结的 KEEP 5（此后仍是 Formal 的一部分）。 */
   const KEEP_IDS = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"].sort();
-  /** A9｜运行时 PN-TRUTH-2* = 第一包 3 ＋ Bootstrap 2 ＋ 重构批 52 = 57（全部 Formal）。 */
+  /** 运行时 PN-TRUTH-2* = 第一包 ＋ Bootstrap ＋ 重构批，**逐 id 由内容源派生**（不写死张数）。 */
   const RUNTIME_TRUTH_IDS = [
     ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
     ...BOOTSTRAP_IDS,
     ...PACK1_ADMISSION_CARD_IDS,
   ].sort();
 
-  it("运行时 PN-TRUTH-2* 恰为内容源派生的 57 张（26 张退役已移出卡源）", () => {
+  it("运行时 PN-TRUTH-2* 恰为内容源派生集合（退役卡已移出卡源）", () => {
     expect(sortedP2Ids(mainlineRuntimeCards().map((card) => card.cardId))).toEqual(RUNTIME_TRUTH_IDS);
     for (const id of KEEP_IDS) expect(RUNTIME_TRUTH_IDS, `${id} 应仍在运行时`).toContain(id);
   });
 
-  it("formalFixedIdSet() === 57（KEEP 5 ＋ 重构批 52，A9 后逐张）", () => {
+  it("formalFixedIdSet() 恰为同一内容源派生集合（KEEP 5 ＋ 重构批，A9 后逐张）", () => {
     expect(formalIds).toEqual(RUNTIME_TRUTH_IDS);
     for (const id of BOOTSTRAP_IDS) expect(formalIds, `${id} 应保持 Formal`).toContain(id);
   });
@@ -434,13 +462,13 @@ describe("R2/A4a⑤ 运行时 PN-TRUTH-2* === 内容源派生 57；Formal === 57
     }
   });
 
-  it("heatMin=1 的 Formal 集合逐字 === KEEP 里 4 张 ∪ 重构批里 heatMin=1 的 11 张（共 15 张）", () => {
+  it("heatMin=1 的 Formal 集合逐字 === 内容源派生集合（KEEP 浅题 ∪ 重构批浅题；张数由内容源派生）", () => {
     const heatMin1Formal = mainlineRuntimeCards()
       .filter((card) => card.heatMin === 1 && formalFixedIdSet().has(card.cardId))
       .map((card) => card.cardId)
       .sort();
     expect(heatMin1Formal).toEqual(HEAT_MIN_1_IDS);
-    expect(heatMin1Formal).toHaveLength(15);
+    expect(heatMin1Formal.length).toBeGreaterThan(0);
     for (const id of ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"]) {
       expect(heatMin1Formal, `${id} 属 KEEP 且 heatMin=1`).toContain(id);
     }
@@ -477,7 +505,7 @@ describe("R2/A4a⑤ 运行时 PN-TRUTH-2* === 内容源派生 57；Formal === 57
     }
   });
 
-  it("桥接追加在末尾：[0] 仍是 PN-TRUTH-001；尾部 = 运行时 57 张（KEEP 5 ＋ 重构批 52，原序）", () => {
+  it("桥接追加在末尾：[0] 仍是 PN-TRUTH-001；尾部 = 运行时内容源全集（第一包 ＋ Bootstrap ＋ 重构批，原序）", () => {
     const cards = mainlineSsotCards();
     expect(cards[0]!.id).toBe("PN-TRUTH-001");
     const tail = cards.slice(-RUNTIME_TRUTH_IDS.length).map((card) => card.id);
