@@ -7,14 +7,16 @@
  *
  * 本文件的期望值**全部来自 reviewer 逐卡判定表**（原文转录于 `temp/HEAT-REVIEW-PACK1.md`，
  * 但 `temp/` 不入仓，故在这里固化为显式期望对象，**测试绝不读 `temp/`**）。
- * 汇总段按编排者 2026-09-28 裁决 #1 更正为 `heatMin` H1=3 / H2=9 / H3=10 / H4=2
- * （reviewer 原汇总把 `PN-TRUTH-205` 同时列进 H2 与 H3，属汇总自身笔误；**以逐卡行为准**）。
+ * 汇总段按编排者 2026-09-28 裁决 #1 更正为 `heatMin` H1=4 / H2=8 / H3=10 / H4=2
+ * （原为 H1=3 / H2=9；2026-09-29 reviewer 单卡复核把 `PN-TRUTH-205` 由 2/2 改为 1/3，
+ * 故 H1 由 3→4、H2 由 9→8，只改 `heatMin`/`heatMax`、题面逐字不动；reviewer 原汇总把 205
+ * 同时列进 H2 与 H3 属汇总自身笔误，**以逐卡行为准**）。
  *
  * 锁死四件事：
  * ① 逐卡 `heatMin`/`heatMax` 与 reviewer 表**逐字一致**（24/24），且 `heatMin <= heatMax` 成立；
  * ② 分布与 reviewer 汇总逐项对齐（Heat 分布变化是**预期结果**，不是回归）；
  * ③ **非 Heat 字段一字未改**：以「去掉 `heatMin`/`heatMax` 后的整卡 sha256 指纹」对照落地前快照；
- * ④ 两个口径的「抽得到 / 抽不到」如实呈现（当前 UI 恒 H1 抽不到 21 张 = Human 已接受的正确结果）。
+ * ④ 两个口径的「抽得到 / 抽不到」如实呈现（当前 UI 恒 H1 抽不到 20 张 = Human 已接受的正确结果）。
  */
 
 import { createHash } from "node:crypto";
@@ -37,13 +39,13 @@ import {
 /* 期望值①：reviewer 逐卡表（transcript，唯一数据来源）                     */
 /* ------------------------------------------------------------------ */
 
-/** reviewer「建议 min / 建议 max」逐卡原值（24 行，一字不改）。 */
+/** reviewer「建议 min / 建议 max」逐卡原值（24 行，一字不改；205 为 2026-09-29 单卡复核后的落地值）。 */
 const REVIEWER_HEAT: Readonly<Record<string, readonly [number, number]>> = {
   "PN-TRUTH-201": [1, 3],
   "PN-TRUTH-202": [1, 4],
   "PN-TRUTH-203": [1, 3],
   "PN-TRUTH-204": [2, 3],
-  "PN-TRUTH-205": [2, 2],
+  "PN-TRUTH-205": [1, 3],
   "PN-TRUTH-206": [2, 3],
   "PN-TRUTH-207": [2, 4],
   "PN-TRUTH-208": [2, 4],
@@ -96,14 +98,14 @@ const NON_HEAT_SHA256: Readonly<Record<string, string>> = {
   "PN-TRUTH-224": "f42d4b125e489e86ace74a8d5c6e7ff2387a84d4c9ac8e2447195cb2425eb391",
 };
 
-/** 期望值②：reviewer 汇总（编排者裁决 #1 更正后）。 */
+/** 期望值②：reviewer 汇总（编排者裁决 #1 更正后；205 依 2026-09-29 单卡复核重算）。 */
 const EXPECTED_COUNTS = {
-  heatMin: { 1: 3, 2: 9, 3: 10, 4: 2 },
-  heatMax: { 1: 0, 2: 1, 3: 4, 4: 19 },
+  heatMin: { 1: 4, 2: 8, 3: 10, 4: 2 },
+  heatMax: { 1: 0, 2: 0, 3: 5, 4: 19 },
 } as const;
 
-/** 当前真实 UI（Heat 恒 H1）下 heatMin=1 ⇒ 唯一可抽的三张浅题。 */
-const H1_REACHABLE = ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203"] as const;
+/** 当前真实 UI（Heat 恒 H1）下 heatMin=1 ⇒ 第一包可抽的四张浅题。 */
+const H1_REACHABLE = ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203", "PN-TRUTH-205"] as const;
 
 const nonHeatSha256 = (card: object): string => {
   // 浅拷贝后删掉两个 Heat 字段：删除不改变其余 key 的插入顺序 ⇒ 序列化结果可复现。
@@ -142,14 +144,14 @@ describe("A3① 逐卡 heatMin/heatMax 与 reviewer 表逐字一致", () => {
     }
   });
 
-  it("heatMin <= heatMax 24/24 成立（边界卡 205=2/2、223=4/4、224=4/4、202=1/4）", () => {
+  it("heatMin <= heatMax 24/24 成立（边界卡 202=1/4、223=4/4、224=4/4；205 已由复核改为 1/3，不再是 2/2）", () => {
     for (const card of FORMAL_TRUTH_CARDS) {
       expect(card.heatMin, `${card.cardId} heatMin<=heatMax`).toBeLessThanOrEqual(card.heatMax);
     }
     const boundary = FORMAL_TRUTH_CARDS.filter(
       (card) => card.heatMin === card.heatMax || card.cardId === "PN-TRUTH-202",
     ).map((card) => `${card.cardId}=${card.heatMin}/${card.heatMax}`);
-    expect(boundary).toEqual(["PN-TRUTH-202=1/4", "PN-TRUTH-205=2/2", "PN-TRUTH-223=4/4", "PN-TRUTH-224=4/4"]);
+    expect(boundary).toEqual(["PN-TRUTH-202=1/4", "PN-TRUTH-223=4/4", "PN-TRUTH-224=4/4"]);
   });
 });
 
@@ -158,7 +160,7 @@ describe("A3① 逐卡 heatMin/heatMax 与 reviewer 表逐字一致", () => {
 /* ------------------------------------------------------------------ */
 
 describe("A3② 分布与 reviewer 汇总逐项对齐", () => {
-  it("heatMin H1=3 / H2=9 / H3=10 / H4=2；heatMax H2=1 / H3=4 / H4=19", () => {
+  it("heatMin H1=4 / H2=8 / H3=10 / H4=2；heatMax H3=5 / H4=19", () => {
     expect(heatMinDist()).toEqual(EXPECTED_COUNTS.heatMin);
     expect(heatMaxDist()).toEqual(EXPECTED_COUNTS.heatMax);
     // 合计守恒：两列都是 24。
@@ -210,15 +212,18 @@ const routerInputAt = (heat: Heat, drawSeed: number): V2RouterInput => {
   };
 };
 
+/** 本文件只锁**第一包 24 张**：把 Router 桶收窄到第一包 id 集（R2 Bootstrap 候选同用 `PN-TRUTH-2*` 前缀，不属本文件范围）。 */
+const FIRST_PACK_ID_SET: ReadonlySet<string> = new Set(FORMAL_TRUTH_CARDS.map((card) => card.cardId));
+
 const formalIdsInBucketAt = (heat: Heat): string[] =>
   createV2MainlineRouter({ packId: "truth-dare" })
     .bucket(routerInputAt(heat, 0))
     .map((card) => card.cardId)
-    .filter((cardId) => cardId.startsWith("PN-TRUTH-2"))
+    .filter((cardId) => FIRST_PACK_ID_SET.has(cardId))
     .sort();
 
 describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口径", () => {
-  it("当前真实 UI：H1 桶内 Formal 集合 === 表中 heatMin=1 的卡集合 === {201,202,203}", () => {
+  it("当前真实 UI：H1 桶内 Formal 集合 === 表中 heatMin=1 的卡集合 === {201,202,203,205}", () => {
     // ⚠️ 本断言即替换旧 `FORMAL_IDS.every(...)`（旧口径「24/24 heatMin=1 ⇒ 全在 H1 桶」已作废）。
     const h1 = formalIdsInBucketAt("H1");
     const expected = FORMAL_TRUTH_CARDS.filter((card) => card.heatMin === 1)
@@ -228,14 +233,13 @@ describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口
     expect(h1).toEqual(expected);
   });
 
-  it("当前真实 UI：暂时抽不到 21 张（Human 已接受的正确结果，非缺陷）", () => {
+  it("当前真实 UI：第一包暂时抽不到 20 张（Human 已接受的正确结果，非缺陷）", () => {
     const reachable = new Set(formalIdsInBucketAt("H1"));
     const unreachable = FORMAL_TRUTH_CARDS.map((card) => card.cardId).filter((id) => !reachable.has(id));
-    expect(unreachable).toHaveLength(21);
+    expect(unreachable).toHaveLength(20);
     // 按 cardId 升序（= 内容源顺序）；分组注释标出各自的 heatMin 档。
     expect(unreachable).toEqual([
-      "PN-TRUTH-204", // H2（本段 9 张）
-      "PN-TRUTH-205",
+      "PN-TRUTH-204", // H2（本段 8 张）
       "PN-TRUTH-206",
       "PN-TRUTH-207",
       "PN-TRUTH-208",
@@ -258,7 +262,7 @@ describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口
     ]);
   });
 
-  it("engine / 显式 disclosure 口径：四档全部有货，H1/H2/H3/H4 首次解锁 3/9/10/2 张", () => {
+  it("engine / 显式 disclosure 口径：四档全部有货，H1/H2/H3/H4 首次解锁 4/8/10/2 张", () => {
     // 「该档首次解锁」= heatMin === H 的张数；「该档 bucket 内可抽总数」= heatMin<=H<=heatMax。
     const firstUnlock: Record<Heat, number> = {
       H1: FORMAL_TRUTH_CARDS.filter((card) => card.heatMin === 1).length,
@@ -266,7 +270,7 @@ describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口
       H3: FORMAL_TRUTH_CARDS.filter((card) => card.heatMin === 3).length,
       H4: FORMAL_TRUTH_CARDS.filter((card) => card.heatMin === 4).length,
     };
-    expect(firstUnlock).toEqual({ H1: 3, H2: 9, H3: 10, H4: 2 });
+    expect(firstUnlock).toEqual({ H1: 4, H2: 8, H3: 10, H4: 2 });
 
     for (const heat of ["H1", "H2", "H3", "H4"] as const) {
       const rank = Number(heat.slice(1));
@@ -285,7 +289,7 @@ describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口
       formalIdsInBucketAt("H2").length,
       formalIdsInBucketAt("H3").length,
       formalIdsInBucketAt("H4").length,
-    ]).toEqual([3, 12, 21, 19]);
+    ]).toEqual([4, 12, 22, 19]);
   });
 
   it("两 Router 同口径：生产 createDeckRouter 在 H1 也只放行 heatMin=1 的 Formal 卡", () => {
@@ -297,7 +301,7 @@ describe("A3④ 当前 UI（Heat 恒 H1）与 engine/显式 disclosure 两个口
     const productionH1 = deck
       .bucket(routerInputAt("H1", 0))
       .map((card) => card.cardId)
-      .filter((cardId) => cardId.startsWith("PN-TRUTH-2"))
+      .filter((cardId) => FIRST_PACK_ID_SET.has(cardId))
       .sort();
     expect(productionH1).toEqual(formalIdsInBucketAt("H1"));
   });

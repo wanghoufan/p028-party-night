@@ -3,18 +3,24 @@
  *
  * 只做静态核验，不接管线、不改任何产物。fail-closed：任何一项不合规即 `process.exit(1)`。
  * 覆盖：
- * 1. 张数（18~24）与 ID 唯一性 / 与既有 SSOT 390 张不冲突 / `PN-TRUTH` 编号段不重叠；
+ * 1. 张数（第一包 18~24；R2 Bootstrap 6~8，**已过两轮独立审查并入库 ⇒ 已是 Formal**）与 ID 唯一性 /
+ *    与既有 SSOT 390 张不冲突 /
+ *    `PN-TRUTH` 编号段不重叠（两包合并核验）；
  * 2. 分布：intensity(I1~I5) / heatMin·heatMax / topic / informationGain / relationshipProgression；
+ *    R2 另单独打印 Bootstrap 包的 intensity / heatMin / heatMax / topic / socialEnergy 分布；
  * 3. 枚举合法性：SSOT 形状 18 字段 + Plan §3 质量字段逐字段对照真源枚举集合（0 非法）；
  * 4. 必填字段缺失 = 0（直接用正式入库校验器 `validateFixedCardMetadataStrict`）；
  * 5. 与既有 350 题的重复检查：精确重复必须 0；近似（字符 bigram Jaccard）只列清单不沉默；
- * 6. canonical BAR-FIT 机器预筛：`HARD_FAIL_PATTERN` 必须 0（SUSPECT 只列池）。
+ * 6. canonical BAR-FIT 机器预筛：`HARD_FAIL_PATTERN` 必须 0（SUSPECT 只列池）；
+ * 7. R2 Bootstrap 反向护栏（**对已入正式库的这 7 张仍逐条适用**，是内容形状护栏、非「未审查」口径）：heatMin 全 1、heatMax 不得全 4、intensity 不得全 1、不得用深关系题材；
+ * 8. 三红线零命中（复用生产 `isHardBlocked`：露骨 / 强迫惩罚灌酒 / 隐私脱衣非自愿）。
  *
  * 运行：`npx vite-node -c vitest.config.ts scripts/audit-formal-truth-selfcheck.ts`
  * 退出码 0 = 全部合规；非 0 = 有不合规项（逐条打印）。
  */
 
 import { readFileSync } from "node:fs";
+import { isHardBlocked } from "@/lib/ai/safety-filter";
 import { judgeCanonicalBarFit } from "@/lib/v2-content/bar-fit-input";
 import {
   V2_BAR_FIT,
@@ -30,6 +36,7 @@ import {
   validateFixedCardMetadataStrict,
   type V2Topic,
 } from "@/lib/v2-content/v2-card-metadata";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import {
   V2_CONSENT_MODES,
@@ -48,6 +55,9 @@ const SSOT_PATH = `${ROOT}/lib/v2-content/generated/v2-ssot.generated.json`;
 
 const MIN_CARDS = 18;
 const MAX_CARDS = 24;
+/** R2｜Truth H1 Bootstrap 包张数区间（宁少勿滥，不设「必须 8 张」quota；7 张已过审查、已入 Formal）。 */
+const BOOTSTRAP_MIN_CARDS = 6;
+const BOOTSTRAP_MAX_CARDS = 8;
 /** 近似判定阈值（字符 bigram Jaccard）：≥ 该值列入近似清单（不自动判失败，人读复核）。 */
 const NEAR_DUPLICATE_THRESHOLD = 0.5;
 
@@ -124,13 +134,23 @@ const intOf = (value: unknown): number | null => (typeof value === "number" && N
 /* 1. 张数 / ID 唯一性 / 与既有 390 不冲突                              */
 /* ------------------------------------------------------------------ */
 
-const cards = FORMAL_TRUTH_CARDS;
+const cards = [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS];
 const cardIds = cards.map((card) => card.cardId);
 const cardIdSet = new Set(cardIds);
 
-console.log(`\n=== C1-2 第一包真心话静态自检（${cards.length} 张） ===`);
-if (cards.length < MIN_CARDS || cards.length > MAX_CARDS) {
-  errors.push(`张数 ${cards.length} 不在 ${MIN_CARDS}~${MAX_CARDS}`);
+console.log(
+  `\n=== C1-2 真心话静态自检（第一包 ${FORMAL_TRUTH_CARDS.length} 张 + H1 Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（已入 Formal）= ${cards.length} 张） ===`,
+);
+if (FORMAL_TRUTH_CARDS.length < MIN_CARDS || FORMAL_TRUTH_CARDS.length > MAX_CARDS) {
+  errors.push(`第一包张数 ${FORMAL_TRUTH_CARDS.length} 不在 ${MIN_CARDS}~${MAX_CARDS}`);
+}
+if (
+  FORMAL_TRUTH_BOOTSTRAP_CARDS.length < BOOTSTRAP_MIN_CARDS ||
+  FORMAL_TRUTH_BOOTSTRAP_CARDS.length > BOOTSTRAP_MAX_CARDS
+) {
+  errors.push(
+    `Bootstrap 包张数 ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 不在 ${BOOTSTRAP_MIN_CARDS}~${BOOTSTRAP_MAX_CARDS}（宁少勿滥，也不可超 8）`,
+  );
 }
 if (cardIdSet.size !== cardIds.length) {
   const dup = cardIds.filter((id, i) => cardIds.indexOf(id) !== i);
@@ -202,6 +222,64 @@ if ((heatMaxDist.get(1) ?? 0) + (heatMaxDist.get(2) ?? 0) + (heatMaxDist.get(3) 
   errors.push("heatMax 无一低于 H4（禁止为了库存统一拉 4）");
 }
 if ((intDist.get(1) ?? 0) + (intDist.get(2) ?? 0) < 8) errors.push(`intensity=1/2 合计 <8，ceiling=1/2 库存不足`);
+
+/* ------------------------------------------------------------------ */
+/* 2b. R2｜Truth H1 Bootstrap 包分布（已入 Formal；单独打印 + 反向护栏）    */
+/* ------------------------------------------------------------------ */
+
+console.log("\n--- R2｜Truth H1 Bootstrap 包分布（已入 Formal，PN-TRUTH-225 起）---");
+const bootstrap = FORMAL_TRUTH_BOOTSTRAP_CARDS;
+const bootIntDist = countBy(bootstrap.map((card) => card.intensity));
+const bootHeatMinDist = countBy(bootstrap.map((card) => card.heatMin));
+const bootHeatMaxDist = countBy(bootstrap.map((card) => card.heatMax));
+const bootTopicDist = countBy(bootstrap.map((card) => card.topic));
+const bootGainDist = countBy(bootstrap.map((card) => card.informationGain));
+const bootEnergyDist = countBy(bootstrap.map((card) => card.socialEnergy));
+printDistribution("intensity(I1~I5)", bootIntDist, [1, 2, 3, 4, 5]);
+printDistribution("heatMin", bootHeatMinDist, [1, 2, 3, 4]);
+printDistribution("heatMax", bootHeatMaxDist, [1, 2, 3, 4]);
+printDistribution("informationGain", bootGainDist, ["zero", "low", "medium", "high"]);
+printDistribution("socialEnergy", bootEnergyDist, ["low", "medium", "high"]);
+printDistribution("topic", bootTopicDist, V2_TOPICS);
+
+if (bootstrap.length === 0) errors.push("Bootstrap 包为空（本单要求新增 6~8 张 H1 补卡）");
+for (const card of bootstrap) {
+  if (card.heatMin !== 1) errors.push(`${card.cardId}: Bootstrap 卡 heatMin=${card.heatMin} ≠ 1（必须是真 H1）`);
+}
+if ((bootHeatMaxDist.get(4) ?? 0) === bootstrap.length) {
+  errors.push("Bootstrap 包 heatMax 全为 H4（禁止为了库存统一拉 4）");
+}
+if ((bootHeatMaxDist.get(1) ?? 0) + (bootHeatMaxDist.get(2) ?? 0) + (bootHeatMaxDist.get(3) ?? 0) === 0) {
+  errors.push("Bootstrap 包 heatMax 无一低于 H4（破冰题到 H4 已太浅，必须逐卡诚实）");
+}
+if ((bootIntDist.get(1) ?? 0) === bootstrap.length) {
+  errors.push("Bootstrap 包 intensity 全为 1（要求做出真正「浅关系但更有现场能量」的 H1+I2/I3 卡）");
+}
+/** 浅关系题材护栏：Bootstrap 不得触碰深层关系/性/边界题材（由 topic 表达）。 */
+const BOOTSTRAP_FORBIDDEN_TOPICS: readonly V2Topic[] = [
+  "前任态度",
+  "吃醋·占有",
+  "异性朋友边界",
+  "底线·雷区",
+  "亲密边界",
+  "性观念·亲密态度",
+  "恋爱观",
+  "择偶偏好",
+  "人生目标·理想生活",
+];
+for (const card of bootstrap) {
+  if (BOOTSTRAP_FORBIDDEN_TOPICS.includes(card.topic)) {
+    errors.push(`${card.cardId}: Bootstrap 卡不得用深关系/性/边界题材「${card.topic}」`);
+  }
+  if (card.intimacyClass !== "none") errors.push(`${card.cardId}: Bootstrap 卡 intimacyClass 必须为 none`);
+  if (card.intensity > 3) errors.push(`${card.cardId}: Bootstrap 卡 intensity=${card.intensity} 超出（禁止为曝光做不自然的 I4/I5）`);
+}
+
+/** 三红线零命中（复用生产安全硬规则 `isHardBlocked`：露骨 / 强迫惩罚灌酒 / 隐私脱衣非自愿）。 */
+const redlineHits = cards.filter((card) => isHardBlocked(`${card.text} ${card.informationGoal}`));
+console.log(`\n--- 三红线扫描（生产 isHardBlocked）---\n命中：${redlineHits.length}`);
+for (const card of redlineHits) console.log(`  - ${card.cardId}: ${card.text}`);
+if (redlineHits.length > 0) errors.push(`三红线命中 ${redlineHits.length} 张（必须 0）`);
 
 /** A.1 审查发现的 2 个零维度 → 既有合法 topic 值。 */
 const ZERO_DIMENSIONS: ReadonlyArray<{ label: string; topics: readonly V2Topic[] }> = [
@@ -396,6 +474,7 @@ if (errors.length > 0) {
   process.exit(1);
 }
 console.log(
-  `全部合规：${cards.length} 张；精确重复 0；枚举非法 0；strict 必填缺失 0；` +
-    `heatMin 覆盖 H1~H4（无空档）；heatMax 未统一拉 4；intensity 覆盖 1~5；零维度已补；BAR-FIT HARD_FAIL_PATTERN 0。`,
+  `全部合规：第一包 ${FORMAL_TRUTH_CARDS.length} 张 + Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（已入 Formal）= ${cards.length} 张；` +
+    `精确重复 0；枚举非法 0；strict 必填缺失 0；heatMin 覆盖 H1~H4（无空档）；heatMax 未统一拉 4；` +
+    `intensity 覆盖 1~5；零维度已补；三红线 0 命中；BAR-FIT HARD_FAIL_PATTERN 0。`,
 );

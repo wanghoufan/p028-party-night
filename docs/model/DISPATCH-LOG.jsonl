@@ -246,3 +246,15 @@
 {"date":"2026-09-28","task":"CR-4 code-reviewer 复检","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
 {"date":"2026-09-28","task":"QA-6 门禁与专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
 {"date":"2026-09-28","task":"SUP-4 终检","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"blocking=0，可 commit+push"}
+{"date":"2026-09-29","task":"R0-2 修 note 派生","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"数据与 note 自相矛盾已修"}
+{"date":"2026-09-29","task":"R0-1/R0-3 HANDOFF 更新(TM 自做)","role":"task-manager","model":"—","used":"主","runtime":"本窗口","result":"PASS","note":"HEAD c61f7d4"}
+{"date":"2026-09-29","task":"R1 reviewer 复核 205 Heat","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"2/2→1/3，已落盘自证"}
+{"date":"2026-09-29","task":"R2 Bootstrap 7 张候选","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"heatMin 全 1，formal 仍 24"}
+{"date":"2026-09-29","task":"R3 机器BAR-FIT+审查输入扩展","role":"builder","model":"codebuddy/glm-5.3-flash","used":"备用","runtime":"codebuddy","result":"PASS","note":"deepseek 429 → 按 override 备用通道"}
+{"date":"2026-09-29","task":"B4 重写3张+metadata修正","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"226/228/230 改题面"}
+{"date":"2026-09-29","task":"B5 reviewer 复判3张","role":"product-reviewer","model":"opencode/muse-spark-1.3-contributor-free","used":"主","runtime":"本窗口","result":"PASS","note":"全 PASS"}
+{"date":"2026-09-29","task":"B5b 回填+Formal admission","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"formal 24→31"}
+{"date":"2026-09-29","task":"B6 重跑 MC 双口径","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"报告全派生"}
+{"date":"2026-09-29","task":"CR-5 code-reviewer 复检 Bootstrap 链","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"P0=0/blocking P1=0"}
+{"date":"2026-09-29","task":"QA-7 门禁与专项实测","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"总判定 PASS"}
+{"date":"2026-09-29","task":"P3-1 清过期注释","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"按用户指示继续派 deepseek-flash"}

@@ -1,8 +1,8 @@
 {
-  "source": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变）",
-  "reviewedAt": "2026-09-28T15:10:00Z",
+  "source": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，本轮原文一字未改（指纹锁定见 FIRST_PACK_REVIEW_ENTRIES_SHA256）。",
+  "reviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）",
   "reviewerKind": "ai-role",
-  "note": "本文件已由 product-reviewer（Research Reviewer，AI 角色，非真人物品审）逐卡填写 24 条人审结论。判定依据三条：①安全红线（无露骨性描写／无强迫惩罚灌酒／无隐私脱衣非自愿；I1 不触亲密性内容，I4/I5 才触及态度与边界，且全部 consentMode=skip-anytime 可无惩罚跳过）；②BAR-FIT（题面是否像人话、有无尴尬/冒犯/说教/审讯腔/AI 腔）；③信息增量（答完能否真的更了解对方本人，是否会落到现场评价/猜测/空话/套话）。机器档位（machineVerdict）只作分流参考，未作为任何一条结论的依据。第二轮复判（2026-09-28T12:48:29Z）：对 builder 按建议重写的 4 张（204/207/220/223）重走同一套三条标准，204/207/220 由 BORDERLINE 升 PASS，223 维持 BORDERLINE（题面腔调已改好但信息增量仍偏薄，属封闭式二选一只换一个标签）。第三轮复判（2026-09-28T15:10:00Z）：仅对 223 重走同一套三条标准——builder 采 208 式量化重写为「亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。」，二轮指出的封闭式单标签与易滑成辩论两个缺陷均已消除，信息增量达标，223 由 BORDERLINE 升 PASS（其余 23 条结论一字未动）。结论：PASS 24 / BORDERLINE 0 / FAIL 0；按 satisfiesFormalAdmission 四条件，预期 formal fixed = 24 张。审查报告：docs/review/RESEARCH_REVIEW-FORMAL-TRUTH-PACK-1.md。",
+  "note": "本文件已由 product-reviewer（Research Reviewer，AI 角色，非真人物品审）逐卡填写 24 条人审结论。判定依据三条：①安全红线（无露骨性描写／无强迫惩罚灌酒／无隐私脱衣非自愿；I1 不触亲密性内容，I4/I5 才触及态度与边界，且全部 consentMode=skip-anytime 可无惩罚跳过）；②BAR-FIT（题面是否像人话、有无尴尬/冒犯/说教/审讯腔/AI 腔）；③信息增量（答完能否真的更了解对方本人，是否会落到现场评价/猜测/空话/套话）。机器档位（machineVerdict）只作分流参考，未作为任何一条结论的依据。第二轮复判（2026-09-28T12:48:29Z）：对 builder 按建议重写的 4 张（204/207/220/223）重走同一套三条标准，204/207/220 由 BORDERLINE 升 PASS，223 维持 BORDERLINE（题面腔调已改好但信息增量仍偏薄，属封闭式二选一只换一个标签）。第三轮复判（2026-09-28T15:10:00Z）：仅对 223 重走同一套三条标准——builder 采 208 式量化重写为「亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。」，二轮指出的封闭式单标签与易滑成辩论两个缺陷均已消除，信息增量达标，223 由 BORDERLINE 升 PASS（其余 23 条结论一字未动）。结论：PASS 24 / BORDERLINE 0 / FAIL 0；按 satisfiesFormalAdmission 四条件，预期 formal fixed = 24 张。审查报告：docs/review/RESEARCH_REVIEW-FORMAL-TRUTH-PACK-1.md。 【R3 追加】R2 Truth H1 Bootstrap 候选 7 张（PN-TRUTH-225~231）已完成两轮独立审查：第一轮 4 PASS / 3 BORDERLINE / 0 FAIL（temp/REVIEW-BOOTSTRAP-7.md），builder 按 reviewer 建议重写 226/228/230 题面（并调整 228 的 heatMax 4→3、230 的 3→2），复判 7 张全部 PASS（temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已回填 humanBarFit=PASS / reviewed=true。reviewerKind=ai-role 如实标注审查者身份（AI 角色，非真人）；机器档位（machineVerdict）只作分流参考，**不是**本次定档的依据 —— 7 张的 PASS 来自独立 reviewer 的逐卡复判报告，机器预筛只是恰好同档。任何汇总数字都由逐卡机器档位行计算（见 lib/v2-content/bar-fit-review-input.ts#tallyVerdicts），不得手填。⛔ UNREVIEWED 不等于 PASS，也不等于 FAIL —— 缺口由独立 reviewer 补写，不得把机器档位当正式定档。",
   "entries": {
     "PN-TRUTH-201": {
       "reviewed": true,
@@ -123,25 +123,80 @@
       "reviewed": true,
       "humanBarFit": "PASS",
       "note": "「你会怎么开口谈？说一句」要的是实际会说出的话，指向真实沟通习惯与边界表达；I5 但只触及态度与节奏分歧，不越红线，可无惩罚跳过。"
+    },
+    "PN-TRUTH-225": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第一轮即 PASS（复判确认：本轮未改题面）。依据 temp/REVIEW-BOOTSTRAP-7.md 第一轮逐卡理由：主问＋「让你上头的第一个瞬间」两拍都能一句话答，第二拍是具体钩子不是长篇作文；信息增量落点是具体事件而非标签，「非猜测、非『看情况』」；安全：非亲密类，intimacyClass=none、consentMode=skip-anytime，无露骨/无强迫惩罚灌酒/无隐私非自愿。Heat：「最近才开始」是时效新鲜题，刚认识就有素材 ⇒ heatMin=1 成立；到 H4 仍是轻兴趣题、不构成深层话题 ⇒ heatMax=3 诚实。"
+    },
+    "PN-TRUTH-226": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判：由 BORDERLINE 升 PASS（依据 temp/REVIEW-BOOTSTRAP-7-RECHECK.md §1）。原 BORDERLINE 主因「题面本身是纯三选一标签题，没有『为什么/说说』钩子」已消除——选项后直接跟「为什么？」，三选一＋一句理由 10 秒内可答；次因「informationGoal 超题面」已修，目标＝「知道他真实的周末节奏更像哪一种，以及他为什么偏这一种」，复判确认「两问（选哪类 / 为什么偏这类）都在题面上，无超题面信息」。信息增量 medium 成立（三选项是可被推翻的具体行为选项＋成因，不是价值观口号）。安全：日常作息题，intimacyClass=none、consentMode=skip-anytime。heatMax 维持 2（复判：到 H4 属过浅）。残留瑕疵不挡 PASS（复判原文）：三选项中「临时决定」偏软，实战可能被答成「看情况」，但带「为什么」仍有增量。"
+    },
+    "PN-TRUTH-227": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第一轮即 PASS（复判确认：本轮未改题面）；topic 由 live_chemistry 改为「兴趣爱好」经 reviewer 复判确认为恰当（依据 temp/REVIEW-BOOTSTRAP-7-RECHECK.md §2）。改 topic 的三条依据（复判原文）：依据 1（硬）live_chemistry 不在真源 V2_TOPICS 内，原值本身就是非法枚举，改为「兴趣爱好」是把非法值拉回合法集；依据 2（语义）题面问的是他真心喜欢并想分享的东西，落在「兴趣爱好」比任何其它枚举都贴；依据 3（次主题置空）原 secondaryTopics 与新主 topic 重复，secondaryTopics 真源为可选字段，置 [] 合规。topic 标注属可修的元数据缺陷、不构成内容质量缺陷，故不影响 PASS：题面 10 秒可懂、「说服我们」是明确的表演型钩子、信息增量具体（他的口味与投入偏好，非标签）。heatMin=1 成立、heatMax=3 诚实。"
+    },
+    "PN-TRUTH-228": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判：由 BORDERLINE 升 PASS（依据 temp/REVIEW-BOOTSTRAP-7-RECHECK.md §1）。题面补「你认吗？」后与 informationGoal「听他讲出自己在朋友圈里被默认的那个角色，以及他认不认这个说法」两问对齐，复判确认不再超题面；heatMax 已按建议 4→3 落地（复判原文：H4 才该给的深度，这张停在 H3；「张罗/捧场/失踪」自带笑点与自嘲，撑到 H4 会开始挖人际关系评价，H3 是正确上限）；heatMin=1 维持。信息增量 medium 成立——「被默认的角色＋本人认不认」是有具体内容的行为观察，不是「你是什么性格」。安全：问的是自我认知、不是让他评价别人，无前任/吃醋/边界审判色彩。"
+    },
+    "PN-TRUTH-229": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第一轮即 PASS（复判确认：本轮未改题面）。依据 temp/REVIEW-BOOTSTRAP-7.md 第一轮逐卡理由：10 秒可懂，主问＋「说说你试过的那次」是天然的一句话钩子，能引出具体轶事；信息增量落到「明确排斥的内容类别＋试过后为什么不感冒的实例」（具体经历＋拒绝理由，非空洞标签）；「提不起兴趣」指向内容类别而非对人，不构成评判他人。安全：非亲密类，intimacyClass=none、consentMode=skip-anytime。Heat：口味排斥是安全破冰话题，H1 自然；到 H3 仍是有趣细节、H4 属过浅 ⇒ heatMin=1／heatMax=3 成立。"
+    },
+    "PN-TRUTH-230": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第二轮复判：由 BORDERLINE 升 PASS（依据 temp/REVIEW-BOOTSTRAP-7-RECHECK.md §1）。原 BORDERLINE 主因「现场框架偏边界元问题」已消除——新题面从现场框架改为「一条具体规矩＋说说它怎么来的」，复判原文：落点从「你怎么定义相处边界」变成「你有一个具体做法，且有故事来源」，仍是浅关系话题但不再像边界问卷；heatMax 已按建议 3→2 落地（题面自带「刚认识的人」锚点，深度被钉死在浅关系）；informationGoal 与题面两问（有没有规矩 / 怎么来的）一致，无超题面。信息增量 medium 成立，且是本包唯一 informationGoalType=relationship_rule 的卡，维度上不与其他 6 张重复。安全：问的是本人的一条规矩，不是越界问题，非亲密类、可跳过。复判如实点出的残留观察（不挡 PASS、不作为卡点）：这是全包最容易答空的一张（对方可能答「没什么规矩」），但题面已用「说说它怎么来的」兜底、答不出可 skip-card 跳过，Bar 场中不会卡场。"
+    },
+    "PN-TRUTH-231": {
+      "reviewed": true,
+      "humanBarFit": "PASS",
+      "note": "第一轮即 PASS（复判确认：本轮未改题面）。依据 temp/REVIEW-BOOTSTRAP-7.md 第一轮逐卡理由：「什么时候＋那段时间在做什么」两拍都能一句话答且第二拍强制具体（规避了抽象化），温和、不尴尬、不说教、非 AI 腔、不要求作文；信息增量原文记「存在轻微抽象化风险（如答『深夜独处时』偏虚），但『通常在做什么』这一追问问的是可复述的日常仪式，实测可落具体」。heatMin=1 自然；heatMax=4 是本包唯一被判诚实的 4——「什么时候最像你自己」是会随关系加深而自然加深的自陈题（从「我在干嘛」到「那段时间我在想什么」），不属机械拉 4，故维持。安全：非亲密类，intimacyClass=none、consentMode=skip-anytime。"
     }
   },
   "packMachineVerdictSummary": {
-    "scope": "本包（第一包 24 张 PN-TRUTH-201~224）",
-    "total": 24,
-    "PASS": 24,
+    "scope": "TRUTH 内容包（第一包 24 张 PN-TRUTH-201~224 + Bootstrap 7 张 PN-TRUTH-225~231 = 31 张）",
+    "total": 31,
+    "PASS": 31,
     "SUSPECT": 0,
     "HARD_FAIL_PATTERN": 0,
-    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.rows 与 #sets.frozenFixed390.rows 差集（＝本包 24 张），逐卡 machineVerdict 实读",
-    "note": "本包 24 张机器档位实测全部 PASS（SUSPECT 0 / HARD_FAIL_PATTERN 0），与骨架原记录一致。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
+    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.rows 逐卡 machineVerdict 实读（canonical 口径：正文 + instruction）",
+    "note": "父级数字 = 各子组逐项之和（不单独手填）。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。",
+    "groups": {
+      "truthFirstPack": {
+        "scope": "TRUTH 第一包 24 张（PN-TRUTH-201~224；已由 reviewer 三轮审查定档）",
+        "total": 24,
+        "PASS": 24,
+        "SUSPECT": 0,
+        "HARD_FAIL_PATTERN": 0,
+        "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.rows 逐卡 machineVerdict 实读（canonical 口径：正文 + instruction）",
+        "note": "本组 24 张机器档位实测全部 PASS，与既有记录一致（与 humanBarFit 独立得出）。"
+      },
+      "truthBootstrap": {
+        "scope": "Truth H1 Bootstrap 7 张（PN-TRUTH-225~231；已由 reviewer 两轮独立审查定档）",
+        "total": 7,
+        "PASS": 7,
+        "SUSPECT": 0,
+        "HARD_FAIL_PATTERN": 0,
+        "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.rows 逐卡 machineVerdict 实读（canonical 口径：正文 + instruction）",
+        "note": "本组 7 张机器档位实测全部 PASS，与独立 reviewer 的复判结论恰好同档（两者独立得出，机器档位未作为定档依据）。"
+      }
+    }
   },
   "libraryMachineVerdictSummary": {
-    "scope": "整库（冻结固定库 414 张＝主线 374 + 扩圈 40）",
-    "total": 414,
-    "PASS": 188,
+    "scope": "整库（冻结固定库全量 421 张 = SSOT 390 + 第一包 24 + Bootstrap 7）",
+    "total": 421,
+    "PASS": 195,
     "SUSPECT": 222,
     "HARD_FAIL_PATTERN": 4,
-    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414.machineVerdictDistribution（实读）",
-    "note": "整库真实分布（实读自 BAR-FIT-AUDIT.json，非估算）。HARD_FAIL_PATTERN=4 为整库口径（PN-DARE-005/016/027 + PN-EXPAND-036），与本包无关。此前把「本包 24 张」与「整库 HARD_FAIL_PATTERN=4」写进同一对象（24+0+4=28），会被误读为四项同属一个集合，故拆为 pack / library 两个各自自洽的并列对象。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
+    "source": "docs/qa/content-audit-v2/BAR-FIT-AUDIT.json#sets.frozenFixed414（实读；该集标识为稳定键名，张数以 cardCount 为准）",
+    "note": "整库真实分布（实读自 BAR-FIT-AUDIT.json，非估算）。HARD_FAIL_PATTERN 为整库口径（PN-DARE-005/016/027 + PN-EXPAND-036），与 TRUTH 内容包无关。机器档位仅作分流参考，未作为任何一条 humanBarFit 的依据。"
   },
-  "generatedBy": "scripts/audit-bar-fit-human-review-skeleton.ts（骨架）＋ product-reviewer 逐卡填写（结论）"
+  "generatedBy": "scripts/audit-bar-fit-human-review-skeleton.ts（骨架）＋ scripts/audit-bar-fit-human-review-extend.ts（R3 扩展：追加 Bootstrap 7 条 + 按包分组汇总，由逐卡数据计算；B5：保留已定档结论并同步追加语）＋ product-reviewer 逐卡填写（第一包结论）＋ product-reviewer 复判回填（Bootstrap 7 张，见 temp/REVIEW-BOOTSTRAP-7.md / temp/REVIEW-BOOTSTRAP-7-RECHECK.md）"
 }

@@ -4,7 +4,7 @@
  * 要证明的链（全部走生产代码，测试只提供两支**正式输入**：真实牌堆 + 正式披露信号）：
  *
  * ```
- * 真实牌堆（mainlineSsotCardsByPack('truth-dare')，含第一包 24 张 Formal）
+ * 真实牌堆（mainlineSsotCardsByPack('truth-dare')，含 Formal 31 张）
  *   → startRound（唯一出题入口：drawDeckCard → createDeckRouter → 生产 Router 三层计数）
  *   → resolveRoundAndReduce(session, 'complete', roundDisclosureSignal({ selfDisclosed, disclosedPlayerIds }))
  *   → eventForRoundTerminal（卡侧 metadata 由 metadataForCard 读生产 sidecar；轮侧披露由正式信号提供）
@@ -13,24 +13,22 @@
  *
  * 纪律：
  * - **不**注入任何 metadata override（`setCardQualityIndexOverrides` 在本文件里一次都不调用）——
- *   第一包 24 张的 `informationGain`/`topic` 来自生产 sidecar（bridge → quality index 的真实投影）；
+ *   Formal 卡（第一包 24 + Bootstrap 7）的 `informationGain`/`topic` 来自生产 sidecar（bridge → quality index 的真实投影）；
  * - **不**直接赋值 relationship / effective count / heat；这些一律由上面的生产链派生后读回；
  * - 认识阈值 / 窗口 / Heat 契约 / D6 / `isEffectiveInformationRound` fail-closed 一律不动。
  *
- * 四个情形（口径随 A3「Heat 标注必须诚实」+ A5「双口径」更新，见各条的 ⚠️）：
- * 1. 全包（生产真实牌堆，124 张）seed=1：**当前真实 UI（Heat 恒 H1）下**第一包里只有
- *    201/202/203 三张 `heatMin=1` 进得了 H1 桶，且它们全为 I1、在建堆里输给 legacy 的高强度档
+ * 五个情形（口径随 A3「Heat 标注必须诚实」+ A5「双口径」+ B5「Bootstrap 7 张过审入 Formal」更新）：
+ * 1. 全包（生产真实牌堆，131 张 = SSOT 100 + Formal 31）seed=1：**当前真实 UI（Heat 恒 H1）下**
+ *    真 H1 卡（第一包 4 张 + Bootstrap 7 张）都进得了 H1 桶，但它们强度低、在建堆里输给 legacy 的高强度档
  *    ⇒ 本局 0 张 Formal、有效计数恒 0、Heat 恒 H1（Human 2026-09-28 已接受「深关系题在当前 UI
  *    暂时抽不到」是正确结果）；
- * 2. 仅 Formal 24 张（真实生产卡，只是牌堆取子集）seed=1：同一条链在 H1 只够走 3 张
- *    （201/202/203，全部 `heatMin=1`）后判 `PACK_EXHAUSTED`（桶空、窗口放宽仍空、本包尚有 21 张，
- *    按 D8 交 Host，不自动洗牌/结束）；
- *    ⚠️ 旧的「H1→H2→H3→H4 逐档可达」断言锁的是**已作废的「24/24 heatMin=1」口径**。
- *    engine / 显式 disclosure 口径下四档仍全部有货（H2/H3/H4 可抽 12/21/19 张），证据见
- *    `tests/unit/formal-truth-heat-labels.test.ts`（A3④）——本文件不手搓 relationship / heat。
- * 3. 仅 legacy 卡（无第一包）：负向对照 —— sidecar 恒 null ⇒ 有效计数恒 0、Heat 恒 H1（fail-closed 成立）。
+ * 2. 仅 Formal 31 张（manifest 轨，真实生产卡子集）seed=1：H1 桶有 11 张可计数（201/202/203/205 + Bootstrap 7）
+ *    ⇒ 冷启能离开 H1，逐档首达 1/4/8/13、跑满 20 轮、终态 H4
+ *    （⚠️ 历史断言「只够走 3 张后 PACK_EXHAUSTED」「H1 桶只有 4 张」是 205 复核前 / B5 前的口径，均已作废）；
+ * 2b. 仅 Bootstrap 7 张（B5 后已过独立审查 ⇒ 属 Formal 子集）：4 张 ⇒ H2、抽满 7 张后交 Host；
+ * 3. 仅 legacy 卡（无 Formal）：负向对照 —— sidecar 恒 null ⇒ 有效计数恒 0、Heat 恒 H1（fail-closed 成立）。
  * 4. **当前真实 UI 口径（A5 新增，可执行门禁）**：`roundDisclosureForCurrentRound()` 恒 `undefined`
- *    ⇒ 无披露生产者 ⇒ 即便牌堆全是可计数的 Formal 卡（201/202/203 真的被抽出、sidecar 有 metadata），
+ *    ⇒ 无披露生产者 ⇒ 即便牌堆全是可计数的 Formal 卡（真被抽出、sidecar 有 metadata），
  *    有效计数仍恒 0、Heat 仍恒 H1。这条把「口径 B」从报告文字变成红灯会亮的测试。
  */
 
@@ -49,12 +47,15 @@ import {
 } from "@/lib/engine/session-engine";
 import { relationshipOf } from "@/lib/engine/v2-deal";
 import { mainlineRuntimeCards, mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
+import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { metadataForCard } from "@/lib/v2-content/v2-card-quality-index";
 import { heatForEffectiveCount } from "@/lib/v2-relationship/v2-state";
 
 const PACK_ID = "truth-dare";
 const FIXED_DRAW_SEED = 1;
 const EXPLICIT_TIMEOUT_MS = 30_000;
+const BOOTSTRAP_ID_SET = new Set(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId));
 
 const players = (): Player[] =>
   ["a", "b", "c", "d"].map((id) => ({
@@ -84,7 +85,15 @@ const config = (): SessionConfig => ({
 });
 
 const PACK_CARDS = mainlineSsotCardsByPack(PACK_ID);
-const FORMAL_CARDS = PACK_CARDS.filter((card) => card.id.startsWith("PN-TRUTH-2"));
+/**
+ * 「Formal」用 manifest 真源 `formalFixedIdSet()` 判定（不用 `PN-TRUTH-2*` 前缀）。
+ * B5（2026-09-29）：Bootstrap 7 张（`PN-TRUTH-225~231`）已过两轮独立审查并回填
+ * `humanBarFit=PASS / reviewed=true` ⇒ **已是 Formal**，原「未过审候选桶」归零；
+ * 这里改用 `BOOTSTRAP_CARDS` 表示「Formal 里的 Bootstrap 子集」（子集证据，不是未过审证据）。
+ */
+const FORMAL_IDS = formalFixedIdSet();
+const FORMAL_CARDS = PACK_CARDS.filter((card) => FORMAL_IDS.has(card.id));
+const BOOTSTRAP_CARDS = PACK_CARDS.filter((card) => BOOTSTRAP_ID_SET.has(card.id));
 const LEGACY_CARDS = PACK_CARDS.filter((card) => !card.id.startsWith("PN-TRUTH-2"));
 
 interface RoundEvidence {
@@ -114,7 +123,7 @@ function driveProductionChain(deck: readonly GameCard[], maxRounds = 20): RoundE
     evidence.push({
       round: i + 1,
       cardId,
-      formal: cardId.startsWith("PN-TRUTH-2"),
+      formal: FORMAL_IDS.has(cardId),
       informationGain: metadataForCard(cardId).informationGain,
       topic: metadataForCard(cardId).topic,
       effectiveCount: relationship.relationshipEffectiveCardCount,
@@ -141,7 +150,7 @@ function driveProductionChainCurrentUI(deck: readonly GameCard[], maxRounds = 20
     evidence.push({
       round: i + 1,
       cardId,
-      formal: cardId.startsWith("PN-TRUTH-2"),
+      formal: FORMAL_IDS.has(cardId),
       informationGain: metadataForCard(cardId).informationGain,
       topic: metadataForCard(cardId).topic,
       effectiveCount: relationship.relationshipEffectiveCardCount,
@@ -167,11 +176,24 @@ describe("C1-8｜Formal Truth → Router → production event → effective coun
     const formalRows = evidence.filter((row) => row.formal);
     expect(formalRows).toHaveLength(0);
 
-    // 归因护栏（不是「卡没了」）：H1 桶里确实仍有 heatMin=1 的三张，只是排不到 top 强度档。
+    // 归因护栏（不是「卡没了」）：H1 桶里确实仍有 heatMin=1 的真 H1 卡（第一包 4 张 + Bootstrap 7 张），
+    // 只是排不到 top 强度档（本 seed 全被 legacy 的 I5 档占住）。
     const h1Formal = mainlineRuntimeCards()
       .filter((card) => card.cardId.startsWith("PN-TRUTH-2") && card.heatMin <= 1 && 1 <= card.heatMax)
       .map((card) => card.cardId);
-    expect(h1Formal).toEqual(["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203"]);
+    expect(h1Formal.sort()).toEqual([
+      "PN-TRUTH-201",
+      "PN-TRUTH-202",
+      "PN-TRUTH-203",
+      "PN-TRUTH-205",
+      "PN-TRUTH-225",
+      "PN-TRUTH-226",
+      "PN-TRUTH-227",
+      "PN-TRUTH-228",
+      "PN-TRUTH-229",
+      "PN-TRUTH-230",
+      "PN-TRUTH-231",
+    ].sort());
 
     // legacy 行：sidecar 恒 null（未补标）⇒ fail-closed 不计有效轮
     for (const row of evidence) {
@@ -186,8 +208,12 @@ describe("C1-8｜Formal Truth → Router → production event → effective coun
     expect(lastHeat(evidence)).toBe("H1");
   }, EXPLICIT_TIMEOUT_MS);
 
-  it("② 仅 Formal 24 张（真实生产卡子集）：H1 下只够走 3 张后 PACK_EXHAUSTED，Heat 恒 H1", () => {
-    expect(FORMAL_CARDS).toHaveLength(24);
+  it("② 仅 Formal 31 张（真实生产卡子集）：H1 桶有 11 张可计数（201/202/203/205 + Bootstrap 7）⇒ H1→H2→H3→H4 逐档可达（首达 1/4/8/13）", () => {
+    // 张数由 manifest 真源派生（不写死）：第一包 24 + Bootstrap 7 = 31，且 Formal 卡必须恰好是这套集合。
+    expect(FORMAL_CARDS).toHaveLength(FORMAL_IDS.size);
+    expect(FORMAL_CARDS.map((card) => card.id).sort()).toEqual([...FORMAL_IDS].sort());
+    for (const id of BOOTSTRAP_ID_SET) expect(FORMAL_IDS.has(id), `${id} 应已进 Formal`).toBe(true);
+
     const evidence = driveProductionChain(FORMAL_CARDS);
 
     // 牌堆只有 Formal 卡 ⇒ 每一张 completed 都是有效信息轮
@@ -197,20 +223,37 @@ describe("C1-8｜Formal Truth → Router → production event → effective coun
       evidence.map((_, index) => index + 1),
     );
 
-    // ⚠️ A3 口径变更：旧断言「H1→H2→H3→H4 逐档可达（H2@4 / H3@8 / H4@13）」依赖
-    // 「24 张全部 heatMin=1」。现只有 3 张 heatMin=1（201/202/203，全 I1）在 H1 可抽；
-    // 第 4 轮起桶空 → 窗口放宽仍空 → 本包尚有 21 张 ⇒ 生产判 PACK_EXHAUSTED（D8 交 Host）。
-    expect(evidence.map((row) => row.cardId).sort()).toEqual([
-      "PN-TRUTH-201",
-      "PN-TRUTH-202",
-      "PN-TRUTH-203",
-    ]);
-    expect(evidence).toHaveLength(3);
-    expect(evidence.map((row) => row.heat)).toEqual(["H1", "H1", "H1"]);
-    expect(maxEffective(evidence)).toBe(3);
-    expect(lastHeat(evidence)).toBe("H1");
-    // 「逐档可达」的机制未坏，只是被「当前 UI 无 disclosure ⇒ Heat 恒 H1」卡住：
-    // engine / 显式 disclosure 口径下 H2/H3/H4 分别可抽 12/21/19 张（见 formal-truth-heat-labels.test.ts A3④）。
+    // ⚠️ 口径变更历史：205 单卡复核（2/2 → 1/3）后 H1 桶内可计数 Formal 由 3 → 4；B5 回填 Bootstrap 7 张后 → 11。
+    // 无论 H1 库存多少，首达轮次由 Heat 阈值决定（H2@4 / H3@8 / H4@13），实测跑满 20 轮。
+    const firstReach = (heat: string): number | null => {
+      const index = evidence.findIndex((row) => row.heat === heat);
+      return index === -1 ? null : index + 1;
+    };
+    expect({
+      H1: firstReach("H1"),
+      H2: firstReach("H2"),
+      H3: firstReach("H3"),
+      H4: firstReach("H4"),
+    }).toEqual({ H1: 1, H2: 4, H3: 8, H4: 13 });
+    expect(evidence).toHaveLength(20);
+    expect(maxEffective(evidence)).toBe(20);
+    expect(lastHeat(evidence)).toBe("H4");
+    // 与落盘产物 `FORMAL-TRUTH-PRODUCTION-CHAIN.json#scenarioFormalOnly` 同源同口径。
+  }, EXPLICIT_TIMEOUT_MS);
+
+  it("②b 仅 Bootstrap 7 张（B5 后已过审查 ⇒ 属 Formal 子集）：能到 H2、第 8 轮起 AWAITING", () => {
+    expect(BOOTSTRAP_CARDS).toHaveLength(BOOTSTRAP_ID_SET.size);
+    expect(BOOTSTRAP_CARDS).toHaveLength(7);
+    const evidence = driveProductionChain(BOOTSTRAP_CARDS);
+    // 已过独立审查 ⇒ 每一轮都必须被认作 Formal 轮；sidecar 有档位 ⇒ 每一轮都是有效信息轮。
+    expect(evidence.every((row) => row.formal)).toBe(true);
+    expect(evidence.every((row) => row.informationGain !== null && row.topic !== null)).toBe(true);
+    expect(evidence.map((row) => row.effectiveCount)).toEqual(evidence.map((_, index) => index + 1));
+    const h2Index = evidence.findIndex((row) => row.heat === "H2");
+    expect(h2Index === -1 ? null : h2Index + 1).toBe(4); // 4 张 ⇒ H2
+    expect(evidence).toHaveLength(7); // 抽满 7 张后桶空、本包无更深档 ⇒ 交 Host
+    expect(maxEffective(evidence)).toBe(7);
+    expect(lastHeat(evidence)).toBe("H2");
   }, EXPLICIT_TIMEOUT_MS);
 
   it("③ 负向对照：仅 legacy 卡（无第一包）⇒ sidecar 恒 null，有效计数恒 0、Heat 恒 H1（fail-closed）", () => {

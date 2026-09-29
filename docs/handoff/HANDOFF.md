@@ -9,8 +9,20 @@
 
 ## 0. 三十秒定位
 
-- 仓库：`main`，HEAD **`e49ee45`**（`feat(content): CONTENT-01 第一包 24 张 Formal Fixed 真心话（formal 0 -> 24）`），**已 push，与 origin/main `0 0`，工作树 clean**。
-- 提交链：`57f5be3 → 8bcef40（B2.2 Step1~6 + 解除 Heat 断粮）→ 2fffafe（账本/HANDOFF 补记）→ 48850a4（Custom 分轨 + final Mutual 尾巴）→ e49ee45（第一包 24 张）`。
+- 仓库：`main`，HEAD **`c61f7d4`**（`fix(content): 审查身份说真话 + 第一包 Heat metadata 说真话`），**已 push，与 origin/main `0 0`，工作树 clean**。（⚠️ 2026-09-29 更新：原文写 `e49ee45`，已过期；当前 HEAD 为 `c61f7d4`，第一包整改已完成并 push。）
+- **第一包整改状态（2026-09-28 完成，CR-4 / QA-6 / SUP-4 三链全 PASS）**：
+  1. **审查身份说真话**：`reviewed=true` = **独立内容审查完成**（不再等于真人）；新增 `ReviewerKind = "human" | "ai-role"`，由 `assertHumanReviewConsistent` **fail-closed 校验**并写入产物 `buildInfo`（实测 `ai-role`）；`humanBarFit` 等仅保留为历史兼容名、**零 rename**；全仓「真实人工审查」类文案中性化（冻结原文保留并标「历史冻结时状态」）；**本轮不新增 `fieldReviewedByHuman`**（真人现场验证仍由 RG-02 独立把关）。
+  2. **Heat metadata 说真话**：24 张 `PN-TRUTH-201~224` 由 reviewer 逐卡重标并逐字落地 —— `heatMin` **H1=3 / H2=9 / H3=10 / H4=2**、`heatMax` **H2=1 / H3=4 / H4=19**、`heatMin<=heatMax` 24/24；只改这两个字段，题面与其它 metadata 由 sha256 指纹 24/24 锁死。
+  3. **报告双口径已冻结**：A｜Engine / explicit disclosure 与 B｜Current real UI 强制分写；B 口径有**可执行门禁测试**（源码扫描 `roundDisclosureForCurrentRound` 恒 `undefined` + 行为断言），QA 篡改探针实测「塞值即红」。
+- **Truth H1 冷启动：已于 2026-09-29 用 Bootstrap 修复（Engine 口径）**。
+  - 原阻塞（历史）：第一包 24 张中 `heatMin=1` 仅 3 张，H2 门槛 `effective>=4` ⇒ 即便 Engine 每轮都给合法 disclosure，Truth 单玩法也只完成 3 个有效信息轮，卡在 H1 进不了 H2（实测 3 轮后 `PACK_EXHAUSTED`、`H2/H3/H4=null`）。
+  - 修法（**新增内容，不是把深题降级**）：① 独立 reviewer 单卡复核把 `PN-TRUTH-205` 由 `2/2` 改为 **`1/3`**（题面是轻量小习惯，「熟人相处久了才发现」描述的是信息稀缺性而非提问门槛）；② 新增 `lib/v2-content/formal-truth-bootstrap-pack.ts` **7 张 `PN-TRUTH-225~231`**（`heatMin` 全 1、I1:1/I2:4/I3:2 不是全 I1、`heatMax` 逐卡诚实），经两轮独立审查（PASS 4/BORDERLINE 3 → 重写 → 复判 PASS 7）。
+  - 现值：`formal 31`（第一包 24 + Bootstrap 7）、`legacy 421`、`audited 31`、`reviewed 31`、`reviewerKind=ai-role`；**`heatMin=1` 的 Formal 共 11 张**（`201 202 203 205 225 226 227 228 229 230 231`）⇒ 相对门槛 4 **余量 7，冷启动已解决**（code-reviewer 实测：只有 205 时余量为 0，只有 7 张新卡时余量 6，合并后 7；口径 A `H2 reach` 1011/4000）。
+  - ⛔ **注意仍在的缺口**：**当前真实 UI 仍不推进 Heat**（`roundDisclosureForCurrentRound()` 恒 `undefined` ⇒ `effective=0`、`Heat=H1`、mid Mutual 不可达）。上述「已解决」**只对 Engine / 显式 disclosure 口径成立**，不要写成「生产 Heat 已正常推进」。
+- **第二包状态 = PREP / NOT YET IMPLEMENTED（方向已冻结，尚无产物）**：`lib/v2-content` 目前有**两个**正式内容源 —— `formal-truth-pack.ts`（第一包 24 张）+ `formal-truth-bootstrap-pack.ts`（Bootstrap 7 张）；Either Or / Never Have I Ever（各 20 张候选，共 40 候选，**不是 quota**）方向已冻结但**尚无代码/内容产物**。
+- **新硬规则（2026-09-29 起，源自本轮两次教训）**：① 独立 reviewer 产出判定表**必须先真实落盘**并 `ls -l` + `shasum -a 256` 自证，task-manager 核验存在后 builder 才能消费；**转录件不得在未回签的情况下当唯一真源**。② 判定表的**分布汇总必须由脚本从逐卡数据计算**，禁止手填（曾出现同一张卡同时被列入两个档的汇总笔误）。③ 报告/MC 的 `note`/`summary` **必须由实测结果派生**，禁止硬编码结论（曾出现「数据说没到 H2、note 说逐档到 H4」）。
+- **通道实况（2026-09-29）**：`codebuddy/deepseek-v4.1-flash` 当日出现 **429 限频**（提示 2026-09-29 20:31 重置），R3 一单按 `USER_MODEL_OVERRIDE` 备用通道改派 `codebuddy/glm-5.3-flash` 并在账本记 `used=备用`。**用户 2026-09-29 指示：后续 builder 继续派 `deepseek-flash`。**
+- 提交链：`57f5be3 → 8bcef40（B2.2 Step1~6 + 解除 Heat 断粮）→ 2fffafe（账本/HANDOFF 补记）→ 48850a4（Custom 分轨 + final Mutual 尾巴）→ e49ee45（第一包 24 张）→ fa6995b（大交接 2 收尾）→ 614a3ea（事实/注释过期修正）→ c61f7d4（第一包整改：审查身份 + Heat + 双口径）`。
 - 阶段：`PROJECT_PHASE=DEVELOP`｜`DEV_BASELINE=PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`（**第一包已入，但 CONTENT-01 未关闭**）｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜**未部署**（红线：Release Gate 前不部署正式版）。
 - 本段之下是历史交接正文（Phase B 之前的过程与旧数字，**部分已过期**，凡与本段冲突以本段为准；历史段只作留痕与经验参考，不要当现状执行）。
 
@@ -70,7 +82,7 @@
   - **新包仍要先跑 Router MC**，但 MC 报告必须**双口径**（见下条），不得用「可抽到多少张」反向压 Heat。
 
 **③ B2.2 尚未做的 Step（技术侧）**
-- 剩余轨道隔离：`buildPlayableDeck` 之外的 `buildPlayableDeck` 同类建堆路径已由 CR-2 确认无漏网；**未做的是 `custom`/`AI` 轨与 snapshot 轨在「新建牌堆」层面的彻底分离**（C 类，需 Human 拍 A/B/C，现状是 C 类缺口）。
+- ~~剩余轨道隔离：`custom`/`AI` 轨与 snapshot 轨在「新建牌堆」层面的彻底分离（C 类，需 Human 拍 A/B/C）~~ → **历史待裁事项，已由 Human 方案 A 关闭**（2026-09-28，CR-2 / QA-4 / SUP-2 全 PASS，commit `48850a4`）：自定义包已退出 Mixed 正式组局、只保留独立 Custom / self-mode。**不要重复立项。** 保留的已知边角：custom-only 局切内置玩法会落 AWAITING 出口（既有体验问题，P3），以及自定义玩法无独立首页入口（既有）。
 - `mutualFinalCheckTrigger` 仍未接 App（按 Human 冻结，**等第一包内容起量 + MC + Human Gate** 再定 HEAT/TIMING）。
 - Step 5/6 剩余细节：见 `docs/review/CODE_REVIEW-CONTENT-01-PACK-1.md` 的 P2/P3。
 

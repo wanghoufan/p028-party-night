@@ -42,6 +42,7 @@ import {
   V2_TOPICS,
   type V2RoundMetadataFields,
 } from "./v2-card-metadata";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "./formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
 import type { V13ExpansionCard, V13MainlineCard } from "./v2-types";
 import { getV2ContentAdapter } from "./v2-content-adapter";
@@ -109,6 +110,8 @@ function ssotRawCards(): readonly QualityIndexSourceCard[] {
     ...(adapter.mainlineCards as readonly V13MainlineCard[]),
     ...(adapter.expansionCards as readonly V13ExpansionCard[]),
     ...(FORMAL_TRUTH_CARDS as readonly FormalTruthCard[]),
+    // R2/R3｜Truth H1 Bootstrap：自带质量字段 ⇒ 侧车有档位（是否入 Formal 由 manifest 准入决定，与此无关）。
+    ...(FORMAL_TRUTH_BOOTSTRAP_CARDS as readonly FormalTruthCard[]),
   ];
 }
 

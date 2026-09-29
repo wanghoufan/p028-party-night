@@ -28,6 +28,7 @@
 import type { BoundaryTag, GameCard, Intensity } from "@/lib/domain/schemas";
 import { getGamePack } from "@/lib/game-packs/registry";
 import { CONSENT_INSTRUCTION } from "./bar-fit-input";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "./formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
 import { getV2ContentAdapter } from "./v2-content-adapter";
 import { findUnknownBoundaryTags, type V2CardQualityMetadata } from "./v2-card-metadata";
@@ -241,6 +242,10 @@ export function mainlineSsotCards(): readonly GameCard[] {
         toMainlineGameCard(card as V13MainlineCard),
       ),
       ...FORMAL_TRUTH_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
+      // R2/R3｜Truth H1 Bootstrap（PN-TRUTH-225~231）：**追加在末尾**。
+      // R3 已过两轮独立审查 ⇒ 已是 Formal（manifest `tracks.formalFixed` 收纳）；
+      // 准入与否由 manifest 独立审查输入决定，这里只保证卡源与质量侧车同源。
+      ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
     ];
   }
   return mainlineCache;
@@ -270,7 +275,7 @@ export function mainlineSsotCardsByPack(packId: string): readonly GameCard[] {
  * 两条来源在此**合流为一条读取路径**，避免「新卡在 guard 下漏放行」这类静默缺口。
  */
 const formalPackMetaById: ReadonlyMap<string, FormalTruthCard> = new Map(
-  FORMAL_TRUTH_CARDS.map((card) => [card.cardId, card]),
+  [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS].map((card) => [card.cardId, card]),
 );
 
 export function mainlineCardMetaById(
@@ -309,6 +314,7 @@ export function mainlineRuntimeCards(): readonly MainlineRuntimeCard[] {
   return [
     ...(getV2ContentAdapter().mainlineCards as readonly V13MainlineCard[]),
     ...FORMAL_TRUTH_CARDS,
+    ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
   ];
 }
 

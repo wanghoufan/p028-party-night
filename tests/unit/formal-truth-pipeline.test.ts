@@ -29,6 +29,7 @@ import {
   buildFixedContentTracks,
   type BuildFixedContentManifestOptions,
 } from "@/lib/v2-content/fixed-content-manifest-build";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { mainlineSsotCards, mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 import { validateFixedCardMetadataStrict } from "@/lib/v2-content/v2-card-metadata";
@@ -36,6 +37,8 @@ import { metadataForCard, qualityIndexSize } from "@/lib/v2-content/v2-card-qual
 import { getV2ContentAdapter } from "@/lib/v2-content/v2-content-adapter";
 
 const FORMAL_IDS = FORMAL_TRUTH_CARDS.map((card) => card.cardId);
+/** R2｜Truth H1 Bootstrap（同样追加在末尾）；**已过两轮独立审查并入库 ⇒ 已是 Formal**。 */
+const BOOTSTRAP_IDS = FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId);
 
 /**
  * 独立审查输入真源（只读）：`reviewed` / `humanBarFit` 的唯一合法来源，与构建脚本同源。
@@ -73,15 +76,15 @@ const asRecord = (value: object): Record<string, unknown> =>
 /* ------------------------------------------------------------------ */
 
 describe("C1-3① 桥接追加：第一包卡进主线池，既有取卡顺序不变", () => {
-  it("mainlineSsotCards 末尾追加 24 张；首卡与既有 SSOT 顺序逐字不变", () => {
+  it("mainlineSsotCards 末尾追加 24+7 张；首卡与既有 SSOT 顺序逐字不变", () => {
     const ssotIds = getV2ContentAdapter().mainlineCards.map((card) => card.cardId);
     const cards = mainlineSsotCards();
 
-    expect(cards).toHaveLength(ssotIds.length + FORMAL_IDS.length);
+    expect(cards).toHaveLength(ssotIds.length + FORMAL_IDS.length + BOOTSTRAP_IDS.length);
     // ① 前 350 张＝SSOT 原序（不前置、不重排）。
     expect(cards.slice(0, ssotIds.length).map((card) => card.id)).toEqual(ssotIds);
-    // ② 末 24 张＝第一包内容源原序。
-    expect(cards.slice(ssotIds.length).map((card) => card.id)).toEqual([...FORMAL_IDS]);
+    // ② 末段＝第一包 24 张 + R2 Bootstrap 7 张（两段各自原序）。
+    expect(cards.slice(ssotIds.length).map((card) => card.id)).toEqual([...FORMAL_IDS, ...BOOTSTRAP_IDS]);
 
     // ③ `[0]` 稳定：既有 E2E / 快照轨断言依赖的「首卡」不变。
     expect(cards[0]!.id).toBe("PN-TRUTH-001");
@@ -184,10 +187,12 @@ describe("C1-3③ fail-closed 守住", () => {
   it("缺字段的卡不产生 informationGain / topic；metadata 齐全本身不产生 reviewed（空独立审查重建 + 产物⇄独立审查双向对账）", () => {
     // 侧车：无档位可言 ⇒ 双 null（fail-closed 的输入侧表达）。
     expect(metadataForCard("PN-TRUTH-901")).toEqual({ informationGain: null, topic: null });
-    // 真实产物：旧卡（未补标）legacyMetadata；第一包 audited——两数按内容源派生，不写死。
+    // 真实产物：旧卡（未补标）legacyMetadata；两包（第一包 + R2 Bootstrap）audited——两数按内容源派生，不写死。
     const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
-    expect(legacy.counts.auditedMetadata).toBe(FORMAL_TRUTH_CARDS.length);
-    expect(legacy.counts.legacyMetadata).toBe(legacy.counts.total - FORMAL_TRUTH_CARDS.length);
+    expect(legacy.counts.auditedMetadata).toBe(FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length);
+    expect(legacy.counts.legacyMetadata).toBe(
+      legacy.counts.total - FORMAL_TRUTH_CARDS.length - FORMAL_TRUTH_BOOTSTRAP_CARDS.length,
+    );
     // 旧卡无独立审查 ⇒ reviewed 必须为 false。
     expect(legacy.provenance["PN-TRUTH-001"]!.reviewed).toBe(false);
 

@@ -66,11 +66,11 @@ describe("C1-8｜双 Router 卡源一致性（共享 mainlineRuntimeCards）", (
     const runtimeIds = mainlineRuntimeCards().map((card) => card.cardId);
     const gameCardIds = mainlineSsotCards().map((card) => card.id);
     expect(runtimeIds).toEqual(gameCardIds);
-    expect(runtimeIds).toHaveLength(374); // 350 主线 + 24 第一包
+    expect(runtimeIds).toHaveLength(381); // 350 主线 + 24 第一包 + 7 R2 Bootstrap
   });
 
-  it("审计 Router 现在能出第一包 Formal 卡（PN-TRUTH-201~224 出现在三层候选里）", () => {
-    expect(FORMAL_IDS).toHaveLength(24);
+  it("审计 Router 现在能出 PN-TRUTH-2* 家族卡（第一包 24 + R2 Bootstrap 7，出现在三层候选里）", () => {
+    expect(FORMAL_IDS).toHaveLength(31);
     const router = createV2MainlineRouter({ packId: PACK_ID });
     const req = input({ drawSeed: 0 });
     for (const tier of ["bucket", "pack", "global"] as const) {
@@ -101,10 +101,11 @@ describe("C1-8｜双 Router 卡源一致性（共享 mainlineRuntimeCards）", (
   it("Heat 档硬过滤口径未改：H1 桶内 Formal 卡集合 == 卡源里 heatMin=1 的 Formal 卡集合（legacy 仍整批豁免）", () => {
     // 旧断言（已作废）：`FORMAL_IDS.every((cardId) => h1.includes(cardId))` —— 它锁的是
     // 「24/24 heatMin=1 ⇒ 24 张全在 H1 桶」这一**已作废口径**（Human 2026-09-28 废止「为能抽到
-    // 把新卡 heatMin 全压成 1」）。现表按真实关系深度诚实标注：只有 3 张 heatMin=1，其余 21 张
-    // 在当前真实 UI（Heat 恒 H1）抽不到 —— 这是 Human 已明确接受的正确结果，不是缺陷。
+    // 把新卡 heatMin 全压成 1」）。现表按真实关系深度诚实标注：第一包只有 4 张 heatMin=1
+    // （201/202/203 + 2026-09-29 复核后的 205），其余 20 张在当前真实 UI（Heat 恒 H1）抽不到
+    // —— 这是 Human 已明确接受的正确结果，不是缺陷。
     // 新断言仍有实质约束力：H1 桶内 Formal 集合必须与卡源 heatMin/heatMax 派生集合**逐字相同**，
-    // 既不空、也不全，且「被收窄掉的 21 张」确实一张都不在桶内。
+    // 既不空、也不全，且「被收窄掉的 20 张」确实一张都不在桶内。
     const router = createV2MainlineRouter({ packId: PACK_ID });
     const h1 = sortedIds(router.bucket(input({ drawSeed: 0 })));
 
@@ -114,10 +115,10 @@ describe("C1-8｜双 Router 卡源一致性（共享 mainlineRuntimeCards）", (
       .sort();
     expect(h1.filter((cardId) => cardId.startsWith("PN-TRUTH-2"))).toEqual(expectedH1Formal);
     expect(expectedH1Formal.length).toBeGreaterThan(0);
-    expect(expectedH1Formal.length).toBeLessThan(FORMAL_IDS.length); // 确实收窄了，不再 24/24
+    expect(expectedH1Formal.length).toBeLessThan(FORMAL_IDS.length); // 确实收窄了，不再全量
 
     const unreachable = FORMAL_IDS.filter((cardId) => !expectedH1Formal.includes(cardId));
-    expect(unreachable).toHaveLength(21);
+    expect(unreachable).toHaveLength(20);
     expect(unreachable.some((cardId) => h1.includes(cardId))).toBe(false);
 
     // legacy 里存在 heatMin>1 的卡也在 H1 桶内（B3-4 的豁免口径没被本单改回）

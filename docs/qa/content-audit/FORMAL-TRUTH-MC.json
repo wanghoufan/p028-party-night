@@ -5,8 +5,8 @@
   "router": "createV2MainlineRouter（审计 / MC 侧）— C1-8 起与生产 createDeckRouter 共享桥接卡源 mainlineRuntimeCards()",
   "cardSource": {
     "description": "mainlineSsotCardsByPack('truth-dare')（SSOT 主线 + 第一包正式内容）",
-    "packTotal": 124,
-    "formalTotal": 24,
+    "packTotal": 131,
+    "formalTotal": 31,
     "legacyTotal": 100
   },
   "config": {
@@ -47,21 +47,29 @@
   "staticHeatAvailability": [
     {
       "heat": "H1",
-      "packTotal": 124,
-      "legalCount": 103,
-      "formalLegal": 3,
+      "packTotal": 131,
+      "legalCount": 111,
+      "formalLegal": 11,
       "formalLegalIds": [
         "PN-TRUTH-201",
         "PN-TRUTH-202",
-        "PN-TRUTH-203"
+        "PN-TRUTH-203",
+        "PN-TRUTH-205",
+        "PN-TRUTH-225",
+        "PN-TRUTH-226",
+        "PN-TRUTH-227",
+        "PN-TRUTH-228",
+        "PN-TRUTH-229",
+        "PN-TRUTH-230",
+        "PN-TRUTH-231"
       ],
       "legacyLegal": 100
     },
     {
       "heat": "H2",
-      "packTotal": 124,
-      "legalCount": 112,
-      "formalLegal": 12,
+      "packTotal": 131,
+      "legalCount": 119,
+      "formalLegal": 19,
       "formalLegalIds": [
         "PN-TRUTH-201",
         "PN-TRUTH-202",
@@ -74,20 +82,28 @@
         "PN-TRUTH-209",
         "PN-TRUTH-210",
         "PN-TRUTH-220",
-        "PN-TRUTH-221"
+        "PN-TRUTH-221",
+        "PN-TRUTH-225",
+        "PN-TRUTH-226",
+        "PN-TRUTH-227",
+        "PN-TRUTH-228",
+        "PN-TRUTH-229",
+        "PN-TRUTH-230",
+        "PN-TRUTH-231"
       ],
       "legacyLegal": 100
     },
     {
       "heat": "H3",
-      "packTotal": 124,
-      "legalCount": 121,
-      "formalLegal": 21,
+      "packTotal": 131,
+      "legalCount": 127,
+      "formalLegal": 27,
       "formalLegalIds": [
         "PN-TRUTH-201",
         "PN-TRUTH-202",
         "PN-TRUTH-203",
         "PN-TRUTH-204",
+        "PN-TRUTH-205",
         "PN-TRUTH-206",
         "PN-TRUTH-207",
         "PN-TRUTH-208",
@@ -104,15 +120,20 @@
         "PN-TRUTH-219",
         "PN-TRUTH-220",
         "PN-TRUTH-221",
-        "PN-TRUTH-222"
+        "PN-TRUTH-222",
+        "PN-TRUTH-225",
+        "PN-TRUTH-227",
+        "PN-TRUTH-228",
+        "PN-TRUTH-229",
+        "PN-TRUTH-231"
       ],
       "legacyLegal": 100
     },
     {
       "heat": "H4",
-      "packTotal": 124,
-      "legalCount": 119,
-      "formalLegal": 19,
+      "packTotal": 131,
+      "legalCount": 120,
+      "formalLegal": 20,
       "formalLegalIds": [
         "PN-TRUTH-202",
         "PN-TRUTH-207",
@@ -132,31 +153,32 @@
         "PN-TRUTH-221",
         "PN-TRUTH-222",
         "PN-TRUTH-223",
-        "PN-TRUTH-224"
+        "PN-TRUTH-224",
+        "PN-TRUTH-231"
       ],
       "legacyLegal": 100
     }
   ],
   "formalProfiles": {
     "byIntensity": {
-      "1": 4,
-      "2": 9,
-      "3": 7,
+      "1": 5,
+      "2": 13,
+      "3": 9,
       "4": 2,
       "5": 2
     },
     "byHeatMax": {
-      "2": 1,
-      "3": 4,
-      "4": 19
+      "2": 2,
+      "3": 9,
+      "4": 20
     },
     "byTopic": {
-      "兴趣爱好": 2,
-      "生活方式": 2,
-      "性格·习惯·小癖好": 2,
+      "兴趣爱好": 5,
+      "生活方式": 3,
+      "性格·习惯·小癖好": 4,
       "恋爱观": 2,
       "择偶偏好": 1,
-      "相处规则": 2,
+      "相处规则": 3,
       "吃醋·占有": 2,
       "异性朋友边界": 2,
       "前任态度": 2,
@@ -166,37 +188,89 @@
       "性观念·亲密态度": 2
     }
   },
+  "h1Formal": {
+    "count": 11,
+    "ids": [
+      "PN-TRUTH-201",
+      "PN-TRUTH-202",
+      "PN-TRUTH-203",
+      "PN-TRUTH-205",
+      "PN-TRUTH-225",
+      "PN-TRUTH-226",
+      "PN-TRUTH-227",
+      "PN-TRUTH-228",
+      "PN-TRUTH-229",
+      "PN-TRUTH-230",
+      "PN-TRUTH-231"
+    ],
+    "byIntensity": {
+      "1": 5,
+      "2": 4,
+      "3": 2
+    },
+    "byHeatMax": {
+      "2": 2,
+      "3": 7,
+      "4": 2
+    },
+    "byTopic": {
+      "兴趣爱好": 5,
+      "生活方式": 2,
+      "性格·习惯·小癖好": 3,
+      "相处规则": 1
+    }
+  },
+  "formalHeatMinDistribution": {
+    "1": 11,
+    "2": 8,
+    "3": 10,
+    "4": 2
+  },
+  "formalCountableUpTo": {
+    "heatMinLe1": 11,
+    "heatMinLe2": 19,
+    "heatMinLe3": 29,
+    "heatMinLe4": 31
+  },
   "modeA": {
     "mode": "A",
     "sessions": 4000,
-    "sessionsCompleted20": 3339,
-    "sessionRate": 0.8347,
-    "completedRoundsMean": 19.58,
-    "deadEndSessions": 661,
-    "deadEndRate": 0.1653,
+    "sessionsCompleted20": 3632,
+    "sessionRate": 0.908,
+    "completedRoundsMean": 19.83,
+    "deadEndSessions": 368,
+    "deadEndRate": 0.092,
     "termination": {
-      "round_limit": 3339,
-      "pack_exhausted": 661,
-      "global_exhausted": 0,
+      "round_limit": 3632,
+      "pack_exhausted": 0,
+      "global_exhausted": 368,
       "awaiting_host": 0,
       "guard_limit": 0
     },
     "truncatedSessions": 0,
     "guardUsedMax": 33,
-    "totalDraws": 92264,
-    "drawsPerSession": 23.07,
-    "formalDraws": 2673,
-    "formalShare": 0.029,
-    "formalExposedDistinct": 3,
+    "totalDraws": 93443,
+    "drawsPerSession": 23.36,
+    "formalDraws": 8858,
+    "formalShare": 0.0948,
+    "formalExposedDistinct": 11,
     "formalExposedIds": [
       "PN-TRUTH-201",
       "PN-TRUTH-202",
-      "PN-TRUTH-203"
+      "PN-TRUTH-203",
+      "PN-TRUTH-205",
+      "PN-TRUTH-225",
+      "PN-TRUTH-226",
+      "PN-TRUTH-227",
+      "PN-TRUTH-228",
+      "PN-TRUTH-229",
+      "PN-TRUTH-230",
+      "PN-TRUTH-231"
     ],
-    "formalTotal": 24,
+    "formalTotal": 31,
     "legacyTotal": 100,
     "heatAtDraw": {
-      "H1": 92264,
+      "H1": 93443,
       "H2": 0,
       "H3": 0,
       "H4": 0
@@ -208,7 +282,7 @@
       "H4": 0
     },
     "heatAfterTerminal": {
-      "H1": 92264,
+      "H1": 93443,
       "H2": 0,
       "H3": 0,
       "H4": 0
@@ -225,7 +299,7 @@
     "topicsPerSessionMean": 0,
     "highEffectivePerSession": 0,
     "longestLowZeroRunMean": 20,
-    "sessionsZeroFormal": 2927,
+    "sessionsZeroFormal": 1227,
     "sessionsZeroEffective": 4000,
     "sessionsMediumPlus5": 0,
     "sessionsHighAtLeast1": 0,
@@ -237,72 +311,99 @@
   "modeB": {
     "mode": "B",
     "sessions": 4000,
-    "sessionsCompleted20": 3339,
-    "sessionRate": 0.8347,
-    "completedRoundsMean": 19.58,
-    "deadEndSessions": 661,
-    "deadEndRate": 0.1653,
+    "sessionsCompleted20": 3632,
+    "sessionRate": 0.908,
+    "completedRoundsMean": 19.83,
+    "deadEndSessions": 368,
+    "deadEndRate": 0.092,
     "termination": {
-      "round_limit": 3339,
-      "pack_exhausted": 661,
-      "global_exhausted": 0,
+      "round_limit": 3632,
+      "pack_exhausted": 0,
+      "global_exhausted": 368,
       "awaiting_host": 0,
       "guard_limit": 0
     },
     "truncatedSessions": 0,
     "guardUsedMax": 33,
-    "totalDraws": 92264,
-    "drawsPerSession": 23.07,
-    "formalDraws": 2674,
-    "formalShare": 0.029,
-    "formalExposedDistinct": 3,
+    "totalDraws": 93443,
+    "drawsPerSession": 23.36,
+    "formalDraws": 9562,
+    "formalShare": 0.1023,
+    "formalExposedDistinct": 21,
     "formalExposedIds": [
       "PN-TRUTH-201",
       "PN-TRUTH-202",
-      "PN-TRUTH-203"
+      "PN-TRUTH-203",
+      "PN-TRUTH-204",
+      "PN-TRUTH-205",
+      "PN-TRUTH-206",
+      "PN-TRUTH-207",
+      "PN-TRUTH-208",
+      "PN-TRUTH-209",
+      "PN-TRUTH-210",
+      "PN-TRUTH-212",
+      "PN-TRUTH-214",
+      "PN-TRUTH-218",
+      "PN-TRUTH-220",
+      "PN-TRUTH-225",
+      "PN-TRUTH-226",
+      "PN-TRUTH-227",
+      "PN-TRUTH-228",
+      "PN-TRUTH-229",
+      "PN-TRUTH-230",
+      "PN-TRUTH-231"
     ],
-    "formalTotal": 24,
+    "formalTotal": 31,
     "legacyTotal": 100,
     "heatAtDraw": {
-      "H1": 92264,
-      "H2": 0,
-      "H3": 0,
+      "H1": 88870,
+      "H2": 4533,
+      "H3": 40,
       "H4": 0
     },
     "heatAtDrawShare": {
-      "H1": 1,
-      "H2": 0,
-      "H3": 0,
+      "H1": 0.9511,
+      "H2": 0.0485,
+      "H3": 0.0004,
       "H4": 0
     },
     "heatAfterTerminal": {
-      "H1": 92264,
-      "H2": 0,
-      "H3": 0,
+      "H1": 87859,
+      "H2": 5504,
+      "H3": 80,
       "H4": 0
     },
-    "sessionsReachingH2": 0,
-    "sessionsReachingH3": 0,
+    "sessionsReachingH2": 1011,
+    "sessionsReachingH3": 40,
     "sessionsReachingH4": 0,
     "repeatedDraws": 0,
-    "effectiveRoundsTotal": 2250,
-    "effectivePerSession": 0.56,
+    "effectiveRoundsTotal": 8140,
+    "effectivePerSession": 2.04,
     "effectiveByGain": {
-      "medium": 2250
+      "high": 428,
+      "medium": 7712
     },
     "effectiveTopics": {
-      "兴趣爱好": 1499,
-      "生活方式": 751
+      "兴趣爱好": 3246,
+      "性格·习惯·小癖好": 2245,
+      "生活方式": 1395,
+      "相处规则": 919,
+      "人生目标·理想生活": 115,
+      "恋爱观": 110,
+      "择偶偏好": 100,
+      "异性朋友边界": 4,
+      "底线·雷区": 4,
+      "吃醋·占有": 2
     },
-    "distinctTopicsCovered": 2,
-    "topicsPerSessionMean": 0.42,
-    "highEffectivePerSession": 0,
-    "longestLowZeroRunMean": 19.44,
-    "sessionsZeroFormal": 2927,
-    "sessionsZeroEffective": 2973,
-    "sessionsMediumPlus5": 0,
-    "sessionsHighAtLeast1": 0,
-    "sessionsTopicsAtLeast3": 0,
+    "distinctTopicsCovered": 10,
+    "topicsPerSessionMean": 1.45,
+    "highEffectivePerSession": 0.11,
+    "longestLowZeroRunMean": 14.39,
+    "sessionsZeroFormal": 1227,
+    "sessionsZeroEffective": 1328,
+    "sessionsMediumPlus5": 584,
+    "sessionsHighAtLeast1": 252,
+    "sessionsTopicsAtLeast3": 930,
     "distinctFirstFive": 3998,
     "topFirstFiveShare": 0.0005,
     "mutualWindowReached": 0
@@ -312,16 +413,16 @@
       "mode": "A",
       "intensityLimit": 1,
       "sessions": 771,
-      "deadEndSessions": 661,
-      "deadEndRate": 0.8573,
-      "completedRoundsMean": 17.84,
-      "formalShare": 0.1428,
-      "formalDrawsOnFinished": 2.95,
+      "deadEndSessions": 368,
+      "deadEndRate": 0.4773,
+      "completedRoundsMean": 19.12,
+      "formalShare": 0.218,
+      "formalDrawsOnFinished": 4.81,
       "effectivePerSession": 0,
       "termination": {
-        "round_limit": 110,
-        "pack_exhausted": 661,
-        "global_exhausted": 0,
+        "round_limit": 403,
+        "pack_exhausted": 0,
+        "global_exhausted": 368,
         "awaiting_host": 0,
         "guard_limit": 0
       }
@@ -333,8 +434,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0204,
-      "formalDrawsOnFinished": 0.48,
+      "formalShare": 0.1677,
+      "formalDrawsOnFinished": 3.96,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 760,
@@ -351,8 +452,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
+      "formalShare": 0.0853,
+      "formalDrawsOnFinished": 2.01,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 780,
@@ -369,8 +470,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
+      "formalShare": 0.0125,
+      "formalDrawsOnFinished": 0.3,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 856,
@@ -387,8 +488,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
+      "formalShare": 0.0128,
+      "formalDrawsOnFinished": 0.3,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 833,
@@ -402,16 +503,16 @@
       "mode": "B",
       "intensityLimit": 1,
       "sessions": 771,
-      "deadEndSessions": 661,
-      "deadEndRate": 0.8573,
-      "completedRoundsMean": 17.84,
-      "formalShare": 0.1429,
-      "formalDrawsOnFinished": 2.96,
-      "effectivePerSession": 2.54,
+      "deadEndSessions": 368,
+      "deadEndRate": 0.4773,
+      "completedRoundsMean": 19.12,
+      "formalShare": 0.2178,
+      "formalDrawsOnFinished": 4.8,
+      "effectivePerSession": 4.15,
       "termination": {
-        "round_limit": 110,
-        "pack_exhausted": 661,
-        "global_exhausted": 0,
+        "round_limit": 403,
+        "pack_exhausted": 0,
+        "global_exhausted": 368,
         "awaiting_host": 0,
         "guard_limit": 0
       }
@@ -423,9 +524,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0204,
-      "formalDrawsOnFinished": 0.48,
-      "effectivePerSession": 0.38,
+      "formalShare": 0.2074,
+      "formalDrawsOnFinished": 4.89,
+      "effectivePerSession": 4.21,
       "termination": {
         "round_limit": 760,
         "pack_exhausted": 0,
@@ -441,9 +542,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
-      "effectivePerSession": 0,
+      "formalShare": 0.085,
+      "formalDrawsOnFinished": 2,
+      "effectivePerSession": 1.69,
       "termination": {
         "round_limit": 780,
         "pack_exhausted": 0,
@@ -459,9 +560,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
-      "effectivePerSession": 0,
+      "formalShare": 0.0125,
+      "formalDrawsOnFinished": 0.29,
+      "effectivePerSession": 0.23,
       "termination": {
         "round_limit": 856,
         "pack_exhausted": 0,
@@ -477,9 +578,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0,
-      "formalDrawsOnFinished": 0,
-      "effectivePerSession": 0,
+      "formalShare": 0.013,
+      "formalDrawsOnFinished": 0.31,
+      "effectivePerSession": 0.26,
       "termination": {
         "round_limit": 833,
         "pack_exhausted": 0,
@@ -490,5 +591,5 @@
     }
   ],
   "worstTraceFile": "docs/qa/content-audit/FORMAL-TRUTH-MC-WORST-TRACE.json",
-  "readingGuide": "Formal 曝光占比＝抽到 PN-TRUTH-201~224 的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。 Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。 Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。 所有数字由本脚本机械产出，报告侧不得手写。"
+  "readingGuide": "Formal 曝光占比＝抽到 Formal（manifest 轨，PN-TRUTH-201~231）的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。 Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。 Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。 所有数字由本脚本机械产出，报告侧不得手写。"
 }

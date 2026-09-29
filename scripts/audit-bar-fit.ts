@@ -4,9 +4,11 @@
  * 真源（两套口径共用同一 canonical 判定，不各拼字符串）：
  * - **冻结 SSOT 快照 390**（主线 350 + 扩圈 40）：`v2-content-adapter` 真源，历史冻结口径，
  *   产物集 `sets.frozenFixed390`（单测与 `reconciliation` 以它为准）；
- * - **冻结固定库全量 414**（SSOT 390 + 第一包正式内容 `PN-TRUTH-201~224`）：
- *   `v2-card-bridge.mainlineSsotCards()` + `expansionSsotCards()` 运行期唯一出口，
- *   当前 manifest 口径，产物集 `sets.frozenFixed414`（`reconciliation414` 以它为准）；
+ * - **冻结固定库全量**（SSOT 390 + 第一包正式内容 `PN-TRUTH-201~224` + R2 Truth H1 Bootstrap
+ *   候选 `PN-TRUTH-225~231`）：`v2-card-bridge.mainlineSsotCards()` + `expansionSsotCards()`
+ *   运行期唯一出口，当前 manifest 口径，产物集 `sets.frozenFixed414`（`reconciliation414` 以它为准）。
+ *   ⚠️ `frozenFixed414` 只是**稳定集标识**（原 414 口径的历史键名），**不是数量**：
+ *   该集的 `cardCount` / `label` 一律由冻结内容动态推导（当前见产物 `sets.frozenFixed414.cardCount`）。
  * - 内置种子 350：`lib/game-packs/built-in-seeds/index.ts` → BUILTIN_SEED_CARDS（seed-*）。
  * 计数一律由真源推导，不写死。
  *
@@ -190,7 +192,8 @@ const ssotForensicRows: AuditRow[] = [
   ...adapter.expansionCards.map((card) => toRow(card, "expansion", "forensic-text-only")),
 ];
 
-/* ---------- 冻结固定库全量（SSOT 390 + 第一包正式内容 24；当前 manifest 的 414 口径） ---------- */
+/* ---------- 冻结固定库全量（SSOT 390 + 第一包 24 + R2 Bootstrap 候选 7；当前 manifest 口径） ---------- */
+// 集标识 `frozenFixed414` 保持稳定（历史键名，不随张数改名）；张数以 bridgeFrozen.length 动态推导。
 const bridgeFrozen = [...mainlineSsotCards(), ...expansionSsotCards()];
 const bridgeLabel = `冻结固定库 ${bridgeFrozen.length}（主线 ${mainlineSsotCards().length} + 扩圈 ${expansionSsotCards().length}）`;
 const bridgeRows: AuditRow[] = bridgeFrozen.map((card) => toRow(card, card.type, "canonical"));
@@ -207,7 +210,7 @@ const frozen390Set = summarize(
 );
 const frozen414Set = summarize(
   bridgeLabel,
-  "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（SSOT 350 + 第一包 24）+ expansionSsotCards()",
+  `lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（${mainlineSsotCards().length} 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（${expansionSsotCards().length} 张）`,
   CANONICAL_SCAN_CALIBER,
   bridgeRows,
 );
@@ -261,7 +264,10 @@ const payload = {
   enumSourceOfTruth: ENUM_SOURCE,
   barFitSource: "docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md §2",
   judgeModule: "lib/v2-content/bar-fit.ts",
-  note: "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。",
+  note:
+    "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。" +
+    "产物集键名 `frozenFixed414` 为稳定集标识（原 414 口径的历史键名），**不是张数**——" +
+    `该集 cardCount 由冻结内容动态推导（当前 ${bridgeFrozen.length}）；对账口径见 reconciliation / reconciliation414。`,
   canonicalInput: {
     implementation: BAR_FIT_INPUT_IMPLEMENTATION,
     caliber: BAR_FIT_INPUT_CALIBER,

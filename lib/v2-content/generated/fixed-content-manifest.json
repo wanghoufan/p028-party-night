@@ -6,7 +6,7 @@
       "isFormalFixedContent": false,
       "purpose": "旧局读取 / 恢复 / 迁移；可缺 Plan §3 新 metadata；明确不是正式 Fixed Content",
       "admission": "legacy-compatibility",
-      "snapshotHash": "65f09f31c5c948157f08630c93e0d1332a497ac7c9c480ce1ed4ca83dde14279",
+      "snapshotHash": "97a58f107a35d5f4a8dc1d106e22e0e2d862aa4c8180f51284540b43091fa4aa",
       "allowedCardIds": [
         "PN-CHEM-001",
         "PN-CHEM-002",
@@ -421,7 +421,14 @@
         "PN-TRUTH-221",
         "PN-TRUTH-222",
         "PN-TRUTH-223",
-        "PN-TRUTH-224"
+        "PN-TRUTH-224",
+        "PN-TRUTH-225",
+        "PN-TRUTH-226",
+        "PN-TRUTH-227",
+        "PN-TRUTH-228",
+        "PN-TRUTH-229",
+        "PN-TRUTH-230",
+        "PN-TRUTH-231"
       ],
       "provenance": {
         "PN-TRUTH-001": {
@@ -3790,6 +3797,69 @@
           "metadataStatus": "audited",
           "payloadHash": "2030b66546fdf69f643dab3c4e2d3cd7af175ab70eafc9bd54c783876701affe"
         },
+        "PN-TRUTH-225": {
+          "cardId": "PN-TRUTH-225",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "90ac48c94a7b12177265bd18ce21053c47488097f38f4ff138d21fae416d26e1"
+        },
+        "PN-TRUTH-226": {
+          "cardId": "PN-TRUTH-226",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "f9379d96cd336124a60c0f79327c69320c1006c061a8f5d9d027a5c3ae7fab46"
+        },
+        "PN-TRUTH-227": {
+          "cardId": "PN-TRUTH-227",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6b428d60783e1f3288fcf188ddae330ba56101f5700f7aaaee8180041df40312"
+        },
+        "PN-TRUTH-228": {
+          "cardId": "PN-TRUTH-228",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "abe0f87dd352c8bc30f037b1a57ecd5faf86b97dcd0f88b270c094bd7699d65e"
+        },
+        "PN-TRUTH-229": {
+          "cardId": "PN-TRUTH-229",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "79e896b09e214a8b9f79902f5e02a23cdc4f3e922c700e5a53955cb3e6bdb794"
+        },
+        "PN-TRUTH-230": {
+          "cardId": "PN-TRUTH-230",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "13abf8860d77f3f205f80186747d665fb2cdf9bc8697043d1ca8dace4733ec2c"
+        },
+        "PN-TRUTH-231": {
+          "cardId": "PN-TRUTH-231",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "262aef3bb062c6920f985c15b7e432e2c898b2364d7947cf427722f19a0202da"
+        },
         "PN-EXPAND-001": {
           "cardId": "PN-EXPAND-001",
           "cardSet": "expansion",
@@ -4152,11 +4222,11 @@
         }
       },
       "counts": {
-        "total": 414,
-        "mainline": 374,
+        "total": 421,
+        "mainline": 381,
         "expansion": 40,
         "legacyMetadata": 390,
-        "auditedMetadata": 24
+        "auditedMetadata": 31
       }
     },
     "formalFixed": {
@@ -4170,7 +4240,7 @@
         "reviewed = true（独立审查完成：有一个独立 reviewer 已逐卡审查并给出明确结论，身份见 buildInfo.reviewerKind；不得由 metadata 齐全或 machineVerdict 推高）",
         "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）"
       ],
-      "snapshotHash": "bc129ccdc74ee80d7c3c9ea8c05f9575898585074b244ff011558d89fc472cc0",
+      "snapshotHash": "12c0f1db4cf46392bc18443f7fb095b947a6f6c36bc0b2a2dc39778fb37d89e7",
       "allowedCardIds": [
         "PN-TRUTH-201",
         "PN-TRUTH-202",
@@ -4195,14 +4265,21 @@
         "PN-TRUTH-221",
         "PN-TRUTH-222",
         "PN-TRUTH-223",
-        "PN-TRUTH-224"
+        "PN-TRUTH-224",
+        "PN-TRUTH-225",
+        "PN-TRUTH-226",
+        "PN-TRUTH-227",
+        "PN-TRUTH-228",
+        "PN-TRUTH-229",
+        "PN-TRUTH-230",
+        "PN-TRUTH-231"
       ],
       "counts": {
-        "total": 24,
-        "mainline": 24,
+        "total": 31,
+        "mainline": 31,
         "expansion": 0,
         "legacyMetadata": 0,
-        "auditedMetadata": 24
+        "auditedMetadata": 31
       },
       "rejectedFromFormal": {
         "total": 390,
@@ -4220,8 +4297,8 @@
     "contentVersion": "content-v2.3",
     "legacyReviewStage": "machine-prescreen",
     "barFitSource": "lib/v2-content/bar-fit-input.ts lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput（正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染））→ bar-fit.ts judgeBarFit → provenance.machineVerdict（机器预筛，非双人模拟噪声计时）；provenance.humanBarFit 机器阶段恒 UNREVIEWED；text-only 扫描为 forensic，不参与 admission",
-    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变）",
-    "humanReviewedAt": "2026-09-28T15:10:00Z",
+    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，本轮原文一字未改（指纹锁定见 FIRST_PACK_REVIEW_ENTRIES_SHA256）。",
+    "humanReviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）",
     "reviewerKind": "ai-role",
     "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（独立审查完成，reviewer 身份见 reviewerKind；不参与准入判定）∧ provenance/hash 完整；无任何宽松开关",
     "ssotMainlineSha256": "6b6c43f870fe22a86c98423db483cc99734090b1f70c48c31dc3fc6b47c75f33",

@@ -35,7 +35,8 @@
  * 2. **`heatMin` / `heatMax` 按卡的真实关系深度诚实标注**（Human 2026-09-28 冻结）：`Heat` =
  *    关系聊到多深、`Intensity` = 用户接受多大尺度，**两者正交** —— 不得用 `Intensity` 代替
  *    `Heat` 的推进作用，不得为库存好看压低 `heatMin`，也不得把 `heatMax` 统一拉 4。
- *    现分布：`heatMin` H1 3 / H2 9 / H3 10 / H4 2；`heatMax` H1 0 / H2 1 / H3 4 / H4 19。
+ *    现分布：`heatMin` H1 4 / H2 8 / H3 10 / H4 2；`heatMax` H1 0 / H2 0 / H3 5 / H4 19
+ *    （2026-09-29 单卡复核：`PN-TRUTH-205` 由 2/2 改为 1/3，只改这两个字段，题面逐字不动）。
  *    ⚠️ 生产 UI 未落地 disclosure ⇒ 运行时 Heat 恒 H1，故 `heatMin≥2` 的卡**当前抽不到**；
  *    这是 Human 已明确接受的正确结果，**不得**为了「能抽到」反向改标注。
  * 3. **`intensity` 覆盖 1~5**（I1 4 / I2 9 / I3 7 / I4 2 / I5 2）：I1/I2 足量供 ceiling=1/2 的桌，
@@ -258,8 +259,8 @@ export const FORMAL_TRUTH_CARDS: readonly FormalTruthCard[] = [
     number: 205,
     text: "说一个小习惯，是熟人相处久了才会发现的。",
     intensity: 1,
-    heatMin: 2,
-    heatMax: 2,
+    heatMin: 1,
+    heatMax: 3,
     relationStage: "notice",
     targetMode: "choose-opposite-sex",
     responseMode: "public",

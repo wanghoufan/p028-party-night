@@ -9,7 +9,9 @@
  * ## 双 Router 卡源一致性（C1-8 的前置修复）
  * 本脚本用 `createV2MainlineRouter`（审计 / MC 侧 Router）。C1-8 已把它与生产
  * `createDeckRouter` 统一到桥接模块的同一份卡源 `mainlineRuntimeCards()`
- * （SSOT 主线 350 + 第一包 24），故本 MC 抽得到 `PN-TRUTH-201~224`，与生产牌堆同内容。
+ * （SSOT 主线 350 + 第一包 `PN-TRUTH-201~224` + Truth H1 Bootstrap `PN-TRUTH-225~231`），
+ * 故本 MC 抽得到全部 Formal 卡，与生产牌堆同内容。**Formal 张数不写死**：由 manifest 真源
+ * `formalFixedIdSet()` 动态判定，当前值见产物 `cardSource.formalTotal`。
  *
  * ## 两种 Heat 起点（任务硬要求，必须分列）
  * - **Mode A｜生产实况**：本局**不供给任何披露信号**（`eventForRoundTerminal` 不带 disclosure）
@@ -125,6 +127,41 @@ const formalProfiles = (() => {
   }
   return { byIntensity, byHeatMax, byTopic };
 })();
+
+/**
+ * 第一包 **H1 桶可抽 Formal** 的画像（`heatMin=1` 且 H1 桶合法者）——即当前真实 UI（Heat 恒 H1）
+ * 下实际进得了桶的 Formal 集合。报告侧据此派生「能抽到几张 / 强度构成 / 题材构成」，
+ * **不允许在报告里写死张数或「全为 I1」这类结论**。
+ */
+const h1Formal = (() => {
+  const ids = staticHeatAvailability[0]!.formalLegalIds;
+  const set = new Set(ids);
+  const byIntensity: Record<string, number> = {}; const byHeatMax: Record<string, number> = {}; const byTopic: Record<string, number> = {};
+  for (const card of packRuntimeCards) {
+    if (!set.has(card.cardId)) continue;
+    bump(byIntensity, card.intensity);
+    bump(byHeatMax, card.heatMax);
+    const meta = metadataForCard(card.cardId);
+    if (meta.topic) bump(byTopic, meta.topic);
+  }
+  return { count: ids.length, ids, byIntensity, byHeatMax, byTopic };
+})();
+
+/**
+ * 第一包 Formal 卡按 `heatMin` 的分布（供报告派生「累积可计数库存」对比 H2/H3/H4 门槛，
+ * 不写死张数）：`heatMin≤1` = H1 冷启能累积的有效轮上限；`heatMin≤2` / `heatMin≤3` 类推。
+ */
+const formalHeatMinDistribution = (() => {
+  const m: Record<string, number> = {};
+  for (const card of packRuntimeCards) {
+    if (!isFormal(card.cardId)) continue;
+    bump(m, card.heatMin);
+  }
+  return m;
+})();
+/** `heatMin ≤ n` 的 Formal 卡累计数（报告冷启门结论的唯一派生源）。 */
+const formalCountableUpTo = (n: number): number =>
+  Object.entries(formalHeatMinDistribution).reduce((sum, [min, count]) => (Number(min) <= n ? sum + count : sum), 0);
 
 /* ------------------------------------------------------------------ */
 /* 模拟主体                                                              */
@@ -519,12 +556,20 @@ const out = {
   },
   staticHeatAvailability,
   formalProfiles,
+  h1Formal,
+  formalHeatMinDistribution,
+  formalCountableUpTo: {
+    heatMinLe1: formalCountableUpTo(1),
+    heatMinLe2: formalCountableUpTo(2),
+    heatMinLe3: formalCountableUpTo(3),
+    heatMinLe4: formalCountableUpTo(4),
+  },
   modeA: summarize(modeA, "A"),
   modeB: summarize(modeB, "B"),
   ceilingCohorts,
   worstTraceFile: "docs/qa/content-audit/FORMAL-TRUTH-MC-WORST-TRACE.json",
   readingGuide: [
-    "Formal 曝光占比＝抽到 PN-TRUTH-201~224 的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。",
+    "Formal 曝光占比＝抽到 Formal（manifest 轨，PN-TRUTH-201~231）的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。",
     "Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。",
     "Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。",
     "所有数字由本脚本机械产出，报告侧不得手写。",
@@ -537,6 +582,10 @@ writeFileSync(`${DIR}/FORMAL-TRUTH-MC-WORST-TRACE.json`, JSON.stringify(worstTra
 console.log("第一包真心话单包 Monte Carlo 完成（truth-dare，两 mode）");
 console.log("卡源：pack", packGameCards.length, "｜Formal", formalTotal, "｜legacy", legacyTotal);
 console.log("静态每 Heat 可用库存：", staticHeatAvailability.map((h) => `${h.heat}=${h.legalCount}(formal ${h.formalLegal})`).join(" "));
+console.log(
+  `第一包 H1 可抽 Formal：${h1Formal.count} 张｜intensity ${JSON.stringify(h1Formal.byIntensity)}`,
+  `｜累积可计数库存 heatMin≤1/≤2/≤3 = ${formalCountableUpTo(1)}/${formalCountableUpTo(2)}/${formalCountableUpTo(3)}`,
+);
 for (const s of [out.modeA, out.modeB]) {
   console.log(
     `Mode ${s.mode}｜局 ${s.sessions}｜跑满 20 轮 ${s.sessionsCompleted20}(${(s.sessionRate * 100).toFixed(1)}%)｜dead-end ${s.deadEndSessions}`,

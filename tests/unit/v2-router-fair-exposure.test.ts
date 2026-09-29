@@ -85,10 +85,15 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
  * （truth 10 : dare 10），±18% 阈值、样本量、tie-break 回归语义均未改。
  *
  * ⚠️ A3 口径变更（2026-09-28，Human 冻结「热标注必须诚实」）：第一包 24 张的 `heatMin` 不再一律 1
- * （现 H1 3 / H2 9 / H3 10 / H4 2）⇒ 在 H1 桶里 Formal 只剩 **3 张**（201/202/203，全为 I1），
- * 其中**没有 I4 卡**。故本夹具的 H1 桶由 102 张收窄到 **83 张**（SSOT I1–I4 80 张 + 第一包 3 张），
- * 顶强度档由 22 张收窄到 **20 张**（SSOT truth 10 : dare 10，第一包 0 张）。
- * 该收窄**正是本单要的结果**（深关系题在当前 UI 不可抽），不是回归；对称性因此更强（10:10），
+ * （现 H1 4 / H2 8 / H3 10 / H4 2）⇒ 在 H1 桶里 Formal 只剩 **4 张**（201/202/203 + 2026-09-29
+ * 复核后的 205，全为 I1/低强度），其中**没有 I4 卡**。
+ * ⚠️ R2 口径变更（2026-09-29；**P3-1 更正**）：新增 Truth H1 Bootstrap 7 张（`PN-TRUTH-225~231`，全
+ * `heatMin=1`、`intensity` ≤3）。这 7 张**已过两轮独立审查并入库** ⇒ **就是 Formal**（`formal=31` =
+ * 第一包 24 + Bootstrap 7，manifest `tracks.formalFixed` 收纳）⇒ **受** Heat 硬过滤；因其 `heatMin` 全为 1，
+ * H1 下**全部通过**该过滤 ⇒ 对本夹具的 H1 桶而言仍等价于再 +7（结论不变，理由不同）。
+ * 故本夹具的 H1 桶 = SSOT I1–I4 80 张（旧卡全 legacy ⇒ Heat 豁免）+ 第一包 4 张 + Bootstrap 7 张 = **91 张**，
+ * 顶强度档仍为 **20 张**（SSOT truth 10 : dare 10，第一包与 Bootstrap 均无 I4 卡）。
+ * 该收窄/扩容**正是本单要的结果**（深关系题在当前 UI 不可抽），不是回归；对称性因此更强（10:10），
  * ±18% 阈值与 tie-break 回归语义仍未改。
  *
  * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（冻结快照 390 张旧卡全为 legacy ⇒ 豁免），
@@ -99,11 +104,11 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
 const TIE_FIXTURE = {
   packId: "truth-dare",
   intensityLimit: 4,
-  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 3（I1，heatMin=1 的 201/202/203）= 83 张。 */
-  expectedBucketSize: 83,
+  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 4（I1，heatMin=1 的 201/202/203/205）+ R2 Bootstrap 7 = 91 张。 */
+  expectedBucketSize: 91,
   /** 实测：top 强度档 = 强度 4。 */
   expectedTieTierMaxIntensity: 4,
-  /** 实测：top 强度档 20 张（SSOT truth 10 : dare 10；第一包 I4 的 217/223 heatMin>1 ⇒ H1 不可抽）。 */
+  /** 实测：top 强度档 20 张（SSOT truth 10 : dare 10；第一包 I4 的 217/223 heatMin>1 ⇒ H1 不可抽；Bootstrap 无 I4）。 */
   expectedTieTierSize: 20,
   expectedGameTypes: ["truth", "dare"] as const,
 } as const;
@@ -330,7 +335,7 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     }
   });
 
-  it("TIE_FIXTURE 局面的构成稳定：83 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
+  it("TIE_FIXTURE 局面的构成稳定：91 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const cards = router.bucket(input({ drawSeed: 0 }));
     const topTier = cards.filter((card) => intensityOf(card.cardId) === TIE_FIXTURE.expectedTieTierMaxIntensity);

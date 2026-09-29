@@ -3,7 +3,7 @@
   "enumSourceOfTruth": "docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md §3",
   "barFitSource": "docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md §2",
   "judgeModule": "lib/v2-content/bar-fit.ts",
-  "note": "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。",
+  "note": "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。产物集键名 `frozenFixed414` 为稳定集标识（原 414 口径的历史键名），**不是张数**——该集 cardCount 由冻结内容动态推导（当前 421）；对账口径见 reconciliation / reconciliation414。",
   "canonicalInput": {
     "implementation": "lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput",
     "caliber": "正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染）",
@@ -28,9 +28,9 @@
   },
   "reconciliation414": {
     "manifestSource": "lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance",
-    "auditSource": "本脚本 canonical input 重算（冻结固定库全量 414 张）",
-    "compared": 414,
-    "consistent": 414,
+    "auditSource": "本脚本 canonical input 重算（冻结固定库全量 421 张）",
+    "compared": 421,
+    "consistent": 421,
     "inconsistent": 0,
     "mismatches": [],
     "onlyInManifest": [],
@@ -8731,8 +8731,8 @@
       ]
     },
     "frozenFixed414": {
-      "label": "冻结固定库 414（主线 374 + 扩圈 40）",
-      "source": "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（SSOT 350 + 第一包 24）+ expansionSsotCards()",
+      "label": "冻结固定库 421（主线 381 + 扩圈 40）",
+      "source": "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（381 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（40 张）",
       "caliber": {
         "includesInstruction": true,
         "forensic": false,
@@ -8741,14 +8741,14 @@
       },
       "forensic": false,
       "admissionEligible": true,
-      "cardCount": 414,
+      "cardCount": 421,
       "machineVerdictDistribution": {
-        "PASS": 188,
+        "PASS": 195,
         "SUSPECT": 222,
         "HARD_FAIL_PATTERN": 4
       },
       "humanBarFitDistribution": {
-        "UNREVIEWED": 414,
+        "UNREVIEWED": 421,
         "PASS": 0,
         "BORDERLINE": 0,
         "FAIL": 0
@@ -8757,7 +8757,7 @@
       "reviewPoolCount": 222,
       "byGameType": {
         "truth": {
-          "PASS": 40,
+          "PASS": 47,
           "SUSPECT": 34,
           "HARD_FAIL_PATTERN": 0
         },
@@ -16339,7 +16339,7 @@
         {
           "cardId": "PN-TRUTH-204",
           "gameType": "truth",
-          "excerpt": "你的活法里，哪些是自己选的、哪些是顺着别人期待？各说一件。",
+          "excerpt": "最近一次有人对你抱有期待，你照做了还是没照？当时怎么决定的。",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16347,8 +16347,8 @@
           "ruleHits": [],
           "reasons": [],
           "metrics": {
-            "charCount": 38,
-            "readSeconds": 9.5,
+            "charCount": 39,
+            "readSeconds": 9.8,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16393,7 +16393,7 @@
         {
           "cardId": "PN-TRUTH-207",
           "gameType": "truth",
-          "excerpt": "在关系里，什么事最容易让你没有安全感？说你自己的那一点。",
+          "excerpt": "伴侣半天没回你消息时，你一般会做什么？",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16401,8 +16401,8 @@
           "ruleHits": [],
           "reasons": [],
           "metrics": {
-            "charCount": 37,
-            "readSeconds": 9.3,
+            "charCount": 28,
+            "readSeconds": 7,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16627,7 +16627,7 @@
         {
           "cardId": "PN-TRUTH-220",
           "gameType": "truth",
-          "excerpt": "如果不考虑现实限制，五年后理想的一天你怎么过？从早到晚说。",
+          "excerpt": "五年后理想的一天，从睁眼到睡前，你最想保住的是哪三段？",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16635,8 +16635,8 @@
           "ruleHits": [],
           "reasons": [],
           "metrics": {
-            "charCount": 38,
-            "readSeconds": 9.5,
+            "charCount": 36,
+            "readSeconds": 9,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16681,7 +16681,7 @@
         {
           "cardId": "PN-TRUTH-223",
           "gameType": "truth",
-          "excerpt": "对你来说，亲密关系里最看重的是什么？说一个你的观念。",
+          "excerpt": "亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16689,8 +16689,8 @@
           "ruleHits": [],
           "reasons": [],
           "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
+            "charCount": 38,
+            "readSeconds": 9.5,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16709,6 +16709,132 @@
           "metrics": {
             "charCount": 35,
             "readSeconds": 8.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-225",
+          "gameType": "truth",
+          "excerpt": "最近才开始的爱好是什么？说说让你上头的第一个瞬间。",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-226",
+          "gameType": "truth",
+          "excerpt": "你的周末更偏哪种：睡到中午、早起出门、还是临时决定？为什么？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 39,
+            "readSeconds": 9.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-227",
+          "gameType": "truth",
+          "excerpt": "说一样你最近反复安利给朋友的东西，再用一句话说服我们。",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 36,
+            "readSeconds": 9,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-228",
+          "gameType": "truth",
+          "excerpt": "朋友里你常被安排成哪种角色：张罗的、捧场的，或失踪的？你认吗？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 40,
+            "readSeconds": 10,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-229",
+          "gameType": "truth",
+          "excerpt": "哪一类电影或音乐你怎样都提不起兴趣？说说你试过的那次。",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 36,
+            "readSeconds": 9,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-230",
+          "gameType": "truth",
+          "excerpt": "跟刚认识的人相处，你有自己的一条规矩吗？说说它怎么来的。",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 37,
+            "readSeconds": 9.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-231",
+          "gameType": "truth",
+          "excerpt": "一天里什么时候你最像你自己？说说那段时间你通常在做什么。",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 37,
+            "readSeconds": 9.3,
             "startActions": 1,
             "instructionCharCount": 9
           },

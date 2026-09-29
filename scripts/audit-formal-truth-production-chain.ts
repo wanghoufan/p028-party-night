@@ -9,6 +9,10 @@
  *     `eventForRoundTerminal`（卡侧 metadata 走生产 sidecar）→ `reduceV2SessionEvents`
  *     → `relationshipEffectiveCardCount` / `Heat`。
  *
+ * R0-2：四种情形的 `note` 与 `firstReachRoundByHeat` **一律由实际运行结果派生**
+ * （`deriveHeatReachNote`，见 `scripts/audit-formal-truth-heat-note.ts`），
+ * 不再出现「数据说没到 H2、note 却说逐档 H1→H4」这类自相矛盾。派生器纯函数、单测可构造反例。
+ *
  * 产物：`docs/qa/content-audit/FORMAL-TRUTH-PRODUCTION-CHAIN.json`
  */
 import { writeFileSync } from "node:fs";
@@ -21,10 +25,14 @@ import {
   roundDisclosureSignal,
   startRound,
 } from "@/lib/engine/session-engine";
-import { relationshipOf } from "@/lib/engine/v2-deal";
-import { mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
+import { drawDeckCard, relationshipOf } from "@/lib/engine/v2-deal";
+import { formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
+import { mainlineCardMetaById, mainlineSsotCardsByPack } from "@/lib/v2-content/v2-card-bridge";
 import { metadataForCard } from "@/lib/v2-content/v2-card-quality-index";
 import { HEAT_THRESHOLDS } from "@/lib/v2-relationship/v2-state";
+
+import { deriveHeatReachNote, type CountableCard } from "./audit-formal-truth-heat-note";
 
 const ROOT = process.cwd();
 const PACK_ID = "truth-dare";
@@ -44,15 +52,54 @@ const config = (): SessionConfig => ({
 });
 
 const PACK_CARDS = mainlineSsotCardsByPack(PACK_ID);
-const FORMAL_CARDS = PACK_CARDS.filter((c) => c.id.startsWith("PN-TRUTH-2"));
-const LEGACY_CARDS = PACK_CARDS.filter((c) => !c.id.startsWith("PN-TRUTH-2"));
+/**
+ * 「Formal」用 manifest 真源 `formalFixedIdSet()` 判定，不用 `PN-TRUTH-2*` 前缀推断。
+ *
+ * B5 口径（2026-09-29）：Truth H1 Bootstrap 7 张（`PN-TRUTH-225~231`）已过两轮独立审查并回填
+ * `humanBarFit=PASS / reviewed=true` ⇒ 它们**已是 Formal**，原来的「候选桶」因此归零。
+ * 本脚本保留其中「仅 Bootstrap 7 张」这一**Formal 子集**情形（证明这 7 张单独也能离开 H1、
+ * 且 7 < H3 门槛 ⇒ 仍有下一道冷启门），它是子集证据，**不是**「未过审候选」。
+ */
+const FORMAL_ID_SET = formalFixedIdSet();
+const FORMAL_CARDS = PACK_CARDS.filter((card) => FORMAL_ID_SET.has(card.id));
+const BOOTSTRAP_ID_SET = new Set(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId));
+const BOOTSTRAP_CARDS = PACK_CARDS.filter((card) => BOOTSTRAP_ID_SET.has(card.id));
+const LEGACY_CARDS = PACK_CARDS.filter((card) => !card.id.startsWith("PN-TRUTH-2"));
+
+interface ChainRound {
+  round: number;
+  cardId: string;
+  formal: boolean;
+  informationGain: string | null;
+  topic: string | null;
+  effectiveCount: number;
+  heat: string;
+}
+
+/** 终止观测：跑满上限 ⇒ `outcome=null`；否则为耗尽分类（只读复算，不写回 session）。 */
+interface ChainTerminal {
+  afterRound: number;
+  outcome: string | null;
+}
 
 const drive = (deck: readonly GameCard[], drawSeed: number, maxRounds = 20) => {
   let session: GameSession = createSession(config(), [...deck], participants());
-  const rounds: Record<string, unknown>[] = [];
+  const rounds: ChainRound[] = [];
+  let terminal: ChainTerminal = { afterRound: maxRounds, outcome: null };
   for (let i = 0; i < maxRounds; i += 1) {
     const dealt = startRound(session, () => 0, { drawSeed });
-    if (!dealt.currentRound) break;
+    if (!dealt.currentRound) {
+      // 只读探测：与 `startRound` 的 single 模式入参同形复算一次抽卡结果，拿到耗尽分类。
+      // 纯读（不写回 session、不改链路），只为把「第几轮为什么不再出卡」变成可落盘的数据。
+      const probe = drawDeckCard({
+        session: dealt,
+        preferredPackIds: [dealt.currentPackId],
+        enabledPackIds: [dealt.currentPackId],
+        drawSeed,
+      });
+      terminal = { afterRound: i, outcome: probe.outcome.kind };
+      break;
+    }
     const cardId = dealt.currentRound.cardId;
     const meta = metadataForCard(cardId);
     session = resolveRoundAndReduce(
@@ -61,29 +108,92 @@ const drive = (deck: readonly GameCard[], drawSeed: number, maxRounds = 20) => {
     );
     const rel = relationshipOf(session);
     rounds.push({
-      round: i + 1, cardId, formal: cardId.startsWith("PN-TRUTH-2"),
+      round: i + 1, cardId, formal: FORMAL_ID_SET.has(cardId),
       informationGain: meta.informationGain, topic: meta.topic,
       effectiveCount: rel.relationshipEffectiveCardCount, heat: rel.heat,
     });
   }
-  return { rounds, finalHeat: relationshipOf(session).heat, finalEffective: relationshipOf(session).relationshipEffectiveCardCount };
+  const rel = relationshipOf(session);
+  return {
+    rounds,
+    finalHeat: rel.heat,
+    finalEffective: rel.relationshipEffectiveCardCount,
+    terminal,
+  };
 };
 
-const firstIndexByHeat = (rounds: { heat: string }[]): Record<string, number | null> => {
-  const out: Record<string, number | null> = {};
-  for (const band of HEAT_THRESHOLDS) {
-    const idx = rounds.findIndex((r) => r.heat === band.heat);
-    out[band.heat] = idx === -1 ? null : idx + 1;
+/**
+ * 牌堆里**卡侧可形成有效信息轮**的卡（`isEffectiveInformationRound` 的卡侧前置条件：
+ * `informationGain` 非 null 且非 zero/low、`topic` 非 null），带上其 Heat 合法区间。
+ * 供 note 现算「某档以下到底有多少张卡能累积有效轮」——不允许写死张数。
+ */
+const countableCardsOf = (deck: readonly GameCard[]): CountableCard[] => {
+  const out: CountableCard[] = [];
+  for (const card of deck) {
+    const meta = metadataForCard(card.id);
+    if (meta.informationGain === null || meta.informationGain === "zero" || meta.informationGain === "low") continue;
+    if (meta.topic === null) continue;
+    const cardMeta = mainlineCardMetaById(card.id);
+    if (!cardMeta || !("heatMin" in cardMeta)) continue;
+    out.push({ cardId: card.id, heatMin: cardMeta.heatMin, heatMax: cardMeta.heatMax });
   }
   return out;
 };
 
-/* 情形 1：全包真实牌堆（seed=1）——Formal 可真抽到、metadata 进 event、Heat 到 H2 */
+/* 情形 1：全包真实牌堆（seed=1）——Formal / legacy 混堆；本 seed 实测结果以 note 为准。 */
 const fullPack = drive(PACK_CARDS, FIXED_DRAW_SEED);
-/* 情形 2：仅 Formal 24 张（真实生产卡子集）——Heat 逐档到 H4 */
+/* 情形 2：仅 Formal ${FORMAL_CARDS.length} 张（真实生产卡子集）——H1 桶抽满后 Heat 是否升档以 note 为准。 */
 const formalOnly = drive(FORMAL_CARDS, FIXED_DRAW_SEED);
-/* 情形 3：负向对照（仅 legacy）——sidecar 恒 null ⇒ 有效计数 0 / Heat 恒 H1 */
+/* 情形 2b：仅 Formal 里的 Truth H1 Bootstrap 7 张（B5 后已过审 ⇒ 属 Formal；单独驱动看子集天花板）。 */
+const bootstrapOnly = drive(BOOTSTRAP_CARDS, FIXED_DRAW_SEED);
+/* 情形 3：负向对照（仅 legacy）——sidecar 恒 null ⇒ 有效计数 0 / Heat 恒 H1。 */
 const legacyOnly = drive(LEGACY_CARDS, FIXED_DRAW_SEED);
+
+/* 牌堆描述与 note 标签共用同一常量：note 的开头因此可从产物反推，便于「复算 note」校验。 */
+const rangeOf = (cards: readonly { id: string }[]): string => {
+  const numbers = cards
+    .map((card) => Number(/^PN-TRUTH-(\d+)$/u.exec(card.id)?.[1] ?? NaN))
+    .filter((n) => Number.isFinite(n));
+  return numbers.length === 0 ? "（无）" : `PN-TRUTH-${Math.min(...numbers)}~${Math.max(...numbers)}`;
+};
+const FULL_PACK_DECK = `mainlineSsotCardsByPack('${PACK_ID}')（${PACK_CARDS.length} 张，含 Formal ${FORMAL_CARDS.length} + legacy ${LEGACY_CARDS.length}）`;
+const FORMAL_ONLY_DECK = `仅 Formal（manifest 轨）${FORMAL_CARDS.length} 张（${rangeOf(FORMAL_CARDS)}，真实生产卡）`;
+const BOOTSTRAP_ONLY_DECK = `仅 Formal 子集：Truth H1 Bootstrap ${BOOTSTRAP_CARDS.length} 张（${rangeOf(BOOTSTRAP_CARDS)}，已过独立审查 ⇒ 属 Formal）`;
+const LEGACY_ONLY_DECK = `仅 legacy 卡（${LEGACY_CARDS.length} 张，无 Formal）`;
+
+/* note 一律由运行结果现算（含未到达档的原因与缺口数），四种情形同源同口径。 */
+const fullPackNote = deriveHeatReachNote({
+  label: FULL_PACK_DECK,
+  rounds: fullPack.rounds,
+  finalHeat: fullPack.finalHeat,
+  finalEffective: fullPack.finalEffective,
+  thresholds: HEAT_THRESHOLDS,
+  countableCards: countableCardsOf(PACK_CARDS),
+});
+const formalOnlyNote = deriveHeatReachNote({
+  label: FORMAL_ONLY_DECK,
+  rounds: formalOnly.rounds,
+  finalHeat: formalOnly.finalHeat,
+  finalEffective: formalOnly.finalEffective,
+  thresholds: HEAT_THRESHOLDS,
+  countableCards: countableCardsOf(FORMAL_CARDS),
+});
+const bootstrapOnlyNote = deriveHeatReachNote({
+  label: BOOTSTRAP_ONLY_DECK,
+  rounds: bootstrapOnly.rounds,
+  finalHeat: bootstrapOnly.finalHeat,
+  finalEffective: bootstrapOnly.finalEffective,
+  thresholds: HEAT_THRESHOLDS,
+  countableCards: countableCardsOf(BOOTSTRAP_CARDS),
+});
+const legacyOnlyNote = deriveHeatReachNote({
+  label: LEGACY_ONLY_DECK,
+  rounds: legacyOnly.rounds,
+  finalHeat: legacyOnly.finalHeat,
+  finalEffective: legacyOnly.finalEffective,
+  thresholds: HEAT_THRESHOLDS,
+  countableCards: countableCardsOf(LEGACY_CARDS),
+});
 
 /* 全包 200 seed 扫描：生产实况的 Heat 到达率（诚实口径，不挑 seed） */
 const SWEEP = 200;
@@ -100,38 +210,51 @@ for (let seed = 1; seed <= SWEEP; seed += 1) {
 
 const out = {
   generator: "scripts/audit-formal-truth-production-chain.ts",
-  requirement: "§十八：Formal Truth → Router 可出 → metadata 进入 production event → effective count 推进 → Heat H1→H2/H3/H4",
+  requirement: "§十八：Formal Truth → Router 可出 → metadata 进入 production event → effective count 推进 → （待验证：Heat 能否逐档 H1→H2→H3→H4；实测结果如实见各 scenario 的 firstReachRoundByHeat / finalHeat / note，本字段不是结论）",
   chain: [
     "startRound（唯一出题入口 → drawDeckCard → createDeckRouter 生产 Router 三层计数）",
     "resolveRoundAndReduce(session,'complete',roundDisclosureSignal({selfDisclosed, disclosedPlayerIds}))",
     "eventForRoundTerminal（卡侧 metadata 由 metadataForCard 读生产 sidecar；轮侧披露由正式信号提供）",
     "reduceV2SessionEvents → relationshipEffectiveCardCount / heatForEffectiveCount",
   ],
-  disclosure: "本文件与 integration 测试均不注入 metadata override；第一包 24 张的 informationGain/topic 来自生产 sidecar 真实投影。",
+  disclosure: `本文件与 integration 测试均不注入 metadata override；Formal ${FORMAL_CARDS.length} 张（含 Truth H1 Bootstrap ${BOOTSTRAP_CARDS.length} 张）的 informationGain/topic 均来自生产 sidecar 真实投影；legacy 卡 sidecar 恒 null（fail-closed 不计有效轮）。`,
   seed: FIXED_DRAW_SEED,
   table: "2男2女（a男/b女/c男/d女，合法 pair 全程可用）",
   scenarioFullPack: {
-    deck: `mainlineSsotCardsByPack('${PACK_ID}')（${PACK_CARDS.length} 张，含第一包 ${FORMAL_CARDS.length} 张）`,
+    deck: FULL_PACK_DECK,
     rounds: fullPack.rounds,
     finalHeat: fullPack.finalHeat,
     finalEffective: fullPack.finalEffective,
-    firstReachRoundByHeat: firstIndexByHeat(fullPack.rounds as { heat: string }[]),
+    terminal: fullPack.terminal,
+    firstReachRoundByHeat: fullPackNote.firstReachRoundByHeat,
+    note: fullPackNote.note,
   },
   scenarioFormalOnly: {
-    deck: `第一包 Formal 24 张（PN-TRUTH-201~224，真实生产卡）`,
+    deck: FORMAL_ONLY_DECK,
     rounds: formalOnly.rounds,
     finalHeat: formalOnly.finalHeat,
     finalEffective: formalOnly.finalEffective,
-    firstReachRoundByHeat: firstIndexByHeat(formalOnly.rounds as { heat: string }[]),
-    note: "牌堆只有 Formal 卡 ⇒ 每张 completed 都是有效信息轮 ⇒ Heat 逐档 H1→H2→H3→H4，逐档首次到达计数 = HEAT_THRESHOLDS 的 min+1（4/8/13）。",
+    terminal: formalOnly.terminal,
+    firstReachRoundByHeat: formalOnlyNote.firstReachRoundByHeat,
+    note: formalOnlyNote.note,
+  },
+  scenarioBootstrapOnly: {
+    deck: BOOTSTRAP_ONLY_DECK,
+    rounds: bootstrapOnly.rounds,
+    finalHeat: bootstrapOnly.finalHeat,
+    finalEffective: bootstrapOnly.finalEffective,
+    terminal: bootstrapOnly.terminal,
+    firstReachRoundByHeat: bootstrapOnlyNote.firstReachRoundByHeat,
+    note: bootstrapOnlyNote.note,
   },
   scenarioLegacyOnly: {
-    deck: `仅 legacy 卡（${LEGACY_CARDS.length} 张，无第一包）`,
+    deck: LEGACY_ONLY_DECK,
     rounds: legacyOnly.rounds,
     finalHeat: legacyOnly.finalHeat,
     finalEffective: legacyOnly.finalEffective,
-    firstReachRoundByHeat: firstIndexByHeat(legacyOnly.rounds as { heat: string }[]),
-    note: "负向对照：legacy 卡 sidecar 恒 null ⇒ isEffectiveInformationRound fail-closed ⇒ 有效计数恒 0、Heat 恒 H1。",
+    terminal: legacyOnly.terminal,
+    firstReachRoundByHeat: legacyOnlyNote.firstReachRoundByHeat,
+    note: legacyOnlyNote.note,
   },
   fullPackSeedSweep: { ...sweep, effectiveMean: +(sweep.effectiveSum / SWEEP).toFixed(2) },
 };
@@ -140,8 +263,14 @@ writeFileSync(`${ROOT}/docs/qa/content-audit/FORMAL-TRUTH-PRODUCTION-CHAIN.json`
 
 console.log("Formal Truth 真实生产链证据已落盘");
 console.log("全包 seed=1：轮", fullPack.rounds.length, "｜effective", fullPack.finalEffective, "｜Heat", fullPack.finalHeat,
-  "｜首达", JSON.stringify(out.scenarioFullPack.firstReachRoundByHeat));
+  "｜终止", JSON.stringify(fullPack.terminal), "｜首达", JSON.stringify(out.scenarioFullPack.firstReachRoundByHeat));
 console.log("仅 Formal seed=1：轮", formalOnly.rounds.length, "｜effective", formalOnly.finalEffective, "｜Heat", formalOnly.finalHeat,
-  "｜首达", JSON.stringify(out.scenarioFormalOnly.firstReachRoundByHeat));
-console.log("仅 legacy seed=1：轮", legacyOnly.rounds.length, "｜effective", legacyOnly.finalEffective, "｜Heat", legacyOnly.finalHeat);
+  "｜终止", JSON.stringify(formalOnly.terminal), "｜首达", JSON.stringify(out.scenarioFormalOnly.firstReachRoundByHeat));
+console.log("仅 Bootstrap 7 张 seed=1：轮", bootstrapOnly.rounds.length, "｜effective", bootstrapOnly.finalEffective, "｜Heat", bootstrapOnly.finalHeat,
+  "｜终止", JSON.stringify(bootstrapOnly.terminal), "｜首达", JSON.stringify(out.scenarioBootstrapOnly.firstReachRoundByHeat));
+console.log("仅 legacy seed=1：轮", legacyOnly.rounds.length, "｜effective", legacyOnly.finalEffective, "｜Heat", legacyOnly.finalHeat,
+  "｜终止", JSON.stringify(legacyOnly.terminal));
+console.log("NOTE[formal]", out.scenarioFormalOnly.note);
+console.log("NOTE[bootstrap]", out.scenarioBootstrapOnly.note);
+console.log("NOTE[legacy]", out.scenarioLegacyOnly.note);
 console.log("全包 200 seed：", JSON.stringify(out.fullPackSeedSweep));

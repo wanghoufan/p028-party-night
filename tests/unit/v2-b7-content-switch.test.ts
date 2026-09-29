@@ -15,6 +15,7 @@ import {
   V2_SSOT_MAINLINE_CARD_COUNT,
   V2_SSOT_MAINLINE_SHA256,
 } from "@/lib/v2-content/v2-types";
+import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { V2_PRECISE_BOUNDARY_TAGS, cardPassesBoundaryFilter } from "@/lib/v2-content/v2-card-metadata";
 import { buildPlayableDeck, localSeedDeck, refillPackFromSeeds } from "@/lib/ai/generate-deck";
@@ -75,15 +76,16 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect((rawSnapshot as { provenance: { migrationIdPolicy: string } }).provenance.migrationIdPolicy).toBe("NONE");
   });
 
-  it("桥接出 374 主线卡（SSOT 350 + 第一包 24：truth-dare 124、其余各 50）且 cardType 落在 pack 支持类型内", () => {
+  it("桥接出 381 主线卡（SSOT 350 + 第一包 24 + R2 Bootstrap 7：truth-dare 131、其余各 50）且 cardType 落在 pack 支持类型内", () => {
     const cards = mainlineSsotCards();
-    // SSOT 冻结主线 350 + CONTENT-01 第一包正式内容 24（`PN-TRUTH-201~224`，追加在末尾）。
-    expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length);
+    // SSOT 冻结主线 350 + CONTENT-01 第一包 24（`PN-TRUTH-201~224`）+ R2 H1 Bootstrap 7（`PN-TRUTH-225~231`）。
+    const extraTruthCards = FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length;
+    expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + extraTruthCards);
 
     const perPack = new Map<string, number>();
     for (const card of cards) perPack.set(card.packId, (perPack.get(card.packId) ?? 0) + 1);
-    // 第一包全是真心话（pack truth-dare），故只有它变化：100 + 24 = 124。
-    expect(perPack.get("truth-dare")).toBe(100 + FORMAL_TRUTH_CARDS.length);
+    // 两包全是真心话（pack truth-dare），故只有它变化：100 + 24 + 7 = 131。
+    expect(perPack.get("truth-dare")).toBe(100 + extraTruthCards);
     for (const packId of MAINLINE_PACK_IDS.filter((id) => id !== "truth-dare")) {
       expect(perPack.get(packId), packId).toBe(50);
     }
@@ -94,9 +96,10 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(cards.slice(0, V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual(
       getV2ContentAdapter().mainlineCards.map((card) => card.cardId),
     );
-    expect(cards.slice(V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual(
-      FORMAL_TRUTH_CARDS.map((card) => card.cardId),
-    );
+    expect(cards.slice(V2_SSOT_MAINLINE_CARD_COUNT).map((card) => card.id)).toEqual([
+      ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+      ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+    ]);
 
     for (const card of cards) {
       const pack = getGamePack(card.packId);
@@ -198,8 +201,11 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     const blocked = all.filter((card) => isHardBlocked(`${card.content} ${card.instruction ?? ""}`)).map((card) => card.id);
     expect(blocked).toEqual(["PN-CHEM-048"]);
 
-    // 安全方向不变式：默认雷区下主线只被剔除这一张，其余全部可出（374 = 350 SSOT + 24 第一包）。
+    // 安全方向不变式：默认雷区下主线只被剔除这一张，其余全部可出
+    // （381 = 350 SSOT + 24 第一包 + 7 R2 Bootstrap）。
     const allowed = filterCards([...mainlineSsotCards()], { intensity: 5, playerCount: 4, boundaries: DEFAULT_BOUNDARIES });
-    expect(allowed).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length - 1);
+    expect(allowed).toHaveLength(
+      V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length - 1,
+    );
   });
 });
