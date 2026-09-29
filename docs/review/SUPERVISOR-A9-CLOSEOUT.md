@@ -1,6 +1,7 @@
 # SUPERVISOR｜A9 收尾复检结论（致编排者）
 
 - 落位说明：按派工书 §5 首选方案，新建本汇总文件留痕；**未改任何既有文件**（业务/测试/文档均未碰），未 commit/push。被检文件评论区未另写（QA 与 CR 报告均已冻结落盘，追加评论即改既有文件；本汇总为唯一新增）。
+  （2026-09-30 收尾注：本句记录的是本单执行当时状态；成果现已于 2026-09-30 落于 `6cac2a2` / `013939b` 并 push main。）
 - 复检身份：supervisor（opencode-go/muse-spark-1.3-contributor，opencode 通道）。只对编排者说话。
 - 读盘顺序：AGENTS.md → docs/roles/supervisor.md → USER_MODEL_OVERRIDE.md → HANDOFF「大交接 3」§0~§5 → 经验一句话.md → BUGS-A9-CLOSEOUT.md（两轮） → CODE_REVIEW-A9-CLOSEOUT.md → RESEARCH_REVIEW-PACK1-FINAL-54/53 → 派工书 §4。
 - 结论档位：**FAIL（治理性 FAIL：产品验收阻断；内容与技术面全绿）**。与 QA 首轮 FAIL 口径一致，不放水。
@@ -38,6 +39,7 @@
 
 1. 产品验收阻断（维持）：`product_acceptance_ac_added` 仍 `false`（亲读）；实绩 Plan 缺 AC 编号+关键 AC 集合+发布类型；QA 判关键 AC 未测。依母版红线**不得报完工**，需人类拍板（是否 Change C），编排者已上呈。
 2. 未 commit：工作树 **52 M + 33 ??（14 备份 + 19 新）= 85 项**，全部未提交。NOTE：编排者上呈"67 项"与实测 71 项内容改动（52M+19新）不符，请订正为 71（差 4 疑为 P2/P3 清完后新增，内容无问题，数字需改）。commit 需人类明确指令。
+   （2026-09-30 收尾注：Supervisor 当时实测 71 项内容改动，编排者实测提交为 Commit A 71 files + Commit B 5 files，两个口径分属不同时点，不要混成一个数字；且现已 commit + push。）
 3. E2E 6 skip 既有（production 离线/PWA×3/V2 Mutual 延期/AI 回退），非新增，不得计 PASS。
 4. 229 瑕疵登记不修（亲验题面未动）。
 5. 结构缺口登记不补：Golden H2 3→2（236 退）、REPLACE 轴（263 退）、supplement（277/249 退）。

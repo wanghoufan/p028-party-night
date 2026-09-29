@@ -10,6 +10,7 @@
   - Heat 交叉：H1＝14／H2＝17／H3＝16／H4＝6（与 `FORMAL-TRUTH-MC.json#formalHeatMinDistribution`、`FORMAL-TRUTH-STRUCTURE.json` 一致）
   - 构成：沿用 FINAL-54 PASS 48 张 ＋ 本轮改写转 PASS 5 张（203/241/252/262/266）− 退役 249（原 BORDERLINE）＝ 53
 - 本单纪律：未改任何代码／测试／generated JSON；未 commit／未 push；临时文件只放仓内 `temp/`；路径类检查均走相对路径＋`git -c core.quotepath=false` 口径
+  （2026-09-30 收尾注：本句记录的是本单执行当时的纪律；成果现已于 2026-09-30 提交。）
 
 ## 1. 六张逐张复核（结论：6/6 已解决，0 未解决，0 引入新问题）
 

@@ -8,7 +8,8 @@
 
 ## 0. 三十秒定位
 - 阶段：`DEVELOP`｜`DEV_BASELINE=PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST`｜`RC=RC_NEEDS_REFREEZE`｜`CONTENT-01=OPEN`｜`RG-02=HOLD_BY_CONTENT_01`｜三处版本 `1.5.0`｜`AI_MAINLINE_ENABLED` 关闭｜**未部署**。
-- HEAD 仍 `0a879ed`（A2~A9 已于 `7d3254e` 提交）。**本轮收口成果 73 项工作树改动全部未 commit**（依红线，commit 需人类明确指令）。
+- ✅ **已 commit + push**（人类 2026-09-30 明确授权，main）：`6cac2a2`（Commit A：A9 内容准入 + 测试迁移 + 证据重刷，71 files）→ `013939b`（Commit B：Playwright baseURL 治本，独立测试设施提交，5 files）。与 `origin/main` **0 0**，tracked tree clean，**仅 14 份 `*.旧版-2026-09-29` 预存备份保持未跟踪**。
+- 提交时排除项：`temp/`、14 份 `*.旧版-2026-09-29`、`next-env.d.ts`（E2E 会自动改写成 `dev/types` 变体，已 `git restore` 还原后再提交）、`.env*`、`docs/pm/**`（本轮未改）。
 - ✅ **技术面全绿**：`vitest` 137 文件 / 1453 用例 / **0 failed**（接手时 26 failed）｜`tsc` 0 error｜`lint` 0 error / 12 既有 warning｜E2E **106 passed / 0 failed / 6 skipped**（6 条为既有条件 skip，非新增）｜`build` 通过｜`build:fixed-manifest` 443/443、0 mismatch、两次 hash 一致（`e4b5d4c2…`）、快照外 ID 0｜`check-ledger` = `LEDGER-OK`（TASK 220 行 / DISPATCH 277 行）。
 - ✅ **产品面全绿**：Product Reviewer 两轮（PASS 48 / BORDERLINE 6 / FAIL 0 → 返工 → **全池 PASS 53 / BORDERLINE 0 / FAIL 0**）｜Code Review `PASS_WITH_NOTES`（P0=0 / P1=0 / P2=1 / P3=3，P2/P3 已清）｜QA 6 条负向探针**全部实测变红**并还原｜Supervisor 技术/产品面全绿。
 - 🔴 **唯一阻断：产品验收**。`docs/model/GOVERNANCE-STATE.json` 的 `product_acceptance_ac_added` 仍 `false`；本仓实绩 Plan 缺「视觉与交互验收标准（AC 编号）＋关键 AC 集合＋发布类型」；QA 与 Supervisor 均据此判**不得报完工**。此项**需人类拍板**（是否走 Change C），已于 2026-09-30 上呈。
@@ -58,7 +59,7 @@
 
 ## 4. 未解决 / 未闭环项（如实登记，⛔ 不许淡化）
 1. 🔴 **产品验收阻断**：`product_acceptance_ac_added = false`，关键 AC 未测、验收证据缺失 ⇒ 依母版红线**不得报完工**。**待人类拍板。**
-2. ⛔ **未 commit / 未 push**：73 项工作树改动。
+2. ✅ **已闭环**：commit + push 已于 2026-09-30 完成（`6cac2a2` + `013939b`，main，`0 0`，tracked tree clean）。三链报告与本文件中「未 commit / 未 push」的表述已由 neat-freak 回填为提交后状态。
 3. `229` 的「说说…那次」是全池唯一真咨询句式瑕疵：Product Reviewer 判 PASS 可容忍、**登记不修**。
 4. 「选谁」骨架收敛风险：`251→257→273→276→279→280→281` 七张收敛于同一暧昧对象（`280/281` 几乎必同人）。**不退卡**，登记并给限流建议；**第二包禁止继续大量堆「选谁」**。
 5. `follow_up_hook` 余量 0、真实数就是 9；`239 253 257 264 270 271` 有 hook 语义但**维持保守标注不扩口径**。
