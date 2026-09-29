@@ -2,9 +2,8 @@
  * B6｜第一包 MC / 报告的**可复算护栏**（沿用 `formal-truth-production-chain-note.test.ts` 的思路，
  * 把「note 必须由实测派生」这条纪律扩展到 MC 产物与 `FORMAL-TRUTH-MC.md` 的 summary/结论）。
  *
- * 背景：Bootstrap 7 张（`PN-TRUTH-225~231`）过审入 Formal 后，`heatMin=1` 的 Formal 由 3 → 11，
- * 旧的 MC 报告里残留了「仅 Formal 24 张 / H1 可计数 3 / 缺口 1 / 库存 = 0（实践不可抽）/
- * H1 全为 intensity=1 / 也离不开 H1」等手写结论——这些在数据上已全部为假。
+ * 背景：A3（2026-09-29）后 26 张旧版本退出 Formal，Formal 由 31 → 5（KEEP 5）。旧的 MC 报告/产物
+ * 里残留的「仅 Formal 31 张 / H1 可计数 11 / 四档全部有货」等结论在数据上已全部为假。
  * 本文件把「报告与产物不得自相矛盾」编成红灯会亮的门禁，五组断言：
  *
  * 1. **口径 B（当前真实 UI）不变式**：无披露 ⇒ effective 恒 0、Heat 恒 H1、互选窗口 0；
@@ -87,7 +86,7 @@ const reportIdsUIIndex = uiLine.indexOf("——");
 const reportClaimedCount = Number(/当前 UI 实际可抽到的 Formal 张数\*\*：\*\*(\d+) 张\*\*/u.exec(uiLine)?.[1]);
 const reportClaimedIds = (uiLine.slice(reportIdsUIIndex).match(/PN-TRUTH-\d+/gu) ?? []).sort();
 
-const h1Expected = ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203", "PN-TRUTH-205"];
+const h1Expected = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"];
 
 describe("B6① 口径 B（当前真实 UI）不变式：无披露 ⇒ effective 恒 0 / Heat 恒 H1 / 互选窗口 0", () => {
   it("modeA 的 heatAtDraw 全部落在 H1，H2/H3/H4 均为 0", () => {
@@ -114,7 +113,7 @@ describe("B6① 口径 B（当前真实 UI）不变式：无披露 ⇒ effective
 });
 
 describe("B6② 口径 A（Engine / 显式 disclosure）：H2 reach > 0 且 effective > 0（不把 A 当 B）", () => {
-  it("modeB：到达 H2 的局 > 0，effective/局 > 0（Bootstrap 入 Formal 后冷启门在 Engine 侧已跨过）", () => {
+  it("modeB：到达 H2 的局 > 0，effective/局 > 0（A3 后 H1 可计数 Formal 4 张 = H2 门槛，冷启门在 Engine 侧仍跨得过）", () => {
     expect(ENGINE.sessionsReachingH2).toBeGreaterThan(0);
     expect(ENGINE.effectivePerSession).toBeGreaterThan(0);
   });
@@ -149,10 +148,11 @@ describe("B6④ heatMin=1 的 Formal（H1 桶可抽）集合与产物、报告�
     expect(mc.h1Formal.count).toBe(H1_FORMAL_COUNT);
   });
 
-  it("该集合 === {201,202,203,205} ∪ Bootstrap（225~231）——与内容侧护栏同源", () => {
-    const bootstrap = ["PN-TRUTH-225", "PN-TRUTH-226", "PN-TRUTH-227", "PN-TRUTH-228", "PN-TRUTH-229", "PN-TRUTH-230", "PN-TRUTH-231"];
-    expect(H1_FORMAL_IDS_MC).toEqual([...h1Expected, ...bootstrap].sort());
+  it("该集合 === Formal 里 heatMin=1<=heatMax 的卡（A3 后 = {203,205,227,229}）——与内容侧护栏同源", () => {
+    expect(H1_FORMAL_IDS_MC).toEqual([...h1Expected].sort());
     expect(mc.formalCountableUpTo.heatMinLe1).toBe(H1_FORMAL_COUNT);
+    // 该集合由 manifest 真源 ∩ 卡源 heatMin/heatMax 派生（不写死张数）。
+    for (const id of H1_FORMAL_IDS_MC) expect(formalFixedIdSet().has(id), `${id} 应为 Formal`).toBe(true);
   });
 
   it("报告印出的张数与清单 === 产物（防报告引用过期数字）", () => {
@@ -162,8 +162,9 @@ describe("B6④ heatMin=1 的 Formal（H1 桶可抽）集合与产物、报告�
 });
 
 describe("B6⑤ 报告不得含与实测数据矛盾的硬编码结论（旧口径字符串 + 缺/不缺现判）", () => {
-  it("清除旧口径字符串：不再出现「仅 Formal 24 张 / 缺口 - / 库存 = 0（实践不可抽）」", () => {
+  it("清除旧口径字符串：不再出现「仅 Formal 24 张 / 仅 Formal 31 张 / 缺口 - / 库存 = 0（实践不可抽）」", () => {
     expect(REPORT).not.toContain("仅 Formal 24 张");
+    expect(REPORT).not.toContain("仅 Formal 31 张");
     expect(REPORT).not.toMatch(/缺口\s*-\d+/);
     expect(REPORT).not.toContain("库存 = 0（实践不可抽）");
   });
@@ -187,8 +188,10 @@ describe("B6⑤ 报告不得含与实测数据矛盾的硬编码结论（旧口�
   it("报告的生产链表「仅 Formal」行张数 === MC 的 formalTotal，且终态 Heat === 链产物实测", () => {
     const fo = chain.scenarioFormalOnly as { finalHeat: string; finalEffective: number };
     expect(REPORT).toContain(`| 仅 Formal ${mc.cardSource.formalTotal} 张 |`);
-    expect(REPORT).toContain(`| H4 | ${fo.finalEffective} |`);
-    expect(fo.finalHeat).toBe("H4");
+    // 终态行的 Heat / effective 两格必须与链产物实测逐字一致（A3 后 = H2 / 5）。
+    expect(REPORT).toContain(`| ${fo.finalHeat} | ${fo.finalEffective} |`);
+    expect(fo.finalHeat).toBe("H2");
+    expect(fo.finalEffective).toBe(5);
     expect(fo.finalEffective).toBeGreaterThan(0);
   });
 

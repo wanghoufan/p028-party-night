@@ -1,5 +1,13 @@
 /**
- * CONTENT-01｜Truth H1 Bootstrap「第一包 H1 补卡」内容源（**R2 新增；R3 已过两轮独立审查 ⇒ 已是 Formal**）。
+ * CONTENT-01｜Truth H1 Bootstrap「第一包 H1 补卡」内容源（**R2 新增；R3 已过两轮独立审查 ⇒ 曾是 Formal；
+ * A4a 后只保留 KEEP 2 张**）。
+ *
+ * ## 现状（A4a 之后：只保留 KEEP 2）
+ * 本文件导出 `FORMAL_TRUTH_BOOTSTRAP_CARDS`（**2 张** `PN-TRUTH-227 / 229`）。原始 7 张
+ * （`225 226 227 228 229 230 231`）里，227 / 229 是 Human 2026-09-29 酒吧新内容基线审计的 KEEP；
+ * 其余 5 张（225 226 228 230 231，全判 REWRITE）已**移出运行时内容源**，逐字归档在
+ * `lib/v2-content/archive/retired-truth-pack-2026-09-29.ts`（含 7 张 REWRITE 中的第一包 2 张）。
+ * ⛔ 退役卡不得留在卡源（否则按 legacy 豁免口径仍会被抽到、计有效轮，违反 Human 新基线）。
  *
  * ## 为什么要有这个包（Human 已冻结的问题定义）
  * 第一包 Heat 诚实重标后，`heatMin=1` 的 Formal 卡太少，而 H2 门槛是 `effective>=4`：
@@ -8,19 +16,18 @@
  * - 修法是**补真正 H1 的浅关系高信息题，不是把深题压回 `heatMin=1`**。
  *
  * ## 本包与第一包的边界（**不要混为一谈**）
- * - 本包 R3 已过两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，
+ * - 本包原始 7 张 R3 已过两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，
  *   报告见 `temp/REVIEW-BOOTSTRAP-7.md` 与 `temp/REVIEW-BOOTSTRAP-7-RECHECK.md`），结论已如实回填
- *   ⇒ 本包 7 张**已是 Formal**（manifest `tracks.formalFixed` 收纳，见产物 `counts.total`）。
+ *   ⇒ 本包原有 7 张**曾是 Formal**；A4a 后仅 227/229 保持 Formal（其余 5 张退役）。
  * - 本包仍只随桥接进入卡源；准入与否**由 manifest 独立审查输入决定**，不在这里写死。
  * - ⛔ 不得把本包卡写进 `formal-truth-pack.ts`，也不得为了「能进 Formal」伪造审查输入。
  * - ⛔ 不得把 `PN-TRUTH-201~224` 里任何深题降级到 `heatMin=1` 来凑 H1 库存。
  *
  * ## 逐条硬规格
  * 1. **`heatMin` 一律 = 1**（真 H1：刚认识就能问），`heatMax` **逐卡诚实**：
- *    破冰题到 H4 已太浅的不许硬拉 4；本包 `heatMax` 分布 = H2 2 / H3 4 / H4 1
- *    （2026-09-29 reviewer 复判：`228` 4→3、`230` 3→2，逐卡理由见 `temp/REVIEW-BOOTSTRAP-7.md`）。
+ *    破冰题到 H4 已太浅的不许硬拉 4；保留的 227 / 229 的 `heatMax` 均为 3。
  * 2. **不是全 I1**：现有 3 张 H1 Formal 全为 I1，在建堆里容易被 legacy 高强度卡压住；
- *    本包做出 `H1+I2` / `H1+I3` 的「浅关系但更有现场能量」卡（I1 1 / I2 4 / I3 2）。
+ *    本包做出 `H1+I2` 的「浅关系但更有现场能量」卡（227 I2 / 229 I2）。
  *    ⛔ 不为曝光做不自然的 I4/I5。
  * 3. **题材只取浅关系**：兴趣爱好 / 生活方式 / 性格·习惯·小癖好 / 相处规则。
  *    ⛔ 不碰前任、吃醋、性/亲密、深层边界、关系创伤、强价值观审问。
@@ -28,7 +35,7 @@
  *    故本包人物信息卡一律不用它作 `topic`；`PN-TRUTH-227` 已由 reviewer 判为 `兴趣爱好`。）
  * 4. **8 项必填质量字段逐卡齐全**（`V2_REQUIRED_QUALITY_FIELDS`，真源 `v2-card-metadata.ts`）
  *    ＋逐卡 `secondaryTopics`；`barFit` 恒 `"PASS"`。
- * 5. **ID**：沿用 `PN-TRUTH-*` 族，续 `225` 起，与既有 `PN-TRUTH-001~050` /
+ * 5. **ID**：沿用 `PN-TRUTH-*` 族，保留 `227 / 229`，与既有 `PN-TRUTH-001~050` /
  *    `PN-TRUTH-201~224` 及全库 390 张**无碰撞**（自检脚本逐条核验）。
  *
  * 真源引用（只读，本文件不改任何真源）：
@@ -44,70 +51,12 @@ import { V2_SSOT_SCHEMA_VERSION } from "./v2-types";
 const SCHEMA = V2_SSOT_SCHEMA_VERSION;
 
 /**
- * Truth H1 Bootstrap 卡（7 张，`PN-TRUTH-225~231`；**已过两轮独立审查并入库 ⇒ Formal**，见文件头）。
+ * Truth H1 Bootstrap 卡（**保留 KEEP 2 张**，`PN-TRUTH-227 / 229`；见文件头）。
  *
- * 排序：按 `cardId` 升序。桥接侧**只能追加在第一包 24 张之后**（不得前置/重排，
+ * 排序：按 `cardId` 升序。桥接侧**只能追加在第一包之后**（不得前置/重排，
  * 否则既有取 `[0]` 的测试与 E2E 会漂移）。
  */
 export const FORMAL_TRUTH_BOOTSTRAP_CARDS: readonly FormalTruthCard[] = [
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-225",
-    gameType: "truth",
-    number: 225,
-    text: "最近才开始的爱好是什么？说说让你上头的第一个瞬间。",
-    intensity: 2,
-    heatMin: 1,
-    heatMax: 3,
-    relationStage: "notice",
-    targetMode: "system-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "兴趣爱好",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "听到他最近才开始的一个爱好，以及真正让他上头的那一刻",
-    socialEnergy: "low",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["生活方式"],
-  },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-226",
-    gameType: "truth",
-    number: 226,
-    text: "你的周末更偏哪种：睡到中午、早起出门、还是临时决定？为什么？",
-    intensity: 1,
-    heatMin: 1,
-    heatMax: 2,
-    relationStage: "notice",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "生活方式",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道他真实的周末节奏更像哪一种，以及他为什么偏这一种",
-    socialEnergy: "low",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["性格·习惯·小癖好"],
-  },
   {
     schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-227",
@@ -141,35 +90,6 @@ export const FORMAL_TRUTH_BOOTSTRAP_CARDS: readonly FormalTruthCard[] = [
   },
   {
     schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-228",
-    gameType: "truth",
-    number: 228,
-    text: "朋友里你常被安排成哪种角色：张罗的、捧场的，或失踪的？你认吗？",
-    intensity: 3,
-    heatMin: 1,
-    heatMax: 3,
-    relationStage: "notice",
-    targetMode: "system-opposite-sex",
-    responseMode: "public",
-    interactionType: "expression",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "性格·习惯·小癖好",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "听他讲出自己在朋友圈里被默认的那个角色，以及他认不认这个说法",
-    socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["相处规则"],
-  },
-  {
-    schemaVersion: SCHEMA,
     cardId: "PN-TRUTH-229",
     gameType: "truth",
     number: 229,
@@ -192,64 +112,6 @@ export const FORMAL_TRUTH_BOOTSTRAP_CARDS: readonly FormalTruthCard[] = [
     informationGain: "medium",
     informationGoal: "知道他明确提不起兴趣的是哪一类内容，以及他试过之后为什么不感冒",
     socialEnergy: "medium",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "self_preference",
-    secondaryTopics: ["生活方式"],
-  },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-230",
-    gameType: "truth",
-    number: 230,
-    text: "跟刚认识的人相处，你有自己的一条规矩吗？说说它怎么来的。",
-    intensity: 3,
-    heatMin: 1,
-    heatMax: 2,
-    relationStage: "notice",
-    targetMode: "system-opposite-sex",
-    responseMode: "public",
-    interactionType: "expression",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "相处规则",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "听到他跟刚认识的人相处时的一条自己的规矩，以及这条规矩的来历",
-    socialEnergy: "low",
-    relationshipProgression: "open",
-    intimacyClass: "none",
-    informationGoalType: "relationship_rule",
-    secondaryTopics: ["性格·习惯·小癖好"],
-  },
-  {
-    schemaVersion: SCHEMA,
-    cardId: "PN-TRUTH-231",
-    gameType: "truth",
-    number: 231,
-    text: "一天里什么时候你最像你自己？说说那段时间你通常在做什么。",
-    intensity: 2,
-    heatMin: 1,
-    heatMax: 4,
-    relationStage: "notice",
-    targetMode: "choose-opposite-sex",
-    responseMode: "public",
-    interactionType: "disclosure",
-    consentMode: "skip-anytime",
-    matchRequired: false,
-    boundaryTags: [],
-    fallbackPolicy: "skip-card",
-    signalEffects: [],
-    postAction: "none",
-    topic: "性格·习惯·小癖好",
-    barFit: "PASS",
-    informationGain: "medium",
-    informationGoal: "知道他自我感觉最自在的那个时间段，以及他那时通常在做什么",
-    socialEnergy: "low",
     relationshipProgression: "open",
     intimacyClass: "none",
     informationGoalType: "self_preference",

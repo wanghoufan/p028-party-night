@@ -21,10 +21,10 @@ import { BUILTIN_SEED_CARDS } from "@/lib/game-packs/built-in-seeds";
  * 三条内容轨必须独立——正式 Fixed session 只能含 formal manifest ID；Legacy-only 始终 legacy-only，
  * 旧 seed session 不得因 `ensurePackPlayable` / `switchPack` / `spin-chain refill` / 后台补题偷偷补进 PN-*。
  *
- * 本文件用的都是**真实 manifest**（当前 `formalFixedIdSet().size === 0`），因此：
+ * 本文件用的都是**真实 manifest**（A3 后 `formalFixedIdSet().size === 5` = KEEP 5），因此：
  * - 快照轨补位 = 补 PN-*（放行）；
  * - 纯旧 seed 轨补位 = 一张都不补（拦住）；
- * - 「正式轨」分支用构造的 fixture manifest 覆盖（生产快照当前还没有 Formal 卡）。
+ * - 「正式轨」分支用构造的 fixture manifest 覆盖（不依赖生产快照里 Formal 的具体张数）。
  *
  * B3-14（收尾）在此之上再收紧 custom/AI ↔ snapshot 方向：custom-only / AI-only 牌堆
  * 不再接收快照内旧题（见文件末尾「B3-14」describe）。

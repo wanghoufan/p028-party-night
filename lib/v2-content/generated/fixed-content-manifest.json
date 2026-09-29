@@ -6,7 +6,7 @@
       "isFormalFixedContent": false,
       "purpose": "旧局读取 / 恢复 / 迁移；可缺 Plan §3 新 metadata；明确不是正式 Fixed Content",
       "admission": "legacy-compatibility",
-      "snapshotHash": "97a58f107a35d5f4a8dc1d106e22e0e2d862aa4c8180f51284540b43091fa4aa",
+      "snapshotHash": "f621701227df11fdc99438598b28050711b135b4080869975585275bc6a0c056",
       "allowedCardIds": [
         "PN-CHEM-001",
         "PN-CHEM-002",
@@ -398,37 +398,63 @@
         "PN-TRUTH-048",
         "PN-TRUTH-049",
         "PN-TRUTH-050",
-        "PN-TRUTH-201",
-        "PN-TRUTH-202",
         "PN-TRUTH-203",
-        "PN-TRUTH-204",
         "PN-TRUTH-205",
-        "PN-TRUTH-206",
-        "PN-TRUTH-207",
-        "PN-TRUTH-208",
         "PN-TRUTH-209",
-        "PN-TRUTH-210",
-        "PN-TRUTH-211",
-        "PN-TRUTH-212",
-        "PN-TRUTH-213",
-        "PN-TRUTH-214",
-        "PN-TRUTH-215",
-        "PN-TRUTH-216",
-        "PN-TRUTH-217",
-        "PN-TRUTH-218",
-        "PN-TRUTH-219",
-        "PN-TRUTH-220",
-        "PN-TRUTH-221",
-        "PN-TRUTH-222",
-        "PN-TRUTH-223",
-        "PN-TRUTH-224",
-        "PN-TRUTH-225",
-        "PN-TRUTH-226",
         "PN-TRUTH-227",
-        "PN-TRUTH-228",
         "PN-TRUTH-229",
-        "PN-TRUTH-230",
-        "PN-TRUTH-231"
+        "PN-TRUTH-232",
+        "PN-TRUTH-233",
+        "PN-TRUTH-234",
+        "PN-TRUTH-235",
+        "PN-TRUTH-236",
+        "PN-TRUTH-237",
+        "PN-TRUTH-238",
+        "PN-TRUTH-239",
+        "PN-TRUTH-240",
+        "PN-TRUTH-241",
+        "PN-TRUTH-242",
+        "PN-TRUTH-243",
+        "PN-TRUTH-244",
+        "PN-TRUTH-245",
+        "PN-TRUTH-246",
+        "PN-TRUTH-247",
+        "PN-TRUTH-248",
+        "PN-TRUTH-249",
+        "PN-TRUTH-250",
+        "PN-TRUTH-251",
+        "PN-TRUTH-252",
+        "PN-TRUTH-253",
+        "PN-TRUTH-254",
+        "PN-TRUTH-255",
+        "PN-TRUTH-256",
+        "PN-TRUTH-257",
+        "PN-TRUTH-258",
+        "PN-TRUTH-259",
+        "PN-TRUTH-260",
+        "PN-TRUTH-261",
+        "PN-TRUTH-262",
+        "PN-TRUTH-263",
+        "PN-TRUTH-264",
+        "PN-TRUTH-265",
+        "PN-TRUTH-266",
+        "PN-TRUTH-267",
+        "PN-TRUTH-268",
+        "PN-TRUTH-269",
+        "PN-TRUTH-270",
+        "PN-TRUTH-271",
+        "PN-TRUTH-272",
+        "PN-TRUTH-273",
+        "PN-TRUTH-274",
+        "PN-TRUTH-275",
+        "PN-TRUTH-276",
+        "PN-TRUTH-277",
+        "PN-TRUTH-278",
+        "PN-TRUTH-279",
+        "PN-TRUTH-280",
+        "PN-TRUTH-281",
+        "PN-TRUTH-282",
+        "PN-TRUTH-283"
       ],
       "provenance": {
         "PN-TRUTH-001": {
@@ -3581,24 +3607,6 @@
           "metadataStatus": "legacy",
           "payloadHash": "00ba0965bf1f65817bdd249507d111f424cd56663f4c244690a559bbf7b95a27"
         },
-        "PN-TRUTH-201": {
-          "cardId": "PN-TRUTH-201",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "1d8f178c35f0ce9323830c970ea1551bae76bb97bf936d83d8521211240ddf8f"
-        },
-        "PN-TRUTH-202": {
-          "cardId": "PN-TRUTH-202",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "bef8eeb059f64c935ef20e84ae2dad6d04ae90fd90188dc6a6166daaed6f7290"
-        },
         "PN-TRUTH-203": {
           "cardId": "PN-TRUTH-203",
           "cardSet": "mainline",
@@ -3607,15 +3615,6 @@
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
           "payloadHash": "0d17da2616bb9991c15d5467e4fb18ca8e0e20247215f4c3ffa2537a23f71299"
-        },
-        "PN-TRUTH-204": {
-          "cardId": "PN-TRUTH-204",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "0c7807e5c53d91176fa662e150bd0ec13683b804c0afbb80aad216522b368cee"
         },
         "PN-TRUTH-205": {
           "cardId": "PN-TRUTH-205",
@@ -3626,33 +3625,6 @@
           "metadataStatus": "audited",
           "payloadHash": "0430deb9adfc36c482e573c1b13fbf4261b1cb76aae18b189f45149fb5e894ac"
         },
-        "PN-TRUTH-206": {
-          "cardId": "PN-TRUTH-206",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "4bdc378fd1230424a9ce81b4bde8898a70884e1499f51f6b3c0c7aa0db0cc239"
-        },
-        "PN-TRUTH-207": {
-          "cardId": "PN-TRUTH-207",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "01ac87b1960ffe87af5b95ffe9b24b32a251e03e71cfa823ea2b5b28b8e5301f"
-        },
-        "PN-TRUTH-208": {
-          "cardId": "PN-TRUTH-208",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "0e200ccd7b5770d8910405edc64fb0af071f144464c0c64e83b361766c34cc51"
-        },
         "PN-TRUTH-209": {
           "cardId": "PN-TRUTH-209",
           "cardSet": "mainline",
@@ -3661,159 +3633,6 @@
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
           "payloadHash": "ba5703f946d7080f5db9d8a350bc214cc996a4a9b4942917b9c95304b68dee07"
-        },
-        "PN-TRUTH-210": {
-          "cardId": "PN-TRUTH-210",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "a37b89f97e7d939a8fbf19380da05935a607294f4682b3e36e825e1e485e6daa"
-        },
-        "PN-TRUTH-211": {
-          "cardId": "PN-TRUTH-211",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "05d72f0aa1596cd28f26e459959b0f92d4aaaa43ba2f1d3f0276fb80426a80a2"
-        },
-        "PN-TRUTH-212": {
-          "cardId": "PN-TRUTH-212",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "8c8210d7dffca41e79ecbdd9786ffa53bd7c5965c1dc7228c716908d1131b8a5"
-        },
-        "PN-TRUTH-213": {
-          "cardId": "PN-TRUTH-213",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "ea6876a5d3d49011bb07aafa240362521a9bce339f7b4e1b58a4c6a91294d570"
-        },
-        "PN-TRUTH-214": {
-          "cardId": "PN-TRUTH-214",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "33b258caf89938e1c6656b139fcf60c285f7c2fa0e234f44fe470ce05d66d714"
-        },
-        "PN-TRUTH-215": {
-          "cardId": "PN-TRUTH-215",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "790c4b7cd2b3edefa885e08e1335e3aa33329b9b28ff75debadd4e65b6bfc764"
-        },
-        "PN-TRUTH-216": {
-          "cardId": "PN-TRUTH-216",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "6d9e69ead9bdee9f5e6a5e0f2dae7de8c8c91913041c886ddf53bcdb4a54b1a7"
-        },
-        "PN-TRUTH-217": {
-          "cardId": "PN-TRUTH-217",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "28521d660da4c3856af0bea448092e2986fac146f307881949480bc4dea36f18"
-        },
-        "PN-TRUTH-218": {
-          "cardId": "PN-TRUTH-218",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "32127f08fca68ddc2371a64dfcd5295135eab2248c75d81bff32d428967ed614"
-        },
-        "PN-TRUTH-219": {
-          "cardId": "PN-TRUTH-219",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "703bf87e5c599f4e9ce2bf6354885c6aae4c54b998d30f4f6cb5b09cf51b724b"
-        },
-        "PN-TRUTH-220": {
-          "cardId": "PN-TRUTH-220",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "6f05a7b72e6217a238d1481ca9fb7154f31c381e469a974b773394f8c07eae14"
-        },
-        "PN-TRUTH-221": {
-          "cardId": "PN-TRUTH-221",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "4cc423a72fa196cbbbc44a9611f9f260d5ae05a880b698da1572646c684f7bbf"
-        },
-        "PN-TRUTH-222": {
-          "cardId": "PN-TRUTH-222",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "75c280b21a2b03c3843ca03568aef6c64945e7dfc29219f00442c52a3e527e59"
-        },
-        "PN-TRUTH-223": {
-          "cardId": "PN-TRUTH-223",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "f9dfabe1c595aaf164a7e5fd73cf0d3f1e5e4f0a9fc09683ffbfdc028e130b5c"
-        },
-        "PN-TRUTH-224": {
-          "cardId": "PN-TRUTH-224",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "2030b66546fdf69f643dab3c4e2d3cd7af175ab70eafc9bd54c783876701affe"
-        },
-        "PN-TRUTH-225": {
-          "cardId": "PN-TRUTH-225",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "90ac48c94a7b12177265bd18ce21053c47488097f38f4ff138d21fae416d26e1"
-        },
-        "PN-TRUTH-226": {
-          "cardId": "PN-TRUTH-226",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "f9379d96cd336124a60c0f79327c69320c1006c061a8f5d9d027a5c3ae7fab46"
         },
         "PN-TRUTH-227": {
           "cardId": "PN-TRUTH-227",
@@ -3824,15 +3643,6 @@
           "metadataStatus": "audited",
           "payloadHash": "6b428d60783e1f3288fcf188ddae330ba56101f5700f7aaaee8180041df40312"
         },
-        "PN-TRUTH-228": {
-          "cardId": "PN-TRUTH-228",
-          "cardSet": "mainline",
-          "reviewed": true,
-          "machineVerdict": "PASS",
-          "humanBarFit": "PASS",
-          "metadataStatus": "audited",
-          "payloadHash": "abe0f87dd352c8bc30f037b1a57ecd5faf86b97dcd0f88b270c094bd7699d65e"
-        },
         "PN-TRUTH-229": {
           "cardId": "PN-TRUTH-229",
           "cardSet": "mainline",
@@ -3842,23 +3652,473 @@
           "metadataStatus": "audited",
           "payloadHash": "79e896b09e214a8b9f79902f5e02a23cdc4f3e922c700e5a53955cb3e6bdb794"
         },
-        "PN-TRUTH-230": {
-          "cardId": "PN-TRUTH-230",
+        "PN-TRUTH-232": {
+          "cardId": "PN-TRUTH-232",
           "cardSet": "mainline",
           "reviewed": true,
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "13abf8860d77f3f205f80186747d665fb2cdf9bc8697043d1ca8dace4733ec2c"
+          "payloadHash": "748f2e5dc16b525fa589c207fa7ebd94aef8e6e406b5f09ba177d98bd545e369"
         },
-        "PN-TRUTH-231": {
-          "cardId": "PN-TRUTH-231",
+        "PN-TRUTH-233": {
+          "cardId": "PN-TRUTH-233",
           "cardSet": "mainline",
           "reviewed": true,
           "machineVerdict": "PASS",
           "humanBarFit": "PASS",
           "metadataStatus": "audited",
-          "payloadHash": "262aef3bb062c6920f985c15b7e432e2c898b2364d7947cf427722f19a0202da"
+          "payloadHash": "92d376f95492c458e6a43b6e14d35f6d72b37528adb0e27627abcc4f27b0e453"
+        },
+        "PN-TRUTH-234": {
+          "cardId": "PN-TRUTH-234",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "616713d6ac76ee804b2831c1422818e89e5d0dc37286cd2d0edecf16ae9ae956"
+        },
+        "PN-TRUTH-235": {
+          "cardId": "PN-TRUTH-235",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "d25dd1dc7421f177bd10c9650ccaabd5cf58b2f2b1daa1bca4e26d516fcc35f0"
+        },
+        "PN-TRUTH-236": {
+          "cardId": "PN-TRUTH-236",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a5ea6127ac2cf78540c9700b78d6ed8d4f08b44f04347046e95f24fd18e2c150"
+        },
+        "PN-TRUTH-237": {
+          "cardId": "PN-TRUTH-237",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "1d08303fcb8e2da4773948ced2e902ab38c00c1a740e009634d27e4fc4a202b3"
+        },
+        "PN-TRUTH-238": {
+          "cardId": "PN-TRUTH-238",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0dbc0b98c07698e3876563d873c27bf0696f5d9c940a515400ab6996e4e82869"
+        },
+        "PN-TRUTH-239": {
+          "cardId": "PN-TRUTH-239",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "da212e0f849955b37b8e88313811fd41dd9e124dede68f17f5ae8ad61e5e5cd6"
+        },
+        "PN-TRUTH-240": {
+          "cardId": "PN-TRUTH-240",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a778cc72ed2c465bc968615428590c386ecfbe74271e807dc12b96f21971add3"
+        },
+        "PN-TRUTH-241": {
+          "cardId": "PN-TRUTH-241",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6805c5daa187b12f9e1dfdfe6ff23b6f6dbd6e4dd63c60039b0134096d4fc056"
+        },
+        "PN-TRUTH-242": {
+          "cardId": "PN-TRUTH-242",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a4c74993c462794492d85662a251d0aa361e11162002323fdfcb4691218194c4"
+        },
+        "PN-TRUTH-243": {
+          "cardId": "PN-TRUTH-243",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "c0ffced30e72a7b85a2be66ce54dc64894464c657046ee66459092720a0a6166"
+        },
+        "PN-TRUTH-244": {
+          "cardId": "PN-TRUTH-244",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "ecfac509f423c38618db67dae19ade8995bc81ff2de1ea80a01849512302d733"
+        },
+        "PN-TRUTH-245": {
+          "cardId": "PN-TRUTH-245",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6b79179afee10b16f9131f1aa734de69936f214626c093c4a819f97c49a0a912"
+        },
+        "PN-TRUTH-246": {
+          "cardId": "PN-TRUTH-246",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "db973787f3f4f73d855fbbc7413d425a3ec7af0cb422e799266503c3b087aa58"
+        },
+        "PN-TRUTH-247": {
+          "cardId": "PN-TRUTH-247",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "9a66a610490d1d90ad32218810d8e17d674da2be8a0b9fd2732183de80597541"
+        },
+        "PN-TRUTH-248": {
+          "cardId": "PN-TRUTH-248",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "49a3f63dfbfafc79e73fb24dc8cf2ebe8ec8d4c5a03ee99cd6523d5371a2fd00"
+        },
+        "PN-TRUTH-249": {
+          "cardId": "PN-TRUTH-249",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "745964b93c1f700d4a97f1028b7f5df09d53e64f50afd570f33b93ae47ccae49"
+        },
+        "PN-TRUTH-250": {
+          "cardId": "PN-TRUTH-250",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "80c5a114c9d61a5909af93ba0cc339263298c22e576d657a8dfd760466d443ba"
+        },
+        "PN-TRUTH-251": {
+          "cardId": "PN-TRUTH-251",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6ba193b6bc3799a3468170475b1568704747f595d2fb6b45616bf423bbe6352e"
+        },
+        "PN-TRUTH-252": {
+          "cardId": "PN-TRUTH-252",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "c4372f6db88c058e44b707f94a00c3ede446b46ac123c32b6cabeae73ed59d07"
+        },
+        "PN-TRUTH-253": {
+          "cardId": "PN-TRUTH-253",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "539b7132e80e366ae507a04e267327a6bbd864cdd94b90e548cefa8d63816a0c"
+        },
+        "PN-TRUTH-254": {
+          "cardId": "PN-TRUTH-254",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "d41b290b04040fdb88060b6bc6939ee0045343f1afaaf708ec3af133603ed020"
+        },
+        "PN-TRUTH-255": {
+          "cardId": "PN-TRUTH-255",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "ca4ec893ed46eb7a5904bb7e95d75c7760351a1213b83e686bddcde9f6616ac3"
+        },
+        "PN-TRUTH-256": {
+          "cardId": "PN-TRUTH-256",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "d6ab3df01e6346a2463d00b3b9a8aeaccd305fc0649aef9ed2b34f55df9cf662"
+        },
+        "PN-TRUTH-257": {
+          "cardId": "PN-TRUTH-257",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a0a9efbda0fd22be23485f2e1b17c04f276a0f4b19375754f799f29768f983c7"
+        },
+        "PN-TRUTH-258": {
+          "cardId": "PN-TRUTH-258",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "3703d1ddb56b340a1eab6a5f35cf6eccde0ce8e236ce23e4ba91b9d98cda5b3e"
+        },
+        "PN-TRUTH-259": {
+          "cardId": "PN-TRUTH-259",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "906a9d2aca51e278a59e7f8204e0401770e3e7c7653397ab831142d557ecae04"
+        },
+        "PN-TRUTH-260": {
+          "cardId": "PN-TRUTH-260",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "2f3cb23f070aac5f2c3930522b401a6c83c2f53b2989359c687c108b03e91256"
+        },
+        "PN-TRUTH-261": {
+          "cardId": "PN-TRUTH-261",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "d4b054c55fa491fa10fdbefa645bacec4830ada6507a172b6df561a01fd5e1a2"
+        },
+        "PN-TRUTH-262": {
+          "cardId": "PN-TRUTH-262",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "66d748cfd9cc3c6c688e1656238406e68dc503d7fc1aebdde662dde92b03c21e"
+        },
+        "PN-TRUTH-263": {
+          "cardId": "PN-TRUTH-263",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "32153747b6ae48af51abc84cf9bc88e2229625a141b5c553254c9b75aafb9f61"
+        },
+        "PN-TRUTH-264": {
+          "cardId": "PN-TRUTH-264",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "5ca368182301462e7908dd79d1973c642356771ef294dbed124cea34a4fb996f"
+        },
+        "PN-TRUTH-265": {
+          "cardId": "PN-TRUTH-265",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "f937dcbebad74c1febebe8a4d23fb002e25162022cb6c003b02f9107870c2104"
+        },
+        "PN-TRUTH-266": {
+          "cardId": "PN-TRUTH-266",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "48d371c3668c00bbfe9d13a09d25d1e53ac3cf5e00b226ceacd066d302959753"
+        },
+        "PN-TRUTH-267": {
+          "cardId": "PN-TRUTH-267",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "11000c3cb330661498c8e4b399eb8b38ec99045594ba91b7174debb55566c1cb"
+        },
+        "PN-TRUTH-268": {
+          "cardId": "PN-TRUTH-268",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "f4087a67408f0ba06e951c8177604b3a2fc0be030ff84ebb177f6530b21896cc"
+        },
+        "PN-TRUTH-269": {
+          "cardId": "PN-TRUTH-269",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "08f6e0644e82c9ec2334fe14983c2a0b5f26cb3eccb805319e7562ed136269aa"
+        },
+        "PN-TRUTH-270": {
+          "cardId": "PN-TRUTH-270",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "094a689edbeb5c26d6997fa1f8b6e065d5d8bc36834e1d7f073c31c4206d2ac8"
+        },
+        "PN-TRUTH-271": {
+          "cardId": "PN-TRUTH-271",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "ac736b868301d7ece168b1c27139b7ccfdc73d6aa8846600cefa1e67c9923c9b"
+        },
+        "PN-TRUTH-272": {
+          "cardId": "PN-TRUTH-272",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "c06481036ca8425625472a293c96034a8cfe171ad78737bb3efe83ccd10cee2a"
+        },
+        "PN-TRUTH-273": {
+          "cardId": "PN-TRUTH-273",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "b2649681e1716da3f91320a98d1819e33e6336fd505d435a8ce78bdec75b2f0b"
+        },
+        "PN-TRUTH-274": {
+          "cardId": "PN-TRUTH-274",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0666ab76e8a2787aed64fc166fa83820fa03b6ec62025769044289c43d3953f7"
+        },
+        "PN-TRUTH-275": {
+          "cardId": "PN-TRUTH-275",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "37d616ca254b17d6d5087b4dc6056bd8150910009a5cbe06fbb2e3925aa80038"
+        },
+        "PN-TRUTH-276": {
+          "cardId": "PN-TRUTH-276",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "12527d203d349eaf772308885b7c5c4350df2e65ec5d23ad62cf7173b27fbcd2"
+        },
+        "PN-TRUTH-277": {
+          "cardId": "PN-TRUTH-277",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a869bda033faf6924143242e7c05d1d8372a973f84847216d14495f17732196e"
+        },
+        "PN-TRUTH-278": {
+          "cardId": "PN-TRUTH-278",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "6c8a57d914017bc03dee871d406425608e06d54cf01a0ee2da244b1647a465c0"
+        },
+        "PN-TRUTH-279": {
+          "cardId": "PN-TRUTH-279",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "0975701b1361268366601f8828c6eac055f615b1f48a28d7ce638d17df0401ba"
+        },
+        "PN-TRUTH-280": {
+          "cardId": "PN-TRUTH-280",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "a55ef8518d96b7687aff394c43ff7935fe0ca2952256f151856a2d1476b99f4e"
+        },
+        "PN-TRUTH-281": {
+          "cardId": "PN-TRUTH-281",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "b5a83cc46e431e29e4b7500cfda8b23e401f4c7924df2249ab04eb00b7ae9150"
+        },
+        "PN-TRUTH-282": {
+          "cardId": "PN-TRUTH-282",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "75a2f04a9ef956dd88d2a1d248d5a89fb164890769c7d97734df80805abd145a"
+        },
+        "PN-TRUTH-283": {
+          "cardId": "PN-TRUTH-283",
+          "cardSet": "mainline",
+          "reviewed": true,
+          "machineVerdict": "PASS",
+          "humanBarFit": "PASS",
+          "metadataStatus": "audited",
+          "payloadHash": "2b17247b29e8a7503d0f2675b7d0b07426a84b96d5a481ffbd0f5242497c8fa8"
         },
         "PN-EXPAND-001": {
           "cardId": "PN-EXPAND-001",
@@ -4222,11 +4482,11 @@
         }
       },
       "counts": {
-        "total": 421,
-        "mainline": 381,
+        "total": 447,
+        "mainline": 407,
         "expansion": 40,
         "legacyMetadata": 390,
-        "auditedMetadata": 31
+        "auditedMetadata": 57
       }
     },
     "formalFixed": {
@@ -4240,46 +4500,72 @@
         "reviewed = true（独立审查完成：有一个独立 reviewer 已逐卡审查并给出明确结论，身份见 buildInfo.reviewerKind；不得由 metadata 齐全或 machineVerdict 推高）",
         "provenance / payloadHash 完整（ID 在快照内且 hash 为 64 位 sha256；无宽松开关）"
       ],
-      "snapshotHash": "12c0f1db4cf46392bc18443f7fb095b947a6f6c36bc0b2a2dc39778fb37d89e7",
+      "snapshotHash": "e24bf1f7a1e5af38da21de64ea008eec7dec53683dd7c561342ef3942bc344b7",
       "allowedCardIds": [
-        "PN-TRUTH-201",
-        "PN-TRUTH-202",
         "PN-TRUTH-203",
-        "PN-TRUTH-204",
         "PN-TRUTH-205",
-        "PN-TRUTH-206",
-        "PN-TRUTH-207",
-        "PN-TRUTH-208",
         "PN-TRUTH-209",
-        "PN-TRUTH-210",
-        "PN-TRUTH-211",
-        "PN-TRUTH-212",
-        "PN-TRUTH-213",
-        "PN-TRUTH-214",
-        "PN-TRUTH-215",
-        "PN-TRUTH-216",
-        "PN-TRUTH-217",
-        "PN-TRUTH-218",
-        "PN-TRUTH-219",
-        "PN-TRUTH-220",
-        "PN-TRUTH-221",
-        "PN-TRUTH-222",
-        "PN-TRUTH-223",
-        "PN-TRUTH-224",
-        "PN-TRUTH-225",
-        "PN-TRUTH-226",
         "PN-TRUTH-227",
-        "PN-TRUTH-228",
         "PN-TRUTH-229",
-        "PN-TRUTH-230",
-        "PN-TRUTH-231"
+        "PN-TRUTH-232",
+        "PN-TRUTH-233",
+        "PN-TRUTH-234",
+        "PN-TRUTH-235",
+        "PN-TRUTH-236",
+        "PN-TRUTH-237",
+        "PN-TRUTH-238",
+        "PN-TRUTH-239",
+        "PN-TRUTH-240",
+        "PN-TRUTH-241",
+        "PN-TRUTH-242",
+        "PN-TRUTH-243",
+        "PN-TRUTH-244",
+        "PN-TRUTH-245",
+        "PN-TRUTH-246",
+        "PN-TRUTH-247",
+        "PN-TRUTH-248",
+        "PN-TRUTH-249",
+        "PN-TRUTH-250",
+        "PN-TRUTH-251",
+        "PN-TRUTH-252",
+        "PN-TRUTH-253",
+        "PN-TRUTH-254",
+        "PN-TRUTH-255",
+        "PN-TRUTH-256",
+        "PN-TRUTH-257",
+        "PN-TRUTH-258",
+        "PN-TRUTH-259",
+        "PN-TRUTH-260",
+        "PN-TRUTH-261",
+        "PN-TRUTH-262",
+        "PN-TRUTH-263",
+        "PN-TRUTH-264",
+        "PN-TRUTH-265",
+        "PN-TRUTH-266",
+        "PN-TRUTH-267",
+        "PN-TRUTH-268",
+        "PN-TRUTH-269",
+        "PN-TRUTH-270",
+        "PN-TRUTH-271",
+        "PN-TRUTH-272",
+        "PN-TRUTH-273",
+        "PN-TRUTH-274",
+        "PN-TRUTH-275",
+        "PN-TRUTH-276",
+        "PN-TRUTH-277",
+        "PN-TRUTH-278",
+        "PN-TRUTH-279",
+        "PN-TRUTH-280",
+        "PN-TRUTH-281",
+        "PN-TRUTH-282",
+        "PN-TRUTH-283"
       ],
       "counts": {
-        "total": 31,
-        "mainline": 31,
+        "total": 57,
+        "mainline": 57,
         "expansion": 0,
         "legacyMetadata": 0,
-        "auditedMetadata": 31
+        "auditedMetadata": 57
       },
       "rejectedFromFormal": {
         "total": 390,
@@ -4297,8 +4583,8 @@
     "contentVersion": "content-v2.3",
     "legacyReviewStage": "machine-prescreen",
     "barFitSource": "lib/v2-content/bar-fit-input.ts lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput（正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染））→ bar-fit.ts judgeBarFit → provenance.machineVerdict（机器预筛，非双人模拟噪声计时）；provenance.humanBarFit 机器阶段恒 UNREVIEWED；text-only 扫描为 forensic，不参与 admission",
-    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，本轮原文一字未改（指纹锁定见 FIRST_PACK_REVIEW_ENTRIES_SHA256）。",
-    "humanReviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）",
+    "humanReviewSource": "product-reviewer(Research Reviewer, AI 角色) 第一包 24 张逐卡审查；第二轮复判 4 张重写卡（PN-TRUTH-204/207/220/223，builder 已按上一轮建议重写 text 与 informationGoal，其余质量字段未变）；第三轮复判 223（builder 采 208 式量化重写 text 与 informationGoal，intensity/heatMax/topic/informationGain/relationshipProgression/intimacyClass/informationGoalType/boundaryTags/consentMode 未变） ｜ 【R3 追加】Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7，报告见 temp/REVIEW-BOOTSTRAP-7.md 与 temp/REVIEW-BOOTSTRAP-7-RECHECK.md），结论已如实回填（PN-TRUTH-226/228/230 由 BORDERLINE 升 PASS，PN-TRUTH-225/227/229/231 维持第一轮 PASS）；既有 24 条结论来自第一包三轮审查，原文一字未改（历史归档指纹锁定见 FROZEN_REVIEW_HISTORY_SHA256）。【A3 状态推进】Human 冻结的酒吧新内容基线逐卡审计判 26 张（7 REWRITE + 19 REPLACE）旧版本不合格 ⇒ 活跃 entry 置 UNREVIEWED / reviewed=false 退出 Formal，KEEP 5（203/205/209/227/229）保持 PASS；原独立审查结论逐字归档在 history，未删除。 ｜ 【A9 admission】第一包重构批 52 张（PN-TRUTH-232~PN-TRUTH-283）经内容主审 Round-1/2/3 三轮 ＋ A4b~A8 四轮返工后逐卡判 PASS，已由本脚本按既有准入路径写入活跃 entry（reviewed=true / humanBarFit=PASS）；审计来源 temp/BAR-AUDIT-PACK1-31.md，分批构成见逐卡 note。KEEP 5 与 26 张退役历史结论一字未改。",
+    "humanReviewedAt": "2026-09-28T15:10:00Z（R3 追加：第一包 24 条结论时间不变；Bootstrap 7 张经两轮独立审查（第一轮 PASS 4 / BORDERLINE 3 → 按建议重写 3 张 → 复判 PASS 7），结论已如实回填）（A9 追加：第一包重构批 52 张 PN-TRUTH-232~PN-TRUTH-283 经内容主审 Round-1/2/3 ＋ A4b~A8 返工后逐卡 PASS，结论已回填；KEEP 5 与 26 张退役结论时间不变）",
     "reviewerKind": "ai-role",
     "formalAdmission": "strict：strict metadata 全字段 ∧ humanBarFit=PASS ∧ reviewed=true（独立审查完成，reviewer 身份见 reviewerKind；不参与准入判定）∧ provenance/hash 完整；无任何宽松开关",
     "ssotMainlineSha256": "6b6c43f870fe22a86c98423db483cc99734090b1f70c48c31dc3fc6b47c75f33",

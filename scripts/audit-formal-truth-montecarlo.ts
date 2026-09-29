@@ -569,9 +569,9 @@ const out = {
   ceilingCohorts,
   worstTraceFile: "docs/qa/content-audit/FORMAL-TRUTH-MC-WORST-TRACE.json",
   readingGuide: [
-    "Formal 曝光占比＝抽到 Formal（manifest 轨，PN-TRUTH-201~231）的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。",
+    "Formal 曝光占比＝抽到 Formal（manifest 轨 tracks.formalFixed；A3 后为 KEEP 5）的次数 / 总抽卡次数；退出 Formal 的旧卡与 SSOT 旧卡都按 legacy 口径处理（不受 Heat 硬过滤）。",
     "Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。",
-    "Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。",
+    "Mode B 的有效信息轮只取决于抽到的卡是否带 Plan §3 metadata（informationGain/topic，走生产 sidecar），与是否仍在 Formal 无关——A3 退出的 26 张仍带 metadata，抽到仍计有效轮；真正无 metadata 的 SSOT 旧卡 sidecar 为 null ⇒ fail-closed 不计数。",
     "所有数字由本脚本机械产出，报告侧不得手写。",
   ].join(" "),
 };

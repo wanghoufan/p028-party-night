@@ -2,7 +2,7 @@
  * C1-3｜CONTENT-01 第一包正式内容接入运行时管线（桥接 + 质量侧车 + manifest）。
  *
  * 锁死四件事（对应派工单「必须补的测试」）：
- * ① **桥接追加**：`PN-TRUTH-201~224` 进入 `mainlineSsotCards()` 的**末尾**，首卡与既有 SSOT
+ * ① **桥接追加**：运行时保留的 KEEP 5（`PN-TRUTH-203/205/209/227/229`）进入 `mainlineSsotCards()` 的**末尾**，首卡与既有 SSOT
  *    相对顺序逐字不变（`[0]` 稳定 ⇒ 既有取卡顺序语义不变）；
  * ② **质量字段真正到达**：8 项必填质量字段（+ `secondaryTopics`）逐张逐项可读，
  *    且值与内容源 `formal-truth-pack.ts` **逐字一致**；§7.2 质量侧车对新卡给出真实档位；
@@ -89,7 +89,9 @@ describe("C1-3① 桥接追加：第一包卡进主线池，既有取卡顺序�
     // ③ `[0]` 稳定：既有 E2E / 快照轨断言依赖的「首卡」不变。
     expect(cards[0]!.id).toBe("PN-TRUTH-001");
     expect(mainlineSsotCardsByPack("truth-dare")[0]!.id).toBe("PN-TRUTH-001");
-    expect(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds).toContain("PN-TRUTH-201");
+    // A4a：运行时只有 KEEP 5；退役卡（如 201）不在任何运行时卡池/manifest 轨内。
+    expect(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds).toContain("PN-TRUTH-203");
+    expect(FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility.allowedCardIds).not.toContain("PN-TRUTH-201");
   });
 });
 
@@ -157,11 +159,11 @@ describe("C1-3③ fail-closed 守住", () => {
   });
 
   it("带齐 8 项 → audited（但无独立审查仍进不了 Formal）；缺全部 → legacy；半填 → 构建抛错", () => {
-    // ① 真正带齐质量字段的第一包卡 ≡ audited。
-    const auditedCard = mainlineSsotCards().find((card) => card.id === "PN-TRUTH-201")!;
+    // ① 真正带齐质量字段的 KEEP 卡（203）≡ audited。
+    const auditedCard = mainlineSsotCards().find((card) => card.id === "PN-TRUTH-203")!;
     expect(validateFixedCardMetadataStrict(auditedCard).ok).toBe(true);
     const auditedBuild = buildFixedContentTracks([auditedCard], options);
-    expect(auditedBuild.manifest.tracks.legacyCompatibility.provenance["PN-TRUTH-201"]).toMatchObject({
+    expect(auditedBuild.manifest.tracks.legacyCompatibility.provenance["PN-TRUTH-203"]).toMatchObject({
       metadataStatus: "audited",
       reviewed: false,
       humanBarFit: "UNREVIEWED",
@@ -197,10 +199,10 @@ describe("C1-3③ fail-closed 守住", () => {
     expect(legacy.provenance["PN-TRUTH-001"]!.reviewed).toBe(false);
 
     // 关键 fail-closed①：**metadata 齐全本身不产生 reviewed**——用空人工输入重建带齐质量字段的
-    // PN-TRUTH-201，仍必须 reviewed=false / humanBarFit=UNREVIEWED，且 formalCount=0。
-    const auditedCard = mainlineSsotCards().find((card) => card.id === "PN-TRUTH-201")!;
+    // PN-TRUTH-203，仍必须 reviewed=false / humanBarFit=UNREVIEWED，且 formalCount=0。
+    const auditedCard = mainlineSsotCards().find((card) => card.id === "PN-TRUTH-203")!;
     const rebuilt = buildFixedContentTracks([auditedCard], options, EMPTY_HUMAN_FIXED_REVIEW);
-    expect(rebuilt.manifest.tracks.legacyCompatibility.provenance["PN-TRUTH-201"]).toMatchObject({
+    expect(rebuilt.manifest.tracks.legacyCompatibility.provenance["PN-TRUTH-203"]).toMatchObject({
       metadataStatus: "audited",
       reviewed: false,
       humanBarFit: "UNREVIEWED",
@@ -237,7 +239,7 @@ describe("C1-3③ fail-closed 守住", () => {
 
 describe("C1-3④ 第一包卡走真实生产链成为有效信息轮", () => {
   it("出卡 → completed + 本人揭晓 → effective count=1，证据档位与卡面一致", () => {
-    const card = mainlineSsotCards().find((item) => item.id === "PN-TRUTH-201")!;
+    const card = mainlineSsotCards().find((item) => item.id === "PN-TRUTH-203")!;
     const players: Player[] = ["a", "b"].map((id) => ({
       id,
       displayName: `玩家${id}`,
@@ -261,7 +263,7 @@ describe("C1-3④ 第一包卡走真实生产链成为有效信息轮", () => {
 
     const session = createSession(config, [card], participants);
     const drawn = startRound(session, () => 0);
-    expect(drawn.currentRound?.cardId).toBe("PN-TRUTH-201");
+    expect(drawn.currentRound?.cardId).toBe("PN-TRUTH-203");
 
     const done = resolveRoundAndReduce(
       drawn,
@@ -273,7 +275,7 @@ describe("C1-3④ 第一包卡走真实生产链成为有效信息轮", () => {
     expect(relationship.relationshipEffectiveCardCount).toBe(1);
     expect(relationship.recognitionEvidence?.[0]).toMatchObject({
       informationGain: "medium",
-      topic: "兴趣爱好",
+      topic: "生活方式",
     });
   });
 });

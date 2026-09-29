@@ -188,12 +188,21 @@ export const V2_CONTENT_SEMANTIC_TAGS = [
   "late-night-topic", // 深夜话题（无直连 §4 主题，作内容风险提示）
 ] as const;
 
-/** 泛安全元数据标签（既有 SSOT 5 项中除 physical-contact 外的 4 项，避免重复登记）。 */
+/**
+ * 泛安全元数据标签（既有 SSOT 5 项中除 physical-contact 外的 4 项 ＋ A9 新增 1 项，避免重复登记）。
+ *
+ * `location-sensitive`（A9，2026-09-29 新增）：回程 / 距离量级类风险提示 —— 题面公开作答可能
+ * 暴露「住得远不远、大致方向」。与 `relationship-sensitive` / `proximity` 同规：**不是** App
+ * 用户可关闭项，只作泛安全元数据（`SSOT_BOUNDARY_TAG_MAP` 映为 `null`，不产出过滤标签）。
+ * 来源：`temp/PACK1-ROUND3-REVIEW.md` §8 判「`277` 不必改题面」⇒ admission 阶段按
+ * `lib/v2-content/pack1-supplements/pack1-admission-prep.ts` 登记落地。
+ */
 export const V2_GENERIC_BOUNDARY_TAGS = [
   "relationship-sensitive",
   "proximity",
   "photo-optional",
   "external-participant",
+  "location-sensitive",
 ] as const;
 
 /**

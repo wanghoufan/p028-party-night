@@ -13,7 +13,7 @@
 - canonical input 唯一实现：`lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput`，四类消费方共用：
   audit 本脚本 / manifest `fixed-content-manifest-build.ts` / CI `build-fixed-content-manifest.ts` + 单测 / Human export 本产物。
 - **逐 cardId 对账（fail-closed）**（manifest provenance 与本脚本 canonical 重算）：
-  - **冻结固定库全量 421 ↔ manifest**：相比 **421** / 一致 **421** / 不一致 **0**（当前 manifest 口径，含第一包 24 张）。
+  - **冻结固定库全量 447 ↔ manifest**：相比 **447** / 一致 **447** / 不一致 **0**（当前 manifest 口径，含第一包 24 张）。
   - 冻结 SSOT 快照 390 ↔ manifest：相比 390 / 一致 390 / 不一致 0（历史冻结口径，`sets.frozenFixed390` 同集合）。
 - **text-only 只作 forensic**：`textOnlyForensic` 集 `forensic: true` / `admissionEligible: false`，
   **不参与 admission**。
@@ -22,46 +22,46 @@
 
 | 数据源 | 口径 | forensic | 题数 | PASS | SUSPECT＝复核池 | HARD_FAIL_PATTERN＝候选 |
 |---|---|---|--:|---:|---:|---:|
-| 冻结固定库 421（主线 381 + 扩圈 40）（`PN-*`） | canonical（正文+instruction） | 否 | 421 | 195 | 222 | 4 |
+| 冻结固定库 447（主线 407 + 扩圈 40）（`PN-*`） | canonical（正文+instruction） | 否 | 447 | 221 | 222 | 4 |
 | 冻结 SSOT 快照 390（主线 350 + 扩圈 40）（`PN-*`） | canonical，历史冻结口径 | 否 | 390 | 164 | 222 | 4 |
 | 内置种子 350（built-in-seeds，非固定库快照内）（`seed-*`） | canonical，非快照内 | 否 | 350 | 146 | 194 | 10 |
 | 冻结 SSOT 快照 390（text-only） | **forensic，不参与 admission** | **是** | 390 | 271 | 115 | 4 |
 
-> 冻结固定库全量 421 的 canonical 数字是**当前 manifest 口径**（与 manifest 逐卡对账一致）；
+> 冻结固定库全量 447 的 canonical 数字是**当前 manifest 口径**（与 manifest 逐卡对账一致）；
 > 冻结 SSOT 快照 390 为历史冻结口径，两者差集＝第一包正式内容 24 张（`PN-TRUTH-201~224`，全部机器 PASS）。
 > text-only 行仅历史对照，**作废、不得用于 admission**。
 
 ## 二、逐卡对账（audit ↔ manifest）
 
 - manifest 来源：`lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance`
-- 冻结固定库全量 421：相比 421 / 一致 421 / 不一致 0
+- 冻结固定库全量 447：相比 447 / 一致 447 / 不一致 0
   - 仅 manifest 有 0 / 仅 audit 有 0
 - 冻结 SSOT 快照 390：相比 390 / 一致 390 / 不一致 0
   - 仅 manifest 有 0 / 仅 audit 有 0
 - 无差异
 
-## 三、冻结固定库 421（主线 381 + 扩圈 40）（canonical，当前 manifest 口径）
+## 三、冻结固定库 447（主线 407 + 扩圈 40）（canonical，当前 manifest 口径）
 
-来源：`lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（381 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（40 张）`
+来源：`lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（407 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（40 张）`
 
 ### 3.1 机器结论分布
 
 | 机器结论 | 题数 | 占比 | 说明 |
 |---|---:|---:|---|
-| PASS | 195 | 46.3% | 无任何机器信号 |
-| SUSPECT | 222 | 52.7% | **进入人工复核池**（不等于「题目有问题」） |
-| HARD_FAIL_PATTERN | 4 | 1.0% | 命中硬失败类型 → **hard-fail 候选**（待人工定档） |
-| **合计** | **421** | 100.0% | — |
+| PASS | 221 | 49.4% | 无任何机器信号 |
+| SUSPECT | 222 | 49.7% | **进入人工复核池**（不等于「题目有问题」） |
+| HARD_FAIL_PATTERN | 4 | 0.9% | 命中硬失败类型 → **hard-fail 候选**（待人工定档） |
+| **合计** | **447** | 100.0% | — |
 
 ### 3.2 人工定档分布（本批无人工审查）
 
 | 人工定档 | 题数 | 占比 |
 |---|---:|---:|
-| UNREVIEWED | 421 | 100.0% |
+| UNREVIEWED | 447 | 100.0% |
 | PASS | 0 | 0.0% |
 | BORDERLINE | 0 | 0.0% |
 | FAIL | 0 | 0.0% |
-| **合计** | **421** | 100.0% |
+| **合计** | **447** | 100.0% |
 
 ### 3.3 按玩法分布
 
@@ -72,7 +72,7 @@
 | expansion | 40 | 1 | 38 | 1 |
 | pointing | 50 | 41 | 9 | 0 |
 | statement | 50 | 34 | 16 | 0 |
-| truth | 81 | 47 | 34 | 0 |
+| truth | 107 | 73 | 34 | 0 |
 | vote | 50 | 34 | 16 | 0 |
 | would-you-rather | 50 | 27 | 23 | 0 |
 

@@ -3,7 +3,7 @@
   "enumSourceOfTruth": "docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md §3",
   "barFitSource": "docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md §2",
   "judgeModule": "lib/v2-content/bar-fit.ts",
-  "note": "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。产物集键名 `frozenFixed414` 为稳定集标识（原 414 口径的历史键名），**不是张数**——该集 cardCount 由冻结内容动态推导（当前 421）；对账口径见 reconciliation / reconciliation414。",
+  "note": "只判定不删除：本批不删任何题、不改任何题面。机器预筛结果需经双人模拟噪声计时复核（Plan §2）。产物集键名 `frozenFixed414` 为稳定集标识（原 414 口径的历史键名），**不是张数**——该集 cardCount 由冻结内容动态推导（当前 447）；对账口径见 reconciliation / reconciliation414。",
   "canonicalInput": {
     "implementation": "lib/v2-content/bar-fit-input.ts#toBarFitRuntimeInput",
     "caliber": "正文（题面 text/content） + 玩家实际必须听到的 instruction（consentMode 渲染）",
@@ -28,9 +28,9 @@
   },
   "reconciliation414": {
     "manifestSource": "lib/v2-content/generated/fixed-content-manifest.json → tracks.legacyCompatibility.provenance",
-    "auditSource": "本脚本 canonical input 重算（冻结固定库全量 421 张）",
-    "compared": 421,
-    "consistent": 421,
+    "auditSource": "本脚本 canonical input 重算（冻结固定库全量 447 张）",
+    "compared": 447,
+    "consistent": 447,
     "inconsistent": 0,
     "mismatches": [],
     "onlyInManifest": [],
@@ -8731,8 +8731,8 @@
       ]
     },
     "frozenFixed414": {
-      "label": "冻结固定库 421（主线 381 + 扩圈 40）",
-      "source": "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（381 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（40 张）",
+      "label": "冻结固定库 447（主线 407 + 扩圈 40）",
+      "source": "lib/v2-content/v2-card-bridge.ts → mainlineSsotCards()（407 张：SSOT 350 + 第一包 24 + R2 Bootstrap 候选 7）+ expansionSsotCards()（40 张）",
       "caliber": {
         "includesInstruction": true,
         "forensic": false,
@@ -8741,14 +8741,14 @@
       },
       "forensic": false,
       "admissionEligible": true,
-      "cardCount": 421,
+      "cardCount": 447,
       "machineVerdictDistribution": {
-        "PASS": 195,
+        "PASS": 221,
         "SUSPECT": 222,
         "HARD_FAIL_PATTERN": 4
       },
       "humanBarFitDistribution": {
-        "UNREVIEWED": 421,
+        "UNREVIEWED": 447,
         "PASS": 0,
         "BORDERLINE": 0,
         "FAIL": 0
@@ -8757,7 +8757,7 @@
       "reviewPoolCount": 222,
       "byGameType": {
         "truth": {
-          "PASS": 47,
+          "PASS": 73,
           "SUSPECT": 34,
           "HARD_FAIL_PATTERN": 0
         },
@@ -16283,42 +16283,6 @@
           "includesInstruction": true
         },
         {
-          "cardId": "PN-TRUTH-201",
-          "gameType": "truth",
-          "excerpt": "说一件你最近主动花时间去做的小事，具体到那件事本身。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-202",
-          "gameType": "truth",
-          "excerpt": "有没有一个爱好你坚持了很多年？说说它现在还在给你什么。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 36,
-            "readSeconds": 9,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
           "cardId": "PN-TRUTH-203",
           "gameType": "truth",
           "excerpt": "下班或放学到睡前，你一个人最固定的一段安排是什么？",
@@ -16331,24 +16295,6 @@
           "metrics": {
             "charCount": 34,
             "readSeconds": 8.5,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-204",
-          "gameType": "truth",
-          "excerpt": "最近一次有人对你抱有期待，你照做了还是没照？当时怎么决定的。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 39,
-            "readSeconds": 9.8,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16373,60 +16319,6 @@
           "includesInstruction": true
         },
         {
-          "cardId": "PN-TRUTH-206",
-          "gameType": "truth",
-          "excerpt": "你在什么状态下会变得不像平时的自己？说一个最近发生的事。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 37,
-            "readSeconds": 9.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-207",
-          "gameType": "truth",
-          "excerpt": "伴侣半天没回你消息时，你一般会做什么？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 28,
-            "readSeconds": 7,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-208",
-          "gameType": "truth",
-          "excerpt": "你觉得关系里喜欢和合适各占几成？说说你为什么这么分。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
           "cardId": "PN-TRUTH-209",
           "gameType": "truth",
           "excerpt": "你会被哪种人吸引？说一个具体行为，别只给形容词。",
@@ -16439,312 +16331,6 @@
           "metrics": {
             "charCount": 33,
             "readSeconds": 8.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-210",
-          "gameType": "truth",
-          "excerpt": "闹别扭时你是当场说开还是先冷一冷？你希望对方怎么做？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-211",
-          "gameType": "truth",
-          "excerpt": "关系里有没有你绝对不能接受的相处方式？说清一条。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 33,
-            "readSeconds": 8.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-212",
-          "gameType": "truth",
-          "excerpt": "你会在什么情况下吃醋？说一件真发生过的，别用看情况带过。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 37,
-            "readSeconds": 9.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-213",
-          "gameType": "truth",
-          "excerpt": "另一半和异性单独吃饭，你能接受到哪一步？说出你的分界。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 36,
-            "readSeconds": 9,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-214",
-          "gameType": "truth",
-          "excerpt": "你有关系很好的异性朋友吗？你们会聊到什么深度？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 32,
-            "readSeconds": 8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-215",
-          "gameType": "truth",
-          "excerpt": "如果伴侣要你少和某个异性朋友来往，你会怎么办？说实话。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 36,
-            "readSeconds": 9,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-216",
-          "gameType": "truth",
-          "excerpt": "上一段关系结束时，你花最久才想通的是哪一点？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 31,
-            "readSeconds": 7.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-217",
-          "gameType": "truth",
-          "excerpt": "什么时刻，上一段关系最容易又浮上来？说说那种时刻的样子。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 37,
-            "readSeconds": 9.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-218",
-          "gameType": "truth",
-          "excerpt": "关系里踩到哪条线，你会直接结束而不是再谈一次？说一条。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 36,
-            "readSeconds": 9,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-219",
-          "gameType": "truth",
-          "excerpt": "你身上哪一点，是你希望对方永远不要拿来开玩笑的？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 33,
-            "readSeconds": 8.3,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-220",
-          "gameType": "truth",
-          "excerpt": "五年后理想的一天，从睁眼到睡前，你最想保住的是哪三段？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 36,
-            "readSeconds": 9,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-221",
-          "gameType": "truth",
-          "excerpt": "你最想完成的一件事是什么？说说你已经为它做过的一步。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-222",
-          "gameType": "truth",
-          "excerpt": "在亲密关系里，哪件事你希望对方一定先问过你？说一条。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-223",
-          "gameType": "truth",
-          "excerpt": "亲密里，对方主动和自己留空间各占几成？说说你为什么这么分。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 38,
-            "readSeconds": 9.5,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-224",
-          "gameType": "truth",
-          "excerpt": "如果你们对亲密的节奏不一致，你会怎么开口谈？说一句。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 35,
-            "readSeconds": 8.8,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-225",
-          "gameType": "truth",
-          "excerpt": "最近才开始的爱好是什么？说说让你上头的第一个瞬间。",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 34,
-            "readSeconds": 8.5,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
-          "cardId": "PN-TRUTH-226",
-          "gameType": "truth",
-          "excerpt": "你的周末更偏哪种：睡到中午、早起出门、还是临时决定？为什么？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 39,
-            "readSeconds": 9.8,
             "startActions": 1,
             "instructionCharCount": 9
           },
@@ -16769,24 +16355,6 @@
           "includesInstruction": true
         },
         {
-          "cardId": "PN-TRUTH-228",
-          "gameType": "truth",
-          "excerpt": "朋友里你常被安排成哪种角色：张罗的、捧场的，或失踪的？你认吗？",
-          "machineVerdict": "PASS",
-          "humanBarFit": "UNREVIEWED",
-          "hardFailPatternHits": [],
-          "suspectHits": [],
-          "ruleHits": [],
-          "reasons": [],
-          "metrics": {
-            "charCount": 40,
-            "readSeconds": 10,
-            "startActions": 1,
-            "instructionCharCount": 9
-          },
-          "includesInstruction": true
-        },
-        {
           "cardId": "PN-TRUTH-229",
           "gameType": "truth",
           "excerpt": "哪一类电影或音乐你怎样都提不起兴趣？说说你试过的那次。",
@@ -16805,9 +16373,225 @@
           "includesInstruction": true
         },
         {
-          "cardId": "PN-TRUTH-230",
+          "cardId": "PN-TRUTH-232",
           "gameType": "truth",
-          "excerpt": "跟刚认识的人相处，你有自己的一条规矩吗？说说它怎么来的。",
+          "excerpt": "今晚你更想认识新人，还是放松一下？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 26,
+            "readSeconds": 6.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-233",
+          "gameType": "truth",
+          "excerpt": "微醺之后，你是看谁都顺眼，还是越来越挑？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 29,
+            "readSeconds": 7.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-234",
+          "gameType": "truth",
+          "excerpt": "你今晚是自己来的，还是被人拉来的？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 26,
+            "readSeconds": 6.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-235",
+          "gameType": "truth",
+          "excerpt": "第一眼更容易抓到你的是穿着还是气质？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-236",
+          "gameType": "truth",
+          "excerpt": "刚认识时，你更看对方的谈吐还是打扮？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-237",
+          "gameType": "truth",
+          "excerpt": "你更容易被话多的人吸引，还是安静的人？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 28,
+            "readSeconds": 7,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-238",
+          "gameType": "truth",
+          "excerpt": "对方一直看你，你会回看还是装没看到？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-239",
+          "gameType": "truth",
+          "excerpt": "今晚遇到有感觉的人，你会主动要联系方式吗？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 30,
+            "readSeconds": 7.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-240",
+          "gameType": "truth",
+          "excerpt": "有人主动坐你旁边，你是加分还是有压力？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 28,
+            "readSeconds": 7,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-241",
+          "gameType": "truth",
+          "excerpt": "你最常被人夸的是哪一点？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 21,
+            "readSeconds": 5.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-242",
+          "gameType": "truth",
+          "excerpt": "第一眼，你最容易注意异性的哪里？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 25,
+            "readSeconds": 6.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-243",
+          "gameType": "truth",
+          "excerpt": "对有感觉的人，拥抱还是牵手更让你心动？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 28,
+            "readSeconds": 7,
+            "startActions": 2,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-244",
+          "gameType": "truth",
+          "excerpt": "今晚到现在，有人约你去下一场，你是当场答应，还是说再看？",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16823,9 +16607,9 @@
           "includesInstruction": true
         },
         {
-          "cardId": "PN-TRUTH-231",
+          "cardId": "PN-TRUTH-245",
           "gameType": "truth",
-          "excerpt": "一天里什么时候你最像你自己？说说那段时间你通常在做什么。",
+          "excerpt": "在场你更像哪种：先开口的，还是等人来聊的？",
           "machineVerdict": "PASS",
           "humanBarFit": "UNREVIEWED",
           "hardFailPatternHits": [],
@@ -16833,8 +16617,692 @@
           "ruleHits": [],
           "reasons": [],
           "metrics": {
-            "charCount": 37,
-            "readSeconds": 9.3,
+            "charCount": 30,
+            "readSeconds": 7.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-246",
+          "gameType": "truth",
+          "excerpt": "你更吃哪种人：像你的，还是跟你完全不一样的？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 31,
+            "readSeconds": 7.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-247",
+          "gameType": "truth",
+          "excerpt": "你的心动是看一眼就来，还是越聊越有？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-248",
+          "gameType": "truth",
+          "excerpt": "刚认识的人，你最受不了哪种：查户口、太热情，还是爱答不理？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 38,
+            "readSeconds": 9.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-249",
+          "gameType": "truth",
+          "excerpt": "你这周哪天最像在放假：工作日的晚上、周六，还是周一？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 35,
+            "readSeconds": 8.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-250",
+          "gameType": "truth",
+          "excerpt": "这一周攒的劲，你打算今晚一次放完，还是留着明天再放？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 35,
+            "readSeconds": 8.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-251",
+          "gameType": "truth",
+          "excerpt": "这桌上，你第一眼先注意到的是谁？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 25,
+            "readSeconds": 6.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-252",
+          "gameType": "truth",
+          "excerpt": "哪种场合你会比平时放得开：熟人局、音乐够燥，还是气氛一起来？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 39,
+            "readSeconds": 9.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-253",
+          "gameType": "truth",
+          "excerpt": "有人当场要加你微信，你会直接给、先聊聊，还是推掉？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-254",
+          "gameType": "truth",
+          "excerpt": "你更容易对哪种人上头：让你心跳的，还是让你安心的？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-255",
+          "gameType": "truth",
+          "excerpt": "这桌谁最不能惹，他惹到你，你是当场说开还是先冷一冷？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 35,
+            "readSeconds": 8.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-256",
+          "gameType": "truth",
+          "excerpt": "哪种搭讪最容易让你没兴趣：太油、太急，还是一本正经？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 35,
+            "readSeconds": 8.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-257",
+          "gameType": "truth",
+          "excerpt": "你想不想凑近谁，说句悄悄话？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-258",
+          "gameType": "truth",
+          "excerpt": "你搭话一般怎么开：先自曝今晚干嘛，还是先抛个问题？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-259",
+          "gameType": "truth",
+          "excerpt": "异性朋友半夜发消息，你多久回：马上、隔一会儿，还是第二天？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 38,
+            "readSeconds": 9.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-260",
+          "gameType": "truth",
+          "excerpt": "看到喜欢的人在跟别人聊，你会过去，还是忍着？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 31,
+            "readSeconds": 7.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-261",
+          "gameType": "truth",
+          "excerpt": "现在是单身，还是已经有主了？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-262",
+          "gameType": "truth",
+          "excerpt": "哪句话会让你突然安静：一句当众的夸奖，还是一句没说出口的话？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 39,
+            "readSeconds": 9.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-263",
+          "gameType": "truth",
+          "excerpt": "快散场了，你会留下来把最想聊的人聊完，还是先走？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 33,
+            "readSeconds": 8.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-264",
+          "gameType": "truth",
+          "excerpt": "拿你哪一点开玩笑最容易翻车：记性、口味，还是脾气？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-265",
+          "gameType": "truth",
+          "excerpt": "今晚剩下的时间，你最想怎么用：再换一家、找人聊，还是回家睡？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 39,
+            "readSeconds": 9.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-266",
+          "gameType": "truth",
+          "excerpt": "你最近一直想做、还没做的是哪件小事：收拾、剪头，还是约人？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 38,
+            "readSeconds": 9.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-267",
+          "gameType": "truth",
+          "excerpt": "亲密里哪样最加分：先问一句、慢一点，还是抱久一点？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 34,
+            "readSeconds": 8.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-268",
+          "gameType": "truth",
+          "excerpt": "喜欢的人碰你哪一下最心动：手、肩，还是头发？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 31,
+            "readSeconds": 7.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-269",
+          "gameType": "truth",
+          "excerpt": "亲密里你更想当主动的那个，还是等对方先？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 29,
+            "readSeconds": 7.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-270",
+          "gameType": "truth",
+          "excerpt": "今晚你更想接着干杯，还是改喝点软的？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-271",
+          "gameType": "truth",
+          "excerpt": "今晚要是换个地方，你想去安静的，还是更吵的？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 31,
+            "readSeconds": 7.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-272",
+          "gameType": "truth",
+          "excerpt": "下一轮你想接着聊的，是刚坐过来的那位，还是你原本就在聊的那位？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 40,
+            "readSeconds": 10,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-273",
+          "gameType": "truth",
+          "excerpt": "这桌散了，你最想跟谁一起走？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-274",
+          "gameType": "truth",
+          "excerpt": "要是分两组玩，你想跟谁一队？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-275",
+          "gameType": "truth",
+          "excerpt": "下一轮你最想跟谁比一局飞镖？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-276",
+          "gameType": "truth",
+          "excerpt": "你想拉谁陪你出去透口气？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 21,
+            "readSeconds": 5.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-277",
+          "gameType": "truth",
+          "excerpt": "散场后你打算怎么回：打车、地铁，还是走路？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 30,
+            "readSeconds": 7.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-278",
+          "gameType": "truth",
+          "excerpt": "最后一圈，你想先溜的是自己，还是等某个人一起溜？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 33,
+            "readSeconds": 8.3,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-279",
+          "gameType": "truth",
+          "excerpt": "散场之前，你想把哪个微信当场要过来？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 27,
+            "readSeconds": 6.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-280",
+          "gameType": "truth",
+          "excerpt": "最后一首歌，你想点给谁听？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 22,
+            "readSeconds": 5.5,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-281",
+          "gameType": "truth",
+          "excerpt": "最后一段，你想跟谁把这杯喝完？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 24,
+            "readSeconds": 6,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-282",
+          "gameType": "truth",
+          "excerpt": "撒娇和嘴硬，你更扛不住哪个？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 23,
+            "readSeconds": 5.8,
+            "startActions": 1,
+            "instructionCharCount": 9
+          },
+          "includesInstruction": true
+        },
+        {
+          "cardId": "PN-TRUTH-283",
+          "gameType": "truth",
+          "excerpt": "你想当逗别人玩的那个，还是被别人逗的那个？",
+          "machineVerdict": "PASS",
+          "humanBarFit": "UNREVIEWED",
+          "hardFailPatternHits": [],
+          "suspectHits": [],
+          "ruleHits": [],
+          "reasons": [],
+          "metrics": {
+            "charCount": 30,
+            "readSeconds": 7.5,
             "startActions": 1,
             "instructionCharCount": 9
           },

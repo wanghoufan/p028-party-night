@@ -76,8 +76,8 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
  *
  * 选 `truth-dare` 包 + H1 + intensityLimit=4：SSOT 里该包共 100 张（truth 50 + dare 50），
  * 其中强度 5 的 20 张是 `match-pair`（未建立 MATCH 时不出）；强度 1–4 = 80 张。
- * 第一包正式内容（`PN-TRUTH-201~224`，全 truth）中强度 ≤4 的有 22 张（强度 4 两张：217/223），
- * 强度 5 的两张（222/224，非 match-pair）不进本夹具强度上限。
+ * 第一包原 24 张里强度 ≤4 的卡（含 217/223 等）已随 A4a 退役移出卡源，故运行时只剩 KEEP 5
+ * （203/205/209/227/229，全 I1/I2，均 ≤4，全部进本夹具桶）。
  *
  * ⚠️ C1-8 口径变更：原夹具用 `intensityLimit=5`，其「顶档 = I4」的前提是「I5 全为 match-pair 被排除」。
  * 第一包新增 2 张**非 match-pair 的 I5 truth 卡**后，该前提不再成立（I5 顶档只剩 2 张 truth，
@@ -88,27 +88,27 @@ const intensityOf = (cardId: string): number => mainlineMeta(cardId).intensity;
  * （现 H1 4 / H2 8 / H3 10 / H4 2）⇒ 在 H1 桶里 Formal 只剩 **4 张**（201/202/203 + 2026-09-29
  * 复核后的 205，全为 I1/低强度），其中**没有 I4 卡**。
  * ⚠️ R2 口径变更（2026-09-29；**P3-1 更正**）：新增 Truth H1 Bootstrap 7 张（`PN-TRUTH-225~231`，全
- * `heatMin=1`、`intensity` ≤3）。这 7 张**已过两轮独立审查并入库** ⇒ **就是 Formal**（`formal=31` =
- * 第一包 24 + Bootstrap 7，manifest `tracks.formalFixed` 收纳）⇒ **受** Heat 硬过滤；因其 `heatMin` 全为 1，
- * H1 下**全部通过**该过滤 ⇒ 对本夹具的 H1 桶而言仍等价于再 +7（结论不变，理由不同）。
- * 故本夹具的 H1 桶 = SSOT I1–I4 80 张（旧卡全 legacy ⇒ Heat 豁免）+ 第一包 4 张 + Bootstrap 7 张 = **91 张**，
- * 顶强度档仍为 **20 张**（SSOT truth 10 : dare 10，第一包与 Bootstrap 均无 I4 卡）。
- * 该收窄/扩容**正是本单要的结果**（深关系题在当前 UI 不可抽），不是回归；对称性因此更强（10:10），
- * ±18% 阈值与 tie-break 回归语义仍未改。
+ * `heatMin=1`、`intensity` ≤3）。
+ * ⚠️ **A4a 口径变更（2026-09-29）**：26 张退役 `PN-TRUTH-2*` 已**移出运行时内容源**
+ * （逐字归档于 `lib/v2-content/archive/`），运行时只剩 KEEP 5（203/205/209/227/229，全 I1/I2）。
+ * 故本夹具（H1 + 强度上限 4）的桶 = SSOT truth-dare 的 I1–I4（旧卡全 legacy ⇒ Heat 豁免）
+ * + 运行时 KEEP 5 中 I≤4 的全部 = **84 张**，顶强度档（I4）= **20 张**（SSOT truth 10 : dare 10）。
+ * 相比 A3 中间态（108 张 / 22 张）本次**收窄**是「退役卡移出卡源」的直接后果（下一单补 H3/H4 卡时重算），
+ * 不是回归；顶档恢复为 SSOT 的 10:10 对称，±18% 阈值与 tie-break 回归语义均未改。
  *
  * B3-4 之后 Heat 档只对 Formal Fixed 轨生效（冻结快照 390 张旧卡全为 legacy ⇒ 豁免），
- * ── 对**旧卡**而言 bucket 不按 Heat 收窄，故出卡集中在包的 top 强度档（强度 4，SSOT truth 10 : dare 10）；
+ * ── 对**旧卡**而言 bucket 不按 Heat 收窄，故出卡集中在包的 top 强度档；
  * 「组内先出哪一张」完全由 tie-break 决定 —— 这正是 P1#2 的最小可复现局面。
  * 修复前 `bucket(...)[0]` 恒为同强度组里 cardId 字典序最小者；修复后随 seed 轮换。
  */
 const TIE_FIXTURE = {
   packId: "truth-dare",
   intensityLimit: 4,
-  /** 实测：H1 + 强度上限 4 → SSOT 80（I1–I4）+ 第一包 4（I1，heatMin=1 的 201/202/203/205）+ R2 Bootstrap 7 = 91 张。 */
-  expectedBucketSize: 91,
+  /** 实测（A4a 后）：H1 + 强度上限 4 → SSOT（I1–I4，legacy 豁免）+ 运行时 KEEP 5（I≤4）= 84 张。 */
+  expectedBucketSize: 84,
   /** 实测：top 强度档 = 强度 4。 */
   expectedTieTierMaxIntensity: 4,
-  /** 实测：top 强度档 20 张（SSOT truth 10 : dare 10；第一包 I4 的 217/223 heatMin>1 ⇒ H1 不可抽；Bootstrap 无 I4）。 */
+  /** 实测：top 强度档 20 张（全是 SSOT truth 10 : dare 10；退役的 I4 卡 217/223 已移出卡源）。 */
   expectedTieTierSize: 20,
   expectedGameTypes: ["truth", "dare"] as const,
 } as const;
@@ -335,7 +335,7 @@ describe("P1#2④｜优先级顺序与硬过滤逐条不变（只动 tie 内起�
     }
   });
 
-  it("TIE_FIXTURE 局面的构成稳定：91 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
+  it("TIE_FIXTURE 局面的构成稳定：84 张桶、top 强度档 20 张（强度 4）、truth+dare 两种 gameType", () => {
     const router = createV2MainlineRouter({ packId: TIE_FIXTURE.packId });
     const cards = router.bucket(input({ drawSeed: 0 }));
     const topTier = cards.filter((card) => intensityOf(card.cardId) === TIE_FIXTURE.expectedTieTierMaxIntensity);
@@ -473,7 +473,7 @@ describe("P1#2⑤｜sessionId 盐：同 session 复现、跨 session 不同", ()
     const cards = router.bucket(input({ relationship, drawSessionSalt: "fixture" }));
 
     expect(drawSeedFor(relationship, "fixture")).toBe(2968762458);
-    // A3：第一包 heatMin 诚实化后，H1 桶的顶强度档候选集变化（第一包 I4 的 217/223 在 H1 不可抽），
+    // A4a（2026-09-29）：26 张退役 `PN-TRUTH-2*` 已移出运行时卡源（含 I4 的 217/223），
     // 同 seed 的确定性序列按新候选集重算（仍是逐字钉死）；口径与 C1-8 的同类重算一致。
     expect(cards.map((card) => card.cardId).slice(0, 5)).toEqual([
       "PN-DARE-032",

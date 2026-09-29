@@ -55,10 +55,10 @@ const PACK_CARDS = mainlineSsotCardsByPack(PACK_ID);
 /**
  * 「Formal」用 manifest 真源 `formalFixedIdSet()` 判定，不用 `PN-TRUTH-2*` 前缀推断。
  *
- * B5 口径（2026-09-29）：Truth H1 Bootstrap 7 张（`PN-TRUTH-225~231`）已过两轮独立审查并回填
- * `humanBarFit=PASS / reviewed=true` ⇒ 它们**已是 Formal**，原来的「候选桶」因此归零。
- * 本脚本保留其中「仅 Bootstrap 7 张」这一**Formal 子集**情形（证明这 7 张单独也能离开 H1、
- * 且 7 < H3 门槛 ⇒ 仍有下一道冷启门），它是子集证据，**不是**「未过审候选」。
+ * B5/A3 口径（2026-09-29）：Bootstrap 7 张（`PN-TRUTH-225~231`）过独立审查后，**A3 又按 Human
+ * 冻结的新内容基线逐卡审计**，其中只有 `PN-TRUTH-227/229` 保持 Formal，其余 5 张已退出 Formal。
+ * 本脚本保留「仅 Bootstrap 7 张」这一**子集**情形（看该子集单独能走到哪一档），其 Formal 归属
+ * 逐张按 `formalFixedIdSet()` 判，**不得**整批当成 Formal。
  */
 const FORMAL_ID_SET = formalFixedIdSet();
 const FORMAL_CARDS = PACK_CARDS.filter((card) => FORMAL_ID_SET.has(card.id));
@@ -144,7 +144,7 @@ const countableCardsOf = (deck: readonly GameCard[]): CountableCard[] => {
 const fullPack = drive(PACK_CARDS, FIXED_DRAW_SEED);
 /* 情形 2：仅 Formal ${FORMAL_CARDS.length} 张（真实生产卡子集）——H1 桶抽满后 Heat 是否升档以 note 为准。 */
 const formalOnly = drive(FORMAL_CARDS, FIXED_DRAW_SEED);
-/* 情形 2b：仅 Formal 里的 Truth H1 Bootstrap 7 张（B5 后已过审 ⇒ 属 Formal；单独驱动看子集天花板）。 */
+/* 情形 2b：仅 Bootstrap 7 张（其中仅 227/229 属 Formal，其余 5 张已退出；单独驱动看子集天花板）。 */
 const bootstrapOnly = drive(BOOTSTRAP_CARDS, FIXED_DRAW_SEED);
 /* 情形 3：负向对照（仅 legacy）——sidecar 恒 null ⇒ 有效计数 0 / Heat 恒 H1。 */
 const legacyOnly = drive(LEGACY_CARDS, FIXED_DRAW_SEED);
@@ -158,7 +158,7 @@ const rangeOf = (cards: readonly { id: string }[]): string => {
 };
 const FULL_PACK_DECK = `mainlineSsotCardsByPack('${PACK_ID}')（${PACK_CARDS.length} 张，含 Formal ${FORMAL_CARDS.length} + legacy ${LEGACY_CARDS.length}）`;
 const FORMAL_ONLY_DECK = `仅 Formal（manifest 轨）${FORMAL_CARDS.length} 张（${rangeOf(FORMAL_CARDS)}，真实生产卡）`;
-const BOOTSTRAP_ONLY_DECK = `仅 Formal 子集：Truth H1 Bootstrap ${BOOTSTRAP_CARDS.length} 张（${rangeOf(BOOTSTRAP_CARDS)}，已过独立审查 ⇒ 属 Formal）`;
+const BOOTSTRAP_ONLY_DECK = `仅 Bootstrap ${BOOTSTRAP_CARDS.length} 张（${rangeOf(BOOTSTRAP_CARDS)}；其中仅 227/229 属 Formal，其余 5 张已退出 Formal）`;
 const LEGACY_ONLY_DECK = `仅 legacy 卡（${LEGACY_CARDS.length} 张，无 Formal）`;
 
 /* note 一律由运行结果现算（含未到达档的原因与缺口数），四种情形同源同口径。 */
@@ -217,7 +217,7 @@ const out = {
     "eventForRoundTerminal（卡侧 metadata 由 metadataForCard 读生产 sidecar；轮侧披露由正式信号提供）",
     "reduceV2SessionEvents → relationshipEffectiveCardCount / heatForEffectiveCount",
   ],
-  disclosure: `本文件与 integration 测试均不注入 metadata override；Formal ${FORMAL_CARDS.length} 张（含 Truth H1 Bootstrap ${BOOTSTRAP_CARDS.length} 张）的 informationGain/topic 均来自生产 sidecar 真实投影；legacy 卡 sidecar 恒 null（fail-closed 不计有效轮）。`,
+  disclosure: `本文件与 integration 测试均不注入 metadata override；Formal ${FORMAL_CARDS.length} 张（A3 KEEP 5）与已退出 Formal 的 26 张旧卡的 informationGain/topic 都来自生产 sidecar 真实投影；无 §7.2 metadata 的 SSOT 旧卡 sidecar 恒 null（fail-closed 不计有效轮）。`,
   seed: FIXED_DRAW_SEED,
   table: "2男2女（a男/b女/c男/d女，合法 pair 全程可用）",
   scenarioFullPack: {

@@ -3,7 +3,8 @@
  *
  * 只做静态核验，不接管线、不改任何产物。fail-closed：任何一项不合规即 `process.exit(1)`。
  * 覆盖：
- * 1. 张数（第一包 18~24；R2 Bootstrap 6~8，**已过两轮独立审查并入库 ⇒ 已是 Formal**）与 ID 唯一性 /
+ * 1. 张数（第一包 18~24；R2 Bootstrap 6~8；两包都只是**内容源**——A3 后其中仅 KEEP 5 保持 Formal，
+ *    其余 26 张已退出 Formal，待在后续批次重构/新开 ID 后重新审查）与 ID 唯一性 /
  *    与既有 SSOT 390 张不冲突 /
  *    `PN-TRUTH` 编号段不重叠（两包合并核验）；
  * 2. 分布：intensity(I1~I5) / heatMin·heatMax / topic / informationGain / relationshipProgression；
@@ -55,7 +56,7 @@ const SSOT_PATH = `${ROOT}/lib/v2-content/generated/v2-ssot.generated.json`;
 
 const MIN_CARDS = 18;
 const MAX_CARDS = 24;
-/** R2｜Truth H1 Bootstrap 包张数区间（宁少勿滥，不设「必须 8 张」quota；7 张已过审查、已入 Formal）。 */
+/** R2｜Truth H1 Bootstrap 包张数区间（宁少勿滥，不设「必须 8 张」quota；7 张是内容源，A3 后仅 227/229 保持 Formal）。 */
 const BOOTSTRAP_MIN_CARDS = 6;
 const BOOTSTRAP_MAX_CARDS = 8;
 /** 近似判定阈值（字符 bigram Jaccard）：≥ 该值列入近似清单（不自动判失败，人读复核）。 */
@@ -139,7 +140,7 @@ const cardIds = cards.map((card) => card.cardId);
 const cardIdSet = new Set(cardIds);
 
 console.log(
-  `\n=== C1-2 真心话静态自检（第一包 ${FORMAL_TRUTH_CARDS.length} 张 + H1 Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（已入 Formal）= ${cards.length} 张） ===`,
+  `\n=== C1-2 真心话静态自检（第一包 ${FORMAL_TRUTH_CARDS.length} 张 + H1 Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（内容源；Formal 归属见 manifest = KEEP 5）= ${cards.length} 张） ===`,
 );
 if (FORMAL_TRUTH_CARDS.length < MIN_CARDS || FORMAL_TRUTH_CARDS.length > MAX_CARDS) {
   errors.push(`第一包张数 ${FORMAL_TRUTH_CARDS.length} 不在 ${MIN_CARDS}~${MAX_CARDS}`);
@@ -224,10 +225,10 @@ if ((heatMaxDist.get(1) ?? 0) + (heatMaxDist.get(2) ?? 0) + (heatMaxDist.get(3) 
 if ((intDist.get(1) ?? 0) + (intDist.get(2) ?? 0) < 8) errors.push(`intensity=1/2 合计 <8，ceiling=1/2 库存不足`);
 
 /* ------------------------------------------------------------------ */
-/* 2b. R2｜Truth H1 Bootstrap 包分布（已入 Formal；单独打印 + 反向护栏）    */
+/* 2b. R2｜Truth H1 Bootstrap 包分布（内容形状；单独打印 + 反向护栏）        */
 /* ------------------------------------------------------------------ */
 
-console.log("\n--- R2｜Truth H1 Bootstrap 包分布（已入 Formal，PN-TRUTH-225 起）---");
+console.log("\n--- R2｜Truth H1 Bootstrap 包分布（内容形状，PN-TRUTH-225 起）---");
 const bootstrap = FORMAL_TRUTH_BOOTSTRAP_CARDS;
 const bootIntDist = countBy(bootstrap.map((card) => card.intensity));
 const bootHeatMinDist = countBy(bootstrap.map((card) => card.heatMin));
@@ -474,7 +475,7 @@ if (errors.length > 0) {
   process.exit(1);
 }
 console.log(
-  `全部合规：第一包 ${FORMAL_TRUTH_CARDS.length} 张 + Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（已入 Formal）= ${cards.length} 张；` +
+  `全部合规：第一包 ${FORMAL_TRUTH_CARDS.length} 张 + Bootstrap ${FORMAL_TRUTH_BOOTSTRAP_CARDS.length} 张（内容源；Formal 归属见 manifest = KEEP 5）= ${cards.length} 张；` +
     `精确重复 0；枚举非法 0；strict 必填缺失 0；heatMin 覆盖 H1~H4（无空档）；heatMax 未统一拉 4；` +
     `intensity 覆盖 1~5；零维度已补；三红线 0 命中；BAR-FIT HARD_FAIL_PATTERN 0。`,
 );

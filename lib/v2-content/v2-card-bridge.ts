@@ -30,6 +30,7 @@ import { getGamePack } from "@/lib/game-packs/registry";
 import { CONSENT_INSTRUCTION } from "./bar-fit-input";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "./formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS, type FormalTruthCard } from "./formal-truth-pack";
+import { PACK1_ADMISSION_RUNTIME_CARDS } from "./pack1-admission";
 import { getV2ContentAdapter } from "./v2-content-adapter";
 import { findUnknownBoundaryTags, type V2CardQualityMetadata } from "./v2-card-metadata";
 import {
@@ -114,6 +115,7 @@ export const SSOT_BOUNDARY_TAG_MAP: Record<string, BoundaryTag | null> = {
   // ── 泛安全元数据（无直连用户开关；不冒充精确开关）────────────────────────
   "relationship-sensitive": null,
   proximity: null,
+  "location-sensitive": null,
   "photo-optional": "photo-video",
   "external-participant": "stranger-contact",
 };
@@ -246,6 +248,11 @@ export function mainlineSsotCards(): readonly GameCard[] {
       // R3 已过两轮独立审查 ⇒ 已是 Formal（manifest `tracks.formalFixed` 收纳）；
       // 准入与否由 manifest 独立审查输入决定，这里只保证卡源与质量侧车同源。
       ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
+      // A9｜第一包重构批（`PN-TRUTH-232~283`，52 张）：Golden 12 + REWRITE 7 + REPLACE 19 + 补卡 14，
+      // **追加在末尾**（保 `[0]` 稳定、既有取卡顺序逐字不变）。卡来自聚合模块 `pack1-admission.ts`
+      // （已按 A8 登记落地待收 `responseMode` / `boundaryTags`）。是否进 Formal 由 manifest 独立
+      // 审查输入决定，这里只保证卡源与质量侧车同源。
+      ...PACK1_ADMISSION_RUNTIME_CARDS.map((card: FormalTruthCard) => toMainlineGameCard(card)),
     ];
   }
   return mainlineCache;
@@ -275,7 +282,10 @@ export function mainlineSsotCardsByPack(packId: string): readonly GameCard[] {
  * 两条来源在此**合流为一条读取路径**，避免「新卡在 guard 下漏放行」这类静默缺口。
  */
 const formalPackMetaById: ReadonlyMap<string, FormalTruthCard> = new Map(
-  [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS].map((card) => [card.cardId, card]),
+  [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS, ...PACK1_ADMISSION_RUNTIME_CARDS].map((card) => [
+    card.cardId,
+    card,
+  ]),
 );
 
 export function mainlineCardMetaById(
@@ -315,6 +325,9 @@ export function mainlineRuntimeCards(): readonly MainlineRuntimeCard[] {
     ...(getV2ContentAdapter().mainlineCards as readonly V13MainlineCard[]),
     ...FORMAL_TRUTH_CARDS,
     ...FORMAL_TRUTH_BOOTSTRAP_CARDS,
+    // A9｜第一包重构批 52 张（`PN-TRUTH-232~283`），追加在末尾，与 `mainlineSsotCards()` 同一份内容；
+    // 用**剥掉 planning-only 三字段**的运行期投影，保证设计字段不泄漏到运行时。
+    ...PACK1_ADMISSION_RUNTIME_CARDS,
   ];
 }
 

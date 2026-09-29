@@ -10,7 +10,7 @@
     "completedRounds": 14,
     "terminationReason": "global_exhausted",
     "deadEnd": true,
-    "formalDraws": 5,
+    "formalDraws": 2,
     "effectiveRounds": 0,
     "longestLowZeroRun": 14,
     "heatAtDraw": {

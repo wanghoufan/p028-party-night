@@ -15,6 +15,7 @@ import {
   V2_SSOT_MAINLINE_CARD_COUNT,
   V2_SSOT_MAINLINE_SHA256,
 } from "@/lib/v2-content/v2-types";
+import { RETIRED_TRUTH_CARDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
 import { V2_PRECISE_BOUNDARY_TAGS, cardPassesBoundaryFilter } from "@/lib/v2-content/v2-card-metadata";
@@ -76,9 +77,10 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect((rawSnapshot as { provenance: { migrationIdPolicy: string } }).provenance.migrationIdPolicy).toBe("NONE");
   });
 
-  it("桥接出 381 主线卡（SSOT 350 + 第一包 24 + R2 Bootstrap 7：truth-dare 131、其余各 50）且 cardType 落在 pack 支持类型内", () => {
+  it("桥接出 355 主线卡（SSOT 350 + 运行时 KEEP 5：truth-dare 105、其余各 50）且 cardType 落在 pack 支持类型内", () => {
     const cards = mainlineSsotCards();
-    // SSOT 冻结主线 350 + CONTENT-01 第一包 24（`PN-TRUTH-201~224`）+ R2 H1 Bootstrap 7（`PN-TRUTH-225~231`）。
+    // SSOT 冻结主线 350 + 运行时保留的 KEEP 5（第一包 3：203/205/209 + Bootstrap 2：227/229）。
+    // A4a（2026-09-29）：其余 26 张退役卡已移出卡源，逐字归档于 lib/v2-content/archive/。
     const extraTruthCards = FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length;
     expect(cards).toHaveLength(V2_SSOT_MAINLINE_CARD_COUNT + extraTruthCards);
 
@@ -173,11 +175,19 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(cardPassesBoundaryFilter(mapSsotBoundaryTags(["ex-partner"]), new Set(["ex-partner"]))).toBe(false);
 
     expect(() => mapSsotBoundaryTags(["未知标签"])).toThrow();
-    // 第一包卡只用精确标签，逐卡映射成功（`ex-partner` 不再 fail closed）。
+    // 运行时保留的 KEEP 卡只用精确标签，逐卡映射成功（`ex-partner` 不再 fail closed）。
     for (const card of FORMAL_TRUTH_CARDS) {
       expect(() => mapSsotBoundaryTags(card.boundaryTags), card.cardId).not.toThrow();
     }
-    expect(mapSsotBoundaryTags(FORMAL_TRUTH_CARDS.find((card) => card.cardId === "PN-TRUTH-216")!.boundaryTags)).toEqual(["ex-partner"]);
+    // A4a：带 `ex-partner` 精确标签的 216/217 已退役离开运行时卡源，其逐字快照归档在
+    // `lib/v2-content/archive/retired-truth-pack-2026-09-29.ts`（归档只被测试/只读扫描消费，
+    // 不进任何运行时卡池）。此处用归档快照继续验证精确标签映射。
+    for (const entry of RETIRED_TRUTH_CARDS) {
+      expect(() => mapSsotBoundaryTags(entry.card.boundaryTags), entry.cardId).not.toThrow();
+    }
+    expect(
+      mapSsotBoundaryTags(RETIRED_TRUTH_CARDS.find((entry) => entry.cardId === "PN-TRUTH-216")!.card.boundaryTags),
+    ).toEqual(["ex-partner"]);
 
     // 映射后的标签必须是 App 既有枚举：扩圈卡在「不接触陌生人」关闭时才可玩，开启时整包被安全过滤挡下。
     const expansion = expansionSsotCards();
@@ -202,7 +212,7 @@ describe("V2-B7 D1｜SSOT 内容真源（350+40，migrationIdPolicy=NONE）", ()
     expect(blocked).toEqual(["PN-CHEM-048"]);
 
     // 安全方向不变式：默认雷区下主线只被剔除这一张，其余全部可出
-    // （381 = 350 SSOT + 24 第一包 + 7 R2 Bootstrap）。
+    // （355 = 350 SSOT + 5 运行时 KEEP）。
     const allowed = filterCards([...mainlineSsotCards()], { intensity: 5, playerCount: 4, boundaries: DEFAULT_BOUNDARIES });
     expect(allowed).toHaveLength(
       V2_SSOT_MAINLINE_CARD_COUNT + FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length - 1,

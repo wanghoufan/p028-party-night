@@ -42,6 +42,40 @@ export interface ReviewEntry {
   note: string;
 }
 
+/**
+ * 历史留痕条目（A3 退出 Formal 时对**原独立审查结论**的归档）。
+ *
+ * 用数组（键为 `cardId` 字段）而不是 `Record<cardId, …>`：审查输入的活跃 `entries` 已经用
+ * cardId 作键，若历史归档也用 cardId 作键，磁盘原文里同一个 `"PN-TRUTH-xxx":` 会出现两次，
+ * 触发 `card-id-unique` 自校验。归档**逐字保留**当时的 `reviewed` / `humanBarFit` / `note`，
+ * 只增不改——退出 Formal 只改活跃 `entries`，不抹历史。
+ */
+export interface ReviewHistoryEntry {
+  cardId: string;
+  reviewed: boolean;
+  humanBarFit: FixedHumanBarFit;
+  note: string;
+}
+
+/**
+ * 一次「退出 Formal」批次的登记（只看事实与流程状态，不做质量评价）。
+ *
+ * `cardIds` 必须**等于**活跃 `entries` 里 `reviewed=false` 的候选集合——由
+ * `checkReviewInput()` 的 `history-coverage` 项派生核对，防手填与活跃状态脱节。
+ */
+export interface ReviewRetirement {
+  /** 归档时刻（ISO 8601）。 */
+  retiredAt: string;
+  /** 本次退出 Formal 的 cardId。 */
+  cardIds: readonly string[];
+  /** 一句话原因（事实/流程口径）。 */
+  reason: string;
+}
+
+/** 退出 Formal 的卡在活跃 `entries` 里的统一 note（只记事实与流程状态，不做质量评价）。 */
+export const RETIRED_FROM_FORMAL_NOTE =
+  "Human 新酒吧基线判定不合格，已退出 Formal，待重构后重新审查（原独立审查结论见本文件 history 归档，未删除）。";
+
 /** 一组机器档位的计数（`total` 必须等于三项之和）。 */
 export interface VerdictTally {
   total: number;
@@ -65,21 +99,30 @@ export interface PackVerdictSummary extends VerdictTally {
   groups: Readonly<Record<string, VerdictGroupSummary>>;
 }
 
-/** 审查输入的完整形态（`entries` ＋ 两个机器档位汇总对象）。 */
+/** 审查输入的完整形态（`entries` ＋ 历史归档 ＋ 两个机器档位汇总对象）。 */
 export interface ReviewInputPayload {
   source: string;
   reviewedAt: string;
   reviewerKind: string;
   note: string;
   entries: Readonly<Record<string, ReviewEntry>>;
+  /** A3：退出 Formal 的卡的原独立审查结论（只增不改的历史留痕）。 */
+  history: readonly ReviewHistoryEntry[];
+  /** A3：本次退出 Formal 的批次登记。 */
+  retirement: ReviewRetirement;
   packMachineVerdictSummary: PackVerdictSummary;
   libraryMachineVerdictSummary: VerdictGroupSummary;
   generatedBy: string;
 }
 
-/** TRUTH 内容包的两个分组键（`packMachineVerdictSummary.groups` 的固定键）。 */
+/** TRUTH 内容包的两个固定分组键（`packMachineVerdictSummary.groups` 的固定键）。 */
 export const TRUTH_FIRST_PACK_GROUP = "truthFirstPack";
 export const TRUTH_BOOTSTRAP_GROUP = "truthBootstrap";
+/**
+ * A9 新增分组键：第一包重构批（Golden 12 + REWRITE 7 + REPLACE 19 + 补卡 14 = 52 张，
+ * `PN-TRUTH-232~283`）。分组键是稳定标识，**不是数量**；张数一律由逐卡行派生。
+ */
+export const TRUTH_PACK1_ADMISSION_GROUP = "truthPack1Admission";
 
 /**
  * 扩展脚本追加语里的人类可读标记（幂等锚点）。
@@ -172,13 +215,36 @@ export function reviewEntriesFingerprintInput(
 }
 
 /**
- * 既有第一包 24 条结论的冻结指纹（sha256 of `reviewEntriesFingerprintInput(entries, FIRST_PACK_IDS)`）。
- * 生成脚本与单测都拿它做「既有 24 条一字未改」的锁：对不上即拒绝写盘 / 测试变红。
- *
- * 变更流程：只有 review 角色重审改结论时，才允许连同本常量一起更新（同时须记 HANDOFF）。
+ * 历史留痕指纹的**输入串**：把归档数组按 cardId 归一成记录，再走
+ * `reviewEntriesFingerprintInput()` 的同一序列化（与对象字面量 key 顺序无关）。
+ * 调用方对返回值取 sha256 即得「历史结论未被改动」的指纹。
  */
-export const FIRST_PACK_REVIEW_ENTRIES_SHA256 =
-  "84846ed120f3fadd8257dd9d071b406527b714e13b764125fff4772f9d17e202";
+export function reviewHistoryFingerprintInput(
+  history: readonly ReviewHistoryEntry[],
+  ids: readonly string[],
+): string {
+  const byId = new Map(history.map((entry) => [entry.cardId, entry]));
+  const record: Record<string, ReviewEntry> = {};
+  for (const id of ids) {
+    const entry = byId.get(id);
+    if (!entry) throw new Error(`历史留痕缺 entry：${id}`);
+    record[id] = { reviewed: entry.reviewed, humanBarFit: entry.humanBarFit, note: entry.note };
+  }
+  return reviewEntriesFingerprintInput(record, ids);
+}
+
+/**
+ * 全部候选（第一包 24 + Bootstrap 7 = 31）独立审查结论的**冻结历史指纹**
+ * （sha256 of `reviewHistoryFingerprintInput(history, ALL_CANDIDATE_IDS)`）。
+ *
+ * 生成脚本与单测都拿它做「退出 Formal 只改活跃 entries、历史一字未改」的锁：
+ * 对不上即拒绝写盘 / 测试变红。
+ *
+ * 变更流程：只有 review 角色重审并**改写历史结论**时才允许连同本常量一起更新
+ * （同时须记 HANDOFF）——单纯推进活跃状态（如退出 Formal）不得改本常量。
+ */
+export const FROZEN_REVIEW_HISTORY_SHA256 =
+  "dc4b3c993fe2c728c57e79ab6568e749c130f55a7acf0994cd545226d08a7d7a";
 
 /** 自校验期待值：候选卡清单（分组）＋整库卡清单＋逐卡机器档位行。 */
 export interface ReviewSelfCheckExpectation {
@@ -190,6 +256,12 @@ export interface ReviewSelfCheckExpectation {
   bootstrapIds: readonly string[];
   /** 整库（`libraryMachineVerdictSummary` 的集合，当前 421）。 */
   libraryIds: readonly string[];
+  /**
+   * 可选追加分组（键 → 该组候选 ID）。A9 起用于「第一包重构批」等**后续批次**，
+   * 使 `packMachineVerdictSummary.groups` 不必回改前两组的固定键即可扩展。
+   * 未提供时行为与旧版逐字一致（只有 `truthFirstPack` / `truthBootstrap` 两组）。
+   */
+  extraGroups?: Readonly<Record<string, readonly string[]>>;
   /** 机器档位逐卡行（canonical 口径，整库覆盖）。 */
   verdictRows: readonly VerdictRow[];
 }
@@ -220,13 +292,16 @@ export function countEntryKeyOccurrences(rawJson: string, ids: readonly string[]
 const sortedIds = (ids: readonly string[]): string[] => [...ids].sort();
 
 /**
- * 审查输入结构自校验（四条；任一条不成立即 `ok=false`，脚本据此非零退出）。
+ * 审查输入结构自校验（五条；任一条不成立即 `ok=false`，脚本据此非零退出）。
  *
  * 1. `entries-count`：逐卡条目数 = 候选总数（且键集恰为候选集，不多不少）。
  * 2. `card-id-unique`：cardId 唯一（给了 `rawJson` 时按磁盘原文数键出现次数，抓 JSON 重复键）。
  * 3. `reviewed-consistency`：每条 `reviewed === (humanBarFit !== "UNREVIEWED")`，且定档在枚举内。
  * 4. `summary-self-consistent`：各组 `total = PASS + SUSPECT + HARD_FAIL_PATTERN`；
  *    各组数字 == 由逐卡行重算的值；`packMachineVerdictSummary` 父级 == 各子组之和。
+ * 5. `history-coverage`：历史归档恰好覆盖全部候选（每卡一条）；`retirement.cardIds` == 活跃
+ *    `reviewed=false` 集合；退出 + 存活互补覆盖全部候选（退出 Formal 只改活跃 entries，不抹历史）。
+ *    （历史指纹的 sha256 比对在拥有 `node:crypto` 的调用方：生成脚本 + 单测。）
  */
 export function checkReviewInput(
   payload: ReviewInputPayload,
@@ -296,6 +371,7 @@ export function checkReviewInput(
     const expectedGroups: Record<string, readonly string[]> = {
       [TRUTH_FIRST_PACK_GROUP]: firstPackIds,
       [TRUTH_BOOTSTRAP_GROUP]: bootstrapIds,
+      ...(expectation.extraGroups ?? {}),
     };
     const pack = payload.packMachineVerdictSummary;
     const groupKeys = Object.keys(pack.groups ?? {});
@@ -343,6 +419,45 @@ export function checkReviewInput(
       detail: bad.length === 0
         ? `pack 父级 ${pack.total} = ${Object.keys(pack.groups ?? {}).join(" + ")} 之和；library ${library.total}；均与逐卡重算一致`
         : bad.join("；"),
+    });
+  }
+
+  /* ⑤ 历史归档覆盖 + 退出登记与活跃状态一致（A3：退出 Formal 不得抹历史、不得与活跃状态脱节） */
+  {
+    const bad: string[] = [];
+    const history = payload.history ?? [];
+    const byId = new Map<string, ReviewHistoryEntry>();
+    for (const entry of history) {
+      if (byId.has(entry.cardId)) bad.push(`history 重复 cardId ${entry.cardId}`);
+      byId.set(entry.cardId, entry);
+    }
+    for (const id of expected) if (!byId.has(id)) bad.push(`history 缺 ${id}`);
+    for (const entry of history) if (!expected.includes(entry.cardId)) bad.push(`history 多余 ${entry.cardId}`);
+
+    // 退出登记 cardIds 必须派生自活跃状态：恰为 `reviewed=false` 的候选集合。
+    const activeRetired = expected.filter((id) => entries[id]?.reviewed === false).sort();
+    const declaredRetired = [...(payload.retirement?.cardIds ?? [])].sort();
+    const sameSet =
+      declaredRetired.length === activeRetired.length &&
+      declaredRetired.every((id, index) => id === activeRetired[index]);
+    if (!sameSet) {
+      bad.push(
+        `retirement.cardIds 与活跃 reviewed=false 集合不一致：登记 ${declaredRetired.join(",") || "—"} ≠ 活跃 ${activeRetired.join(",") || "—"}`,
+      );
+    }
+    // 退出 + 存活的并集必须恰好覆盖全部候选（无遗漏、无重复）。
+    const activeReviewed = expected.filter((id) => entries[id]?.reviewed === true).sort();
+    if (activeReviewed.length + activeRetired.length !== expected.length) {
+      bad.push(`退出 ${activeRetired.length} + 存活 ${activeReviewed.length} ≠ 候选 ${expected.length}`);
+    }
+    items.push({
+      id: "history-coverage",
+      label: "历史归档覆盖全部候选，且退出登记 == 活跃 reviewed=false 集合",
+      ok: bad.length === 0,
+      detail:
+        bad.length === 0
+          ? `history ${history.length} 条覆盖 ${expected.length} 候选；退出 ${declaredRetired.length} / 存活 ${activeReviewed.length}`
+          : bad.join("；"),
     });
   }
 

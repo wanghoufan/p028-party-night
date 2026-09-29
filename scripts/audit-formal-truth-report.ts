@@ -276,7 +276,7 @@ p("| 情形 | 牌堆 | 轮数 | 终态 Heat | 最终 effective count | Heat 逐�
 p("|---|---|---|---|---|---|");
 p(`| 全包（真实生产牌堆） | ${fp.deck} | ${fp.rounds.length} | ${fp.finalHeat} | ${fp.finalEffective} | ${JSON.stringify(fp.firstReachRoundByHeat)} |`);
 p(`| 仅 Formal ${FORMAL_TOTAL} 张 | ${fo.deck} | ${fo.rounds.length} | ${fo.finalHeat} | ${fo.finalEffective} | ${JSON.stringify(fo.firstReachRoundByHeat)} |`);
-p(`| 仅 Formal 子集：Bootstrap（PN-TRUTH-225~231） | ${bo.deck} | ${bo.rounds.length} | ${bo.finalHeat} | ${bo.finalEffective} | ${JSON.stringify(bo.firstReachRoundByHeat)} |`);
+p(`| 仅 Bootstrap 7 张（其中仅 227/229 属 Formal） | ${bo.deck} | ${bo.rounds.length} | ${bo.finalHeat} | ${bo.finalEffective} | ${JSON.stringify(bo.firstReachRoundByHeat)} |`);
 p(`| 仅 legacy（负向对照） | ${lo.deck} | ${lo.rounds.length} | ${lo.finalHeat} | ${lo.finalEffective} | ${JSON.stringify(lo.firstReachRoundByHeat)} |`);
 p();
 const formalDrawnIds = [...new Set(fo.rounds.map((r) => r.cardId))].sort();
@@ -284,7 +284,7 @@ const formalDrawnAllInH1 = formalDrawnIds.every((id) => H1_FORMAL_IDS.includes(i
 p(`- 全包（seed=1，**给了合法披露信号**）：Formal 卡被抽到 **${fp.rounds.filter((r: { formal: boolean }) => r.formal).length} 张**；有效计数 ${fp.finalEffective}、Heat ${fp.finalHeat}；${stopText(fp)}。`);
 const foGap = Math.max(0, H2_MIN - fo.finalEffective);
 p(`- 仅 Formal ${FORMAL_TOTAL} 张（seed=1，**给了合法披露信号**）：共 ${fo.rounds.length} 轮，抽到 ${ids(formalDrawnIds)}（${formalDrawnAllInH1 ? `全部落在 H1 桶合法集合内——该集合共 ${H1_FORMAL_COUNT} 张 \`heatMin=1\`` : "含 H1 桶合法集合以外的卡"}），effective ${fo.finalEffective} / H2 门槛 ${H2_MIN}（${foGap === 0 ? "已跨过 H2 门槛" : `缺口 ${foGap}`}）⇒ 实测终态 Heat **${fo.finalHeat}**（逐档首达见上表）；${stopText(fo)}。`);
-p(`- 仅 Formal 子集 Bootstrap 7 张（seed=1，**给了合法披露信号**）：共 ${bo.rounds.length} 轮，该子集可计数 Formal ${bo.rounds.length} 张（子集恒 7，由链证据 rounds 长度派生），effective ${bo.finalEffective} ⇒ 首达 ${JSON.stringify(bo.firstReachRoundByHeat)}；${stopText(bo)}（该子集 < 下一档门槛，属真实缺口）。`);
+p(`- 仅 Bootstrap 7 张（seed=1，**给了合法披露信号**；其中仅 227/229 属 Formal）：共 ${bo.rounds.length} 轮，该子集 ${bo.rounds.length} 张都带 §7.2 metadata ⇒ 每轮计有效轮（Formal 归属只影响曝光统计、不影响计数口径），effective ${bo.finalEffective} ⇒ 首达 ${JSON.stringify(bo.firstReachRoundByHeat)}；${stopText(bo)}（该子集 < 下一档门槛，属真实缺口）。`);
 p(`- 全包 ${chain.fullPackSeedSweep.sessions} seed 扫描（不挑 seed，**同一固定桌型/固定配置的窄口径**，与 §1.2 的 4000 局多桌型聚合口径并列阅读、不互相替代）：到达 H2 ${chain.fullPackSeedSweep.reachedH2} 局、H3 ${chain.fullPackSeedSweep.reachedH3} 局、H4 ${chain.fullPackSeedSweep.reachedH4} 局；终态 Heat 分布 ${JSON.stringify(chain.fullPackSeedSweep.heatDistribution)}；有效轮/局 ${chain.fullPackSeedSweep.effectiveMean}。`);
 p(`- legacy 负向对照：sidecar 恒 null ⇒ effective 恒 ${lo.finalEffective}、Heat 恒 ${lo.finalHeat}（fail-closed 成立）。`);
 p();

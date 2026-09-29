@@ -1,18 +1,22 @@
 /**
- * R2｜Truth H1 Bootstrap 包（`lib/v2-content/formal-truth-bootstrap-pack.ts`，`PN-TRUTH-225~231`）。
+ * R2 / A4a｜Truth H1 Bootstrap 包（`lib/v2-content/formal-truth-bootstrap-pack.ts`）。
  *
- * 本文件按「逐卡锁值 + 全库不变量」两层锁死，手法沿用 `formal-truth-heat-labels.test.ts`：
- * ① **逐卡值锁死**：每张卡的 `text / informationGoal / intensity / heatMin / heatMax / topic /
+ * ⚠️ A4a（2026-09-29）口径：原始 7 张（`PN-TRUTH-225~231`）里只有 **227 / 229 是 Human 审计的 KEEP**，
+ * 仍是运行时卡源；其余 5 张（225/226/228/230/231，全 REWRITE）已**移出运行时内容源**，
+ * 逐字归档在 `lib/v2-content/archive/retired-truth-pack-2026-09-29.ts`（归档卡的逐字锁值见
+ * `tests/unit/retired-truth-archive.test.ts`）。
+ *
+ * 本文件按「逐卡锁值 + 全库不变量」两层锁死**运行时保留的 2 张**：
+ * ① **逐卡值锁死**：`text / informationGoal / intensity / heatMin / heatMax / topic /
  *    informationGain / informationGoalType / socialEnergy / relationshipProgression / intimacyClass`
  *    与内容源逐字一致（改任何一个都要同步改本表，不可能静默漂移）；
  * ② **反向护栏**：`heatMin` 全 1（真 H1）、`heatMax` 不得全 4、`intensity` 不得全 1 且不得 I4/I5、
  *    题材不得触碰深关系/性/边界（且人物信息卡不得用 `live_chemistry`）；
- *    `heatMax` 分布必须逐卡诚实（H2 2 / H3 4 / H4 1，2026-09-29 reviewer 复判后）；
- * ③ **全库不变量**：ID 唯一且与既有 390 张 + 第一包 24 张无碰撞、编号段不重叠；
+ * ③ **全库不变量**：ID 唯一且与既有 390 张 + 运行时第一包 3 张无碰撞、编号段不重叠；
  *    枚举合法、strict 必填零缺失；精确重复 0；近似（bigram Jaccard）全部 < 阈值；三红线 0 命中；
- * ④ **可达性**：H1 桶内 `PN-TRUTH-2*` 集合 === {201,202,203,205} ∪ Bootstrap（两 Router 同口径）；
- * ⑤ **已入 Formal（B5）**：两轮独立审查 PASS 7/7、结论已回填 ⇒ `formalFixedIdSet()` = 第一包 24 +
- *    Bootstrap 7 = 31，逐张满足四条件准入；`heatMin=1` 的 Formal 集合 = {201,202,203,205} ∪ Bootstrap。
+ * ④ **可达性**：H1 桶内 `PN-TRUTH-2*` 集合 = 卡源派生（Formal 只在 `heatMin=1` 时过关）——两 Router 同口径；
+ * ⑤ **入轨状态**：运行时 `PN-TRUTH-2*` 恰为 KEEP 5，`formalFixedIdSet()` = KEEP 5，
+ *    `heatMin=1` 的 Formal 集合 = {203,205,227,229}。
  *
  * 只读真源 + 走生产 Router；不改 SSOT / 生成产物 / 认识阈值 / 窗口 / Heat 契约。
  */
@@ -86,20 +90,6 @@ interface ExpectedCard {
 }
 
 const EXPECTED: Readonly<Record<string, ExpectedCard>> = {
-  "PN-TRUTH-225": {
-    text: "最近才开始的爱好是什么？说说让你上头的第一个瞬间。",
-    informationGoal: "听到他最近才开始的一个爱好，以及真正让他上头的那一刻",
-    intensity: 2, heatMin: 1, heatMax: 3, topic: "兴趣爱好",
-    informationGain: "medium", informationGoalType: "self_preference",
-    socialEnergy: "low", relationshipProgression: "open", intimacyClass: "none",
-  },
-  "PN-TRUTH-226": {
-    text: "你的周末更偏哪种：睡到中午、早起出门、还是临时决定？为什么？",
-    informationGoal: "知道他真实的周末节奏更像哪一种，以及他为什么偏这一种",
-    intensity: 1, heatMin: 1, heatMax: 2, topic: "生活方式",
-    informationGain: "medium", informationGoalType: "self_preference",
-    socialEnergy: "low", relationshipProgression: "open", intimacyClass: "none",
-  },
   "PN-TRUTH-227": {
     text: "说一样你最近反复安利给朋友的东西，再用一句话说服我们。",
     informationGoal: "听到他最近真心安利的一件东西，以及他为什么觉得值得一试",
@@ -107,33 +97,12 @@ const EXPECTED: Readonly<Record<string, ExpectedCard>> = {
     informationGain: "medium", informationGoalType: "self_preference",
     socialEnergy: "high", relationshipProgression: "open", intimacyClass: "none",
   },
-  "PN-TRUTH-228": {
-    text: "朋友里你常被安排成哪种角色：张罗的、捧场的，或失踪的？你认吗？",
-    informationGoal: "听他讲出自己在朋友圈里被默认的那个角色，以及他认不认这个说法",
-    intensity: 3, heatMin: 1, heatMax: 3, topic: "性格·习惯·小癖好",
-    informationGain: "medium", informationGoalType: "self_preference",
-    socialEnergy: "medium", relationshipProgression: "open", intimacyClass: "none",
-  },
   "PN-TRUTH-229": {
     text: "哪一类电影或音乐你怎样都提不起兴趣？说说你试过的那次。",
     informationGoal: "知道他明确提不起兴趣的是哪一类内容，以及他试过之后为什么不感冒",
     intensity: 2, heatMin: 1, heatMax: 3, topic: "兴趣爱好",
     informationGain: "medium", informationGoalType: "self_preference",
     socialEnergy: "medium", relationshipProgression: "open", intimacyClass: "none",
-  },
-  "PN-TRUTH-230": {
-    text: "跟刚认识的人相处，你有自己的一条规矩吗？说说它怎么来的。",
-    informationGoal: "听到他跟刚认识的人相处时的一条自己的规矩，以及这条规矩的来历",
-    intensity: 3, heatMin: 1, heatMax: 2, topic: "相处规则",
-    informationGain: "medium", informationGoalType: "relationship_rule",
-    socialEnergy: "low", relationshipProgression: "open", intimacyClass: "none",
-  },
-  "PN-TRUTH-231": {
-    text: "一天里什么时候你最像你自己？说说那段时间你通常在做什么。",
-    informationGoal: "知道他自我感觉最自在的那个时间段，以及他那时通常在做什么",
-    intensity: 2, heatMin: 1, heatMax: 4, topic: "性格·习惯·小癖好",
-    informationGain: "medium", informationGoalType: "self_preference",
-    socialEnergy: "low", relationshipProgression: "open", intimacyClass: "none",
   },
 };
 
@@ -160,10 +129,11 @@ const expectField = (cardId: string, field: keyof ExpectedCard, actual: unknown)
 /* ① 逐卡锁值                                                          */
 /* ------------------------------------------------------------------ */
 
-describe("R2① Bootstrap 逐卡值锁死（7 张，改任一字段都必须同步改本表）", () => {
+describe("R2/A4a① Bootstrap 运行时逐卡值锁死（2 张，改任一字段都必须同步改本表）", () => {
   it("卡集合与顺序 === 期望表（无缺卡、无多余、无乱序）", () => {
     expect(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId)).toEqual(Object.keys(EXPECTED));
-    expect(FORMAL_TRUTH_BOOTSTRAP_CARDS).toHaveLength(7);
+    expect(FORMAL_TRUTH_BOOTSTRAP_CARDS).toHaveLength(2);
+    expect(BOOTSTRAP_IDS).toEqual(["PN-TRUTH-227", "PN-TRUTH-229"]);
   });
 
   it("逐卡 text / informationGoal / intensity / heatMin / heatMax / topic / gain / goalType / energy / RP / intimacy 逐字一致", () => {
@@ -193,15 +163,15 @@ describe("R2① Bootstrap 逐卡值锁死（7 张，改任一字段都必须同�
 /* ② 反向护栏                                                          */
 /* ------------------------------------------------------------------ */
 
-describe("R2② 反向护栏：真 H1 / heatMax 不得全 4 / intensity 不得全 1 / 题材只许浅关系", () => {
+describe("R2/A4a② 反向护栏：真 H1 / heatMax 不得全 4 / intensity 不得全 1 / 题材只许浅关系", () => {
   it("heatMin 全为 1（真 H1：刚认识就能问）", () => {
-    expect(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.heatMin)).toEqual([1, 1, 1, 1, 1, 1, 1]);
+    expect(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.heatMin)).toEqual([1, 1]);
   });
 
-  it("heatMax 逐卡诚实：H2 2 / H3 4 / H4 1，且不得全部 = 4", () => {
+  it("heatMax 逐卡诚实：均停在 3（H4 属过浅），且不得全部 = 4", () => {
     const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
     for (const card of FORMAL_TRUTH_BOOTSTRAP_CARDS) dist[card.heatMax] = (dist[card.heatMax] ?? 0) + 1;
-    expect(dist).toEqual({ 1: 0, 2: 2, 3: 4, 4: 1 });
+    expect(dist).toEqual({ 1: 0, 2: 0, 3: 2, 4: 0 });
     expect(dist[4]).toBeLessThan(FORMAL_TRUTH_BOOTSTRAP_CARDS.length);
     expect(dist[1] + dist[2] + dist[3]).toBeGreaterThan(0);
     for (const card of FORMAL_TRUTH_BOOTSTRAP_CARDS) {
@@ -209,16 +179,14 @@ describe("R2② 反向护栏：真 H1 / heatMax 不得全 4 / intensity 不得�
     }
   });
 
-  it("intensity 覆盖 I1/I2/I3 且不是全 I1；无 I4/I5（不为曝光做不自然高尺度）", () => {
+  it("intensity 全为 I2（不是全 I1，也不做不自然的高尺度）：无 I4/I5", () => {
     const intensities = FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.intensity);
-    expect(new Set(intensities)).toEqual(new Set([1, 2, 3]));
+    expect(new Set(intensities)).toEqual(new Set([2]));
     expect(intensities.every((value) => value === 1)).toBe(false);
     expect(intensities.every((value) => value <= 3)).toBe(true);
-    expect(intensities.filter((value) => value === 2).length).toBeGreaterThan(0);
-    expect(intensities.filter((value) => value === 3).length).toBeGreaterThan(0);
   });
 
-  it("题材只许浅关系白名单；intimacyClass 全 none；low/medium/high 社交能量都有", () => {
+  it("题材只许浅关系白名单；intimacyClass 全 none；medium/high 社交能量都有", () => {
     for (const card of FORMAL_TRUTH_BOOTSTRAP_CARDS) {
       expect(SHALLOW_TOPICS, `${card.cardId} 的 topic`).toContain(card.topic);
       expect(card.intimacyClass, card.cardId).toBe("none");
@@ -227,76 +195,11 @@ describe("R2② 反向护栏：真 H1 / heatMax 不得全 4 / intensity 不得�
     const energies = new Set(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.socialEnergy));
     expect(energies.has("medium")).toBe(true);
     expect(energies.has("high")).toBe(true);
-    expect(energies.has("low")).toBe(true);
-  });
-});
-
-/* ------------------------------------------------------------------ */
-/* ②b 题面 ⇄ informationGoal 一致性（2026-09-29 reviewer 复判后的重写锁）  */
-/* ------------------------------------------------------------------ */
-
-/**
- * 2026-09-29 reviewer（`temp/REVIEW-BOOTSTRAP-7.md`）判 `226 / 228 / 230` 为 BORDERLINE，
- * 根因是「标签题无追问钩子 + `informationGoal` 超题面」。本单按 reviewer 理由重写这三张题面，
- * 并调整 `informationGoal` 使「问什么就答什么」。
- *
- * 下面的断言是**可复算的弱断言**（necessary, not sufficient）：
- * - `hookInText`：题面里确实存在那个追问钩子（消除「纯标签题」）；
- * - `goalPromise`：`informationGoal` 兑现的正是该钩子（消除「目标声明超题面」，即目标不再声明题面不收集的信息）；
- * - `forbiddenGoalPhrases`：不再出现 reviewer 点名的那类「而不是……」超题面措辞。
- * 语义等价仍需 reviewer 复判，本测试只锁住「不回退成超题面」这一必要条件。
- */
-const REWRITES: ReadonlyArray<{
-  readonly cardId: string;
-  readonly hookInText: string;
-  readonly goalPromise: string;
-  readonly forbiddenGoalPhrases: readonly string[];
-}> = [
-  {
-    cardId: "PN-TRUTH-226",
-    hookInText: "为什么",
-    goalPromise: "为什么",
-    forbiddenGoalPhrases: ["而不是"],
-  },
-  {
-    cardId: "PN-TRUTH-228",
-    hookInText: "你认吗",
-    goalPromise: "认不认",
-    forbiddenGoalPhrases: [],
-  },
-  {
-    cardId: "PN-TRUTH-230",
-    hookInText: "怎么来的",
-    goalPromise: "来历",
-    forbiddenGoalPhrases: [],
-  },
-];
-
-describe("R2②b 三张重写卡：题面带追问钩子、informationGoal 不再超题面", () => {
-  const byId = new Map(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => [card.cardId, card]));
-
-  it.each(REWRITES)("$cardId：题面含钩子「$hookInText」，目标只承诺题面收集的信息", ({ cardId, hookInText, goalPromise, forbiddenGoalPhrases }) => {
-    const card = byId.get(cardId);
-    expect(card, `${cardId} 不在本包`).toBeDefined();
-    expect(card!.text, `${cardId} 题面缺少追问钩子「${hookInText}」`).toContain(hookInText);
-    expect(card!.informationGoal, `${cardId} 目标未兑现题面钩子「${goalPromise}」`).toContain(goalPromise);
-    for (const phrase of forbiddenGoalPhrases) {
-      expect(card!.informationGoal, `${cardId} 目标残留超题面措辞「${phrase}」`).not.toContain(phrase);
-    }
   });
 
-  it("227 的 topic === 兴趣爱好（reviewer §3：现场化学反应不算人物维度）", () => {
-    expect(byId.get("PN-TRUTH-227")!.topic).toBe("兴趣爱好");
-  });
-
-  it("本包人物信息卡不再使用 live_chemistry 作 topic（缓冲维度不得当人物维度）", () => {
+  it("227 的 topic === 兴趣爱好；本包不使用 live_chemistry 作 topic", () => {
+    expect(FORMAL_TRUTH_BOOTSTRAP_CARDS.find((card) => card.cardId === "PN-TRUTH-227")!.topic).toBe("兴趣爱好");
     expect(FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.topic)).not.toContain("live_chemistry");
-  });
-
-  it("heatMin 7/7 全为 1（reviewer 确认 H1 成立，未为凑数压低）", () => {
-    const mins = FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.heatMin);
-    expect(mins).toEqual([1, 1, 1, 1, 1, 1, 1]);
-    expect(mins.filter((value) => value === 1)).toHaveLength(FORMAL_TRUTH_BOOTSTRAP_CARDS.length);
   });
 });
 
@@ -320,13 +223,13 @@ const jaccard = (a: ReadonlySet<string>, b: ReadonlySet<string>): number => {
   return inter / (a.size + b.size - inter);
 };
 
-describe("R2③ 全库不变量：ID / 枚举 / 必填 / 重复 / 三红线", () => {
+describe("R2/A4a③ 全库不变量：ID / 枚举 / 必填 / 重复 / 三红线", () => {
   const adapter = getV2ContentAdapter();
   const ssotCards = [...adapter.mainlineCards, ...adapter.expansionCards];
   const ssotById = new Map(ssotCards.map((card) => [card.cardId, card]));
   const firstPackIds = new Set(FORMAL_TRUTH_CARDS.map((card) => card.cardId));
 
-  it("本包 ID 唯一，且与既有 SSOT 390 张、第一包 24 张均无碰撞；编号段不重叠", () => {
+  it("本包 ID 唯一，且与既有 SSOT 390 张、运行时第一包 3 张均无碰撞；编号段不重叠", () => {
     expect(new Set(BOOTSTRAP_IDS).size).toBe(BOOTSTRAP_IDS.length);
     for (const id of BOOTSTRAP_IDS) {
       expect(ssotById.has(id), `${id} 与 SSOT 390 张冲突`).toBe(false);
@@ -382,7 +285,7 @@ describe("R2③ 全库不变量：ID / 枚举 / 必填 / 重复 / 三红线", ()
     }
   });
 
-  it("重复检查：与 390 张 + 第一包精确重复 0；近似 bigram Jaccard 全部 < 0.5", () => {
+  it("重复检查：与 390 张 + 运行时第一包精确重复 0；近似 bigram Jaccard 全部 < 0.5", () => {
     const THRESHOLD = 0.5;
     const existing = [...ssotCards.map((card) => ({ id: card.cardId, text: card.text })), ...FORMAL_TRUTH_CARDS.map((card) => ({ id: card.cardId, text: card.text }))];
     const existingNorm = new Map(existing.map((item) => [item.id, { norm: normText(item.text), grams: bigrams(normText(item.text)) }]));
@@ -420,7 +323,7 @@ describe("R2③ 全库不变量：ID / 枚举 / 必填 / 重复 / 三红线", ()
 });
 
 /* ------------------------------------------------------------------ */
-/* ④ 可达性：H1 桶内 PN-TRUTH-2* === {201,202,203,205} ∪ Bootstrap        */
+/* ④ 可达性：H1 桶内 PN-TRUTH-2* === 卡源派生集合                          */
 /* ------------------------------------------------------------------ */
 
 const TABLE_2M2F: SessionParticipant[] = [
@@ -446,21 +349,31 @@ const routerInputAt = (heat: Heat, drawSeed: number): V2RouterInput => {
 const sortedP2Ids = (ids: readonly string[]): string[] =>
   ids.filter((id) => id.startsWith("PN-TRUTH-2")).sort();
 
-describe("R2④ H1 可达性：Bootstrap 全部进 H1 桶；H1 桶 PN-TRUTH-2* === {201,202,203,205} ∪ Bootstrap", () => {
-  const EXPECTED_H1 = ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203", "PN-TRUTH-205", ...BOOTSTRAP_IDS].sort();
+describe("R2/A4a④ H1 可达性：H1 桶内 PN-TRUTH-2* === 卡源派生集合（Formal 只在 heatMin=1 时过关）", () => {
+  const EXPECTED_H1 = mainlineRuntimeCards()
+    .filter((card) => card.cardId.startsWith("PN-TRUTH-2"))
+    .filter((card) => !formalFixedIdSet().has(card.cardId) || (card.heatMin <= 1 && 1 <= card.heatMax))
+    .map((card) => card.cardId)
+    .sort();
+  /** A9 后 H1 桶 = 全部 heatMin=1 的 Formal 卡（KEEP 5 里的 4 张 ＋ 重构批的 11 张）。 */
+  const HEAT_MIN_1_FORMAL = mainlineRuntimeCards()
+    .filter((card) => card.heatMin === 1 && formalFixedIdSet().has(card.cardId))
+    .map((card) => card.cardId)
+    .sort();
 
-  it("heatMin=1 的 Formal 家族集合逐字 === {201,202,203,205} + Bootstrap 全量", () => {
-    const heatMin1 = [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS]
-      .filter((card) => card.heatMin === 1)
-      .map((card) => card.cardId)
-      .sort();
-    expect(heatMin1).toEqual(EXPECTED_H1);
+  it("H1 桶内 PN-TRUTH-2* 家族 === 卡源里 heatMin=1 的 Formal 卡（209 heatMin=2 被硬过滤；26 张退役已不在卡源）", () => {
+    expect(EXPECTED_H1).toEqual(HEAT_MIN_1_FORMAL);
+    expect(EXPECTED_H1).toHaveLength(15);
+    for (const id of BOOTSTRAP_IDS) expect(EXPECTED_H1, `${id} 未进 H1 桶`).toContain(id);
   });
 
-  it("审计 Router（createV2MainlineRouter）H1 桶内 PN-TRUTH-2* === 期望集合", () => {
+  it("审计 Router（createV2MainlineRouter）H1 桶内 PN-TRUTH-2* === 派生集合；Formal 里 heatMin=2 的 209 被过滤", () => {
     const h1 = sortedP2Ids(createV2MainlineRouter({ packId: "truth-dare" }).bucket(routerInputAt("H1", 0)).map((card) => card.cardId));
     expect(h1).toEqual(EXPECTED_H1);
     for (const id of BOOTSTRAP_IDS) expect(h1, `${id} 未进 H1 桶`).toContain(id);
+    // KEEP 5 中唯一 heatMin=2 的 209 仍受硬过滤（Formal 身份未变）。
+    expect(formalFixedIdSet().has("PN-TRUTH-209")).toBe(true);
+    expect(h1).not.toContain("PN-TRUTH-209");
   });
 
   it("生产 Router（createDeckRouter）同口径：H1 桶内 PN-TRUTH-2* 与审计 Router 逐字相同", () => {
@@ -477,17 +390,28 @@ describe("R2④ H1 可达性：Bootstrap 全部进 H1 桶；H1 桶 PN-TRUTH-2* =
 });
 
 /* ------------------------------------------------------------------ */
-/* ⑤ 已入 Formal（B5：两轮独立审查 + 结论回填后）                          */
+/* ⑤ 已入 Formal（A3/A4a：运行时 KEEP 5）                                 */
 /* ------------------------------------------------------------------ */
 
-describe("R2⑤ Bootstrap 7 张已过独立审查 → 进 Formal Fixed 轨（formal 24 → 31），Legacy 轨质量档位真实可用", () => {
+describe("R2/A4a⑤ 运行时 PN-TRUTH-2* === 内容源派生 57；Formal === 57；Legacy 轨质量档位真实可用", () => {
   const formalIds = [...formalFixedIdSet()].sort();
-  const firstPackIds = FORMAL_TRUTH_CARDS.map((card) => card.cardId);
+  /** A3/A4a｜Human 冻结的 KEEP 5（A9 前唯一的 Formal 卡）。 */
+  const KEEP_IDS = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"].sort();
+  /** A9｜运行时 PN-TRUTH-2* = 第一包 3 ＋ Bootstrap 2 ＋ 重构批 52 = 57（全部 Formal）。 */
+  const RUNTIME_TRUTH_IDS = [
+    ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+    ...BOOTSTRAP_IDS,
+    ...PACK1_ADMISSION_CARD_IDS,
+  ].sort();
 
-  it("formalFixedIdSet() === 第一包 24 + Bootstrap 7（逐张，31 张）", () => {
-    expect(formalIds).toEqual([...firstPackIds, ...BOOTSTRAP_IDS].sort());
-    expect(formalIds).toHaveLength(firstPackIds.length + BOOTSTRAP_IDS.length);
-    for (const id of BOOTSTRAP_IDS) expect(formalIds, `${id} 应已进 Formal`).toContain(id);
+  it("运行时 PN-TRUTH-2* 恰为内容源派生的 57 张（26 张退役已移出卡源）", () => {
+    expect(sortedP2Ids(mainlineRuntimeCards().map((card) => card.cardId))).toEqual(RUNTIME_TRUTH_IDS);
+    for (const id of KEEP_IDS) expect(RUNTIME_TRUTH_IDS, `${id} 应仍在运行时`).toContain(id);
+  });
+
+  it("formalFixedIdSet() === 57（KEEP 5 ＋ 重构批 52，A9 后逐张）", () => {
+    expect(formalIds).toEqual(RUNTIME_TRUTH_IDS);
+    for (const id of BOOTSTRAP_IDS) expect(formalIds, `${id} 应保持 Formal`).toContain(id);
   });
 
   it("Formal 逐张满足四条件准入（strict metadata ∧ humanBarFit=PASS ∧ reviewed=true ∧ provenance/hash 完整）", () => {
@@ -510,25 +434,37 @@ describe("R2⑤ Bootstrap 7 张已过独立审查 → 进 Formal Fixed 轨（for
     }
   });
 
-  it("heatMin=1 的 Formal 集合逐字 === {201,202,203,205} ∪ Bootstrap 7（11 张，冷启动证据）", () => {
-    const heatMin1Formal = [...FORMAL_TRUTH_CARDS, ...FORMAL_TRUTH_BOOTSTRAP_CARDS]
+  it("heatMin=1 的 Formal 集合逐字 === KEEP 里 4 张 ∪ 重构批里 heatMin=1 的 11 张（共 15 张）", () => {
+    const heatMin1Formal = mainlineRuntimeCards()
       .filter((card) => card.heatMin === 1 && formalFixedIdSet().has(card.cardId))
       .map((card) => card.cardId)
       .sort();
-    expect(heatMin1Formal).toEqual(
-      ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-203", "PN-TRUTH-205", ...BOOTSTRAP_IDS].sort(),
-    );
-    expect(heatMin1Formal).toHaveLength(11);
+    expect(heatMin1Formal).toEqual(HEAT_MIN_1_IDS);
+    expect(heatMin1Formal).toHaveLength(15);
+    for (const id of ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-227", "PN-TRUTH-229"]) {
+      expect(heatMin1Formal, `${id} 属 KEEP 且 heatMin=1`).toContain(id);
+    }
   });
 
-  it("manifest legacy provenance：本包仍在 Legacy 轨内、metadataStatus=audited（旧局可读），但已 reviewed", () => {
+  it("KEEP 5 的 manifest legacy provenance：metadataStatus=audited 且 reviewed=true / humanBarFit=PASS", () => {
     const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
-    for (const id of BOOTSTRAP_IDS) {
+    for (const id of KEEP_IDS) {
       const provenance = legacy.provenance[id];
       expect(provenance, `${id} 缺 legacy provenance`).toBeDefined();
       expect(provenance!.metadataStatus, id).toBe("audited");
-      expect(provenance!.reviewed, id).toBe(true);
-      expect(provenance!.humanBarFit, id).toBe("PASS");
+      expect(provenance!.reviewed, `${id} reviewed`).toBe(true);
+      expect(provenance!.humanBarFit, `${id} humanBarFit`).toBe("PASS");
+    }
+  });
+
+  it("26 张退役卡不在 manifest 任何轨内（逐张）", () => {
+    const legacy = FIXED_CONTENT_MANIFEST.tracks.legacyCompatibility;
+    const formal = FIXED_CONTENT_MANIFEST.tracks.formalFixed;
+    const retired = ["PN-TRUTH-201", "PN-TRUTH-202", "PN-TRUTH-204", "PN-TRUTH-216", "PN-TRUTH-217", "PN-TRUTH-225", "PN-TRUTH-231"];
+    for (const id of retired) {
+      expect(legacy.allowedCardIds, `${id} 不得在 Legacy 允许清单`).not.toContain(id);
+      expect(legacy.provenance[id], `${id} 不得在 Legacy provenance`).toBeUndefined();
+      expect(formal.allowedCardIds, `${id} 不得在 Formal 清单`).not.toContain(id);
     }
   });
 
@@ -541,10 +477,15 @@ describe("R2⑤ Bootstrap 7 张已过独立审查 → 进 Formal Fixed 轨（for
     }
   });
 
-  it("桥接追加在末尾：[0] 仍是 PN-TRUTH-001；尾部 = 第一包 + Bootstrap 原序", () => {
+  it("桥接追加在末尾：[0] 仍是 PN-TRUTH-001；尾部 = 运行时 57 张（KEEP 5 ＋ 重构批 52，原序）", () => {
     const cards = mainlineSsotCards();
     expect(cards[0]!.id).toBe("PN-TRUTH-001");
-    expect(cards.slice(-(BOOTSTRAP_IDS.length)).map((card) => card.id)).toEqual([...BOOTSTRAP_IDS]);
+    const tail = cards.slice(-RUNTIME_TRUTH_IDS.length).map((card) => card.id);
+    expect(tail).toEqual([
+      ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+      ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+      ...PACK1_ADMISSION_CARD_IDS,
+    ]);
     // 两个投影逐 id 一致。
     expect(mainlineRuntimeCards().map((card) => card.cardId)).toEqual(cards.map((card) => card.id));
   });

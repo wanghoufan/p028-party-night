@@ -6,8 +6,8 @@
   "cardSource": {
     "description": "mainlineSsotCardsByPack('truth-dare')（SSOT 主线 + 第一包正式内容）",
     "packTotal": 131,
-    "formalTotal": 31,
-    "legacyTotal": 100
+    "formalTotal": 5,
+    "legacyTotal": 126
   },
   "config": {
     "sessionsPerTable": 1000,
@@ -48,189 +48,101 @@
     {
       "heat": "H1",
       "packTotal": 131,
-      "legalCount": 111,
-      "formalLegal": 11,
+      "legalCount": 130,
+      "formalLegal": 4,
       "formalLegalIds": [
-        "PN-TRUTH-201",
-        "PN-TRUTH-202",
         "PN-TRUTH-203",
         "PN-TRUTH-205",
-        "PN-TRUTH-225",
-        "PN-TRUTH-226",
         "PN-TRUTH-227",
-        "PN-TRUTH-228",
-        "PN-TRUTH-229",
-        "PN-TRUTH-230",
-        "PN-TRUTH-231"
+        "PN-TRUTH-229"
       ],
-      "legacyLegal": 100
+      "legacyLegal": 126
     },
     {
       "heat": "H2",
       "packTotal": 131,
-      "legalCount": 119,
-      "formalLegal": 19,
+      "legalCount": 131,
+      "formalLegal": 5,
       "formalLegalIds": [
-        "PN-TRUTH-201",
-        "PN-TRUTH-202",
         "PN-TRUTH-203",
-        "PN-TRUTH-204",
         "PN-TRUTH-205",
-        "PN-TRUTH-206",
-        "PN-TRUTH-207",
-        "PN-TRUTH-208",
         "PN-TRUTH-209",
-        "PN-TRUTH-210",
-        "PN-TRUTH-220",
-        "PN-TRUTH-221",
-        "PN-TRUTH-225",
-        "PN-TRUTH-226",
         "PN-TRUTH-227",
-        "PN-TRUTH-228",
-        "PN-TRUTH-229",
-        "PN-TRUTH-230",
-        "PN-TRUTH-231"
+        "PN-TRUTH-229"
       ],
-      "legacyLegal": 100
+      "legacyLegal": 126
     },
     {
       "heat": "H3",
       "packTotal": 131,
-      "legalCount": 127,
-      "formalLegal": 27,
+      "legalCount": 131,
+      "formalLegal": 5,
       "formalLegalIds": [
-        "PN-TRUTH-201",
-        "PN-TRUTH-202",
         "PN-TRUTH-203",
-        "PN-TRUTH-204",
         "PN-TRUTH-205",
-        "PN-TRUTH-206",
-        "PN-TRUTH-207",
-        "PN-TRUTH-208",
         "PN-TRUTH-209",
-        "PN-TRUTH-210",
-        "PN-TRUTH-211",
-        "PN-TRUTH-212",
-        "PN-TRUTH-213",
-        "PN-TRUTH-214",
-        "PN-TRUTH-215",
-        "PN-TRUTH-216",
-        "PN-TRUTH-217",
-        "PN-TRUTH-218",
-        "PN-TRUTH-219",
-        "PN-TRUTH-220",
-        "PN-TRUTH-221",
-        "PN-TRUTH-222",
-        "PN-TRUTH-225",
         "PN-TRUTH-227",
-        "PN-TRUTH-228",
-        "PN-TRUTH-229",
-        "PN-TRUTH-231"
+        "PN-TRUTH-229"
       ],
-      "legacyLegal": 100
+      "legacyLegal": 126
     },
     {
       "heat": "H4",
       "packTotal": 131,
-      "legalCount": 120,
-      "formalLegal": 20,
+      "legalCount": 127,
+      "formalLegal": 1,
       "formalLegalIds": [
-        "PN-TRUTH-202",
-        "PN-TRUTH-207",
-        "PN-TRUTH-208",
-        "PN-TRUTH-209",
-        "PN-TRUTH-210",
-        "PN-TRUTH-211",
-        "PN-TRUTH-212",
-        "PN-TRUTH-213",
-        "PN-TRUTH-214",
-        "PN-TRUTH-215",
-        "PN-TRUTH-216",
-        "PN-TRUTH-217",
-        "PN-TRUTH-218",
-        "PN-TRUTH-219",
-        "PN-TRUTH-220",
-        "PN-TRUTH-221",
-        "PN-TRUTH-222",
-        "PN-TRUTH-223",
-        "PN-TRUTH-224",
-        "PN-TRUTH-231"
+        "PN-TRUTH-209"
       ],
-      "legacyLegal": 100
+      "legacyLegal": 126
     }
   ],
   "formalProfiles": {
     "byIntensity": {
-      "1": 5,
-      "2": 13,
-      "3": 9,
-      "4": 2,
-      "5": 2
+      "1": 2,
+      "2": 3
     },
     "byHeatMax": {
-      "2": 2,
-      "3": 9,
-      "4": 20
+      "3": 4,
+      "4": 1
     },
     "byTopic": {
-      "兴趣爱好": 5,
-      "生活方式": 3,
-      "性格·习惯·小癖好": 4,
-      "恋爱观": 2,
+      "生活方式": 1,
+      "性格·习惯·小癖好": 1,
       "择偶偏好": 1,
-      "相处规则": 3,
-      "吃醋·占有": 2,
-      "异性朋友边界": 2,
-      "前任态度": 2,
-      "底线·雷区": 2,
-      "人生目标·理想生活": 2,
-      "亲密边界": 1,
-      "性观念·亲密态度": 2
+      "兴趣爱好": 2
     }
   },
   "h1Formal": {
-    "count": 11,
+    "count": 4,
     "ids": [
-      "PN-TRUTH-201",
-      "PN-TRUTH-202",
       "PN-TRUTH-203",
       "PN-TRUTH-205",
-      "PN-TRUTH-225",
-      "PN-TRUTH-226",
       "PN-TRUTH-227",
-      "PN-TRUTH-228",
-      "PN-TRUTH-229",
-      "PN-TRUTH-230",
-      "PN-TRUTH-231"
+      "PN-TRUTH-229"
     ],
     "byIntensity": {
-      "1": 5,
-      "2": 4,
-      "3": 2
+      "1": 2,
+      "2": 2
     },
     "byHeatMax": {
-      "2": 2,
-      "3": 7,
-      "4": 2
+      "3": 4
     },
     "byTopic": {
-      "兴趣爱好": 5,
-      "生活方式": 2,
-      "性格·习惯·小癖好": 3,
-      "相处规则": 1
+      "生活方式": 1,
+      "性格·习惯·小癖好": 1,
+      "兴趣爱好": 2
     }
   },
   "formalHeatMinDistribution": {
-    "1": 11,
-    "2": 8,
-    "3": 10,
-    "4": 2
+    "1": 4,
+    "2": 1
   },
   "formalCountableUpTo": {
-    "heatMinLe1": 11,
-    "heatMinLe2": 19,
-    "heatMinLe3": 29,
-    "heatMinLe4": 31
+    "heatMinLe1": 4,
+    "heatMinLe2": 5,
+    "heatMinLe3": 5,
+    "heatMinLe4": 5
   },
   "modeA": {
     "mode": "A",
@@ -251,24 +163,17 @@
     "guardUsedMax": 33,
     "totalDraws": 93443,
     "drawsPerSession": 23.36,
-    "formalDraws": 8858,
-    "formalShare": 0.0948,
-    "formalExposedDistinct": 11,
+    "formalDraws": 2605,
+    "formalShare": 0.0279,
+    "formalExposedDistinct": 4,
     "formalExposedIds": [
-      "PN-TRUTH-201",
-      "PN-TRUTH-202",
       "PN-TRUTH-203",
       "PN-TRUTH-205",
-      "PN-TRUTH-225",
-      "PN-TRUTH-226",
       "PN-TRUTH-227",
-      "PN-TRUTH-228",
-      "PN-TRUTH-229",
-      "PN-TRUTH-230",
-      "PN-TRUTH-231"
+      "PN-TRUTH-229"
     ],
-    "formalTotal": 31,
-    "legacyTotal": 100,
+    "formalTotal": 5,
+    "legacyTotal": 126,
     "heatAtDraw": {
       "H1": 93443,
       "H2": 0,
@@ -299,12 +204,12 @@
     "topicsPerSessionMean": 0,
     "highEffectivePerSession": 0,
     "longestLowZeroRunMean": 20,
-    "sessionsZeroFormal": 1227,
+    "sessionsZeroFormal": 2521,
     "sessionsZeroEffective": 4000,
     "sessionsMediumPlus5": 0,
     "sessionsHighAtLeast1": 0,
     "sessionsTopicsAtLeast3": 0,
-    "distinctFirstFive": 3998,
+    "distinctFirstFive": 3977,
     "topFirstFiveShare": 0.0005,
     "mutualWindowReached": 0
   },
@@ -327,86 +232,73 @@
     "guardUsedMax": 33,
     "totalDraws": 93443,
     "drawsPerSession": 23.36,
-    "formalDraws": 9562,
-    "formalShare": 0.1023,
-    "formalExposedDistinct": 21,
+    "formalDraws": 2984,
+    "formalShare": 0.0319,
+    "formalExposedDistinct": 5,
     "formalExposedIds": [
-      "PN-TRUTH-201",
-      "PN-TRUTH-202",
       "PN-TRUTH-203",
-      "PN-TRUTH-204",
       "PN-TRUTH-205",
-      "PN-TRUTH-206",
-      "PN-TRUTH-207",
-      "PN-TRUTH-208",
       "PN-TRUTH-209",
-      "PN-TRUTH-210",
-      "PN-TRUTH-212",
-      "PN-TRUTH-214",
-      "PN-TRUTH-218",
-      "PN-TRUTH-220",
-      "PN-TRUTH-225",
-      "PN-TRUTH-226",
       "PN-TRUTH-227",
-      "PN-TRUTH-228",
-      "PN-TRUTH-229",
-      "PN-TRUTH-230",
-      "PN-TRUTH-231"
+      "PN-TRUTH-229"
     ],
-    "formalTotal": 31,
-    "legacyTotal": 100,
+    "formalTotal": 5,
+    "legacyTotal": 126,
     "heatAtDraw": {
-      "H1": 88870,
-      "H2": 4533,
-      "H3": 40,
+      "H1": 72131,
+      "H2": 19880,
+      "H3": 1432,
       "H4": 0
     },
     "heatAtDrawShare": {
-      "H1": 0.9511,
-      "H2": 0.0485,
-      "H3": 0.0004,
+      "H1": 0.7719,
+      "H2": 0.2128,
+      "H3": 0.0153,
       "H4": 0
     },
     "heatAfterTerminal": {
-      "H1": 87859,
-      "H2": 5504,
-      "H3": 80,
+      "H1": 69497,
+      "H2": 22009,
+      "H3": 1937,
       "H4": 0
     },
-    "sessionsReachingH2": 1011,
-    "sessionsReachingH3": 40,
+    "sessionsReachingH2": 2634,
+    "sessionsReachingH3": 505,
     "sessionsReachingH4": 0,
     "repeatedDraws": 0,
-    "effectiveRoundsTotal": 8140,
-    "effectivePerSession": 2.04,
+    "effectiveRoundsTotal": 18355,
+    "effectivePerSession": 4.59,
     "effectiveByGain": {
-      "high": 428,
-      "medium": 7712
+      "high": 8831,
+      "medium": 9524
     },
     "effectiveTopics": {
-      "兴趣爱好": 3246,
-      "性格·习惯·小癖好": 2245,
-      "生活方式": 1395,
-      "相处规则": 919,
-      "人生目标·理想生活": 115,
-      "恋爱观": 110,
-      "择偶偏好": 100,
-      "异性朋友边界": 4,
-      "底线·雷区": 4,
-      "吃醋·占有": 2
+      "兴趣爱好": 2642,
+      "性格·习惯·小癖好": 2113,
+      "性观念·亲密态度": 2096,
+      "前任态度": 1979,
+      "生活方式": 1763,
+      "相处规则": 1598,
+      "异性朋友边界": 1051,
+      "吃醋·占有": 1039,
+      "人生目标·理想生活": 1025,
+      "恋爱观": 1018,
+      "底线·雷区": 997,
+      "亲密边界": 700,
+      "择偶偏好": 334
     },
-    "distinctTopicsCovered": 10,
-    "topicsPerSessionMean": 1.45,
-    "highEffectivePerSession": 0.11,
-    "longestLowZeroRunMean": 14.39,
-    "sessionsZeroFormal": 1227,
-    "sessionsZeroEffective": 1328,
-    "sessionsMediumPlus5": 584,
-    "sessionsHighAtLeast1": 252,
-    "sessionsTopicsAtLeast3": 930,
-    "distinctFirstFive": 3998,
-    "topFirstFiveShare": 0.0005,
-    "mutualWindowReached": 0
+    "distinctTopicsCovered": 13,
+    "topicsPerSessionMean": 3.87,
+    "highEffectivePerSession": 2.21,
+    "longestLowZeroRunMean": 8.48,
+    "sessionsZeroFormal": 2498,
+    "sessionsZeroEffective": 9,
+    "sessionsMediumPlus5": 1755,
+    "sessionsHighAtLeast1": 3132,
+    "sessionsTopicsAtLeast3": 2933,
+    "distinctFirstFive": 3978,
+    "topFirstFiveShare": 0.0008,
+    "mutualWindowReached": 2
   },
   "ceilingCohorts": [
     {
@@ -416,8 +308,8 @@
       "deadEndSessions": 368,
       "deadEndRate": 0.4773,
       "completedRoundsMean": 19.12,
-      "formalShare": 0.218,
-      "formalDrawsOnFinished": 4.81,
+      "formalShare": 0.0873,
+      "formalDrawsOnFinished": 1.93,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 403,
@@ -434,8 +326,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.1677,
-      "formalDrawsOnFinished": 3.96,
+      "formalShare": 0.0609,
+      "formalDrawsOnFinished": 1.44,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 760,
@@ -452,8 +344,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0853,
-      "formalDrawsOnFinished": 2.01,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 780,
@@ -470,8 +362,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0125,
-      "formalDrawsOnFinished": 0.3,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 856,
@@ -488,8 +380,8 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0128,
-      "formalDrawsOnFinished": 0.3,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
       "effectivePerSession": 0,
       "termination": {
         "round_limit": 833,
@@ -506,8 +398,8 @@
       "deadEndSessions": 368,
       "deadEndRate": 0.4773,
       "completedRoundsMean": 19.12,
-      "formalShare": 0.2178,
-      "formalDrawsOnFinished": 4.8,
+      "formalShare": 0.087,
+      "formalDrawsOnFinished": 1.92,
       "effectivePerSession": 4.15,
       "termination": {
         "round_limit": 403,
@@ -524,9 +416,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.2074,
-      "formalDrawsOnFinished": 4.89,
-      "effectivePerSession": 4.21,
+      "formalShare": 0.0824,
+      "formalDrawsOnFinished": 1.94,
+      "effectivePerSession": 7.78,
       "termination": {
         "round_limit": 760,
         "pack_exhausted": 0,
@@ -542,9 +434,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.085,
-      "formalDrawsOnFinished": 2,
-      "effectivePerSession": 1.69,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
+      "effectivePerSession": 5.8,
       "termination": {
         "round_limit": 780,
         "pack_exhausted": 0,
@@ -560,9 +452,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.0125,
-      "formalDrawsOnFinished": 0.29,
-      "effectivePerSession": 0.23,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
+      "effectivePerSession": 2.1,
       "termination": {
         "round_limit": 856,
         "pack_exhausted": 0,
@@ -578,9 +470,9 @@
       "deadEndSessions": 0,
       "deadEndRate": 0,
       "completedRoundsMean": 20,
-      "formalShare": 0.013,
-      "formalDrawsOnFinished": 0.31,
-      "effectivePerSession": 0.26,
+      "formalShare": 0,
+      "formalDrawsOnFinished": 0,
+      "effectivePerSession": 3.51,
       "termination": {
         "round_limit": 833,
         "pack_exhausted": 0,
@@ -591,5 +483,5 @@
     }
   ],
   "worstTraceFile": "docs/qa/content-audit/FORMAL-TRUTH-MC-WORST-TRACE.json",
-  "readingGuide": "Formal 曝光占比＝抽到 Formal（manifest 轨，PN-TRUTH-201~231）的次数 / 总抽卡次数；legacy 卡（SSOT PN-TRUTH-001~050 + PN-DARE-*）不推进 Heat。 Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。 Mode B 的有效信息轮只来自带 Plan §3 metadata 的 Formal 卡；legacy 卡 sidecar 为 null ⇒ fail-closed 不计数。 所有数字由本脚本机械产出，报告侧不得手写。"
+  "readingGuide": "Formal 曝光占比＝抽到 Formal（manifest 轨 tracks.formalFixed；A3 后为 KEEP 5）的次数 / 总抽卡次数；退出 Formal 的旧卡与 SSOT 旧卡都按 legacy 口径处理（不受 Heat 硬过滤）。 Mode A 的 heatAtDraw 恒 H1 是「无披露通道」的确定性结果，不是 Router 抖动。 Mode B 的有效信息轮只取决于抽到的卡是否带 Plan §3 metadata（informationGain/topic，走生产 sidecar），与是否仍在 Formal 无关——A3 退出的 26 张仍带 metadata，抽到仍计有效轮；真正无 metadata 的 SSOT 旧卡 sidecar 为 null ⇒ fail-closed 不计数。 所有数字由本脚本机械产出，报告侧不得手写。"
 }

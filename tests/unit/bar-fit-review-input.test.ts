@@ -2,33 +2,40 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { RETIRED_TRUTH_CARD_IDS } from "@/lib/v2-content/archive/retired-truth-pack-2026-09-29";
 import { FORMAL_TRUTH_BOOTSTRAP_CARDS } from "@/lib/v2-content/formal-truth-bootstrap-pack";
 import { FORMAL_TRUTH_CARDS } from "@/lib/v2-content/formal-truth-pack";
+import { FIXED_CONTENT_MANIFEST, formalFixedIdSet } from "@/lib/v2-content/fixed-content-manifest";
+import { PACK1_ADMISSION_CARD_IDS } from "@/lib/v2-content/pack1-admission";
 import {
-  FIRST_PACK_REVIEW_ENTRIES_SHA256,
+  FROZEN_REVIEW_HISTORY_SHA256,
   R3_APPEND_MARK,
+  RETIRED_FROM_FORMAL_NOTE,
   TRUTH_BOOTSTRAP_GROUP,
   TRUTH_FIRST_PACK_GROUP,
+  TRUTH_PACK1_ADMISSION_GROUP,
   checkReviewInput,
-  reviewEntriesFingerprintInput,
+  reviewHistoryFingerprintInput,
   stripAppendedSuffix,
   tallyVerdicts,
   type ReviewEntry,
+  type ReviewHistoryEntry,
   type ReviewInputPayload,
   type ReviewSelfCheckExpectation,
   type VerdictRow,
 } from "@/lib/v2-content/bar-fit-review-input";
 
 /**
- * R3｜独立审查输入（`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`）结构自校验。
+ * A3/A9｜独立审查输入（`docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json`）结构自校验 + Formal 账目。
  *
- * 本文件锁死四件事（Human 本轮新硬规则）：
+ * 本文件锁死：
  * ① 逐卡条目数 = 候选总数；② cardId 唯一；③ 每条 `reviewed === (humanBarFit !== "UNREVIEWED")`；
- * ④ 各汇总组求和自洽（且**必须等于由逐卡数据重算的值**，防手填）。
- * 外加两条护栏：既有第一包 24 条结论指纹冻结（一字未改）；Bootstrap 7 张的独立复判结论已回填
- * （一律 PASS / reviewed=true，且 note 不得退回占位语）。
+ * ④ 各汇总组求和自洽（且**必须等于由逐卡数据重算的值**，防手填）；
+ * ⑤ 历史留痕归档覆盖全部候选，且 `retirement.cardIds` == 活跃 `reviewed=false` 集合；
+ * ⑥ **A9 账目**：52 张重构批活跃 `reviewed=true / humanBarFit=PASS`、`note` 载分批构成、
+ *    `formalFixed.allowedCardIds` 恰为 57（KEEP 5 ＋ 52）、26 张退役一律不在 Formal。
  *
- * 反例是**构造性**的：篡改一份汇总 / 条目使其不自洽，自校验必须报错（不报错即本测试变红）。
+ * 反例是**构造性**的：篡改一份汇总 / 条目 / 退出登记使其不自洽，自校验必须报错（不报错即本测试变红）。
  */
 
 const REVIEW_PATH = "docs/qa/content-audit-v2/BAR-FIT-HUMAN-REVIEW.json";
@@ -42,14 +49,33 @@ const audit = JSON.parse(readFileSync(join(process.cwd(), AUDIT_PATH), "utf8")) 
 };
 const verdictRows: readonly VerdictRow[] = audit.sets.frozenFixed414.rows;
 
+/** 运行时保留卡（A9 后：第一包 3 + Bootstrap 2 + 重构批 52 = 57）。 */
+const RUNTIME_PACK_IDS = [
+  ...FORMAL_TRUTH_CARDS.map((card) => card.cardId),
+  ...FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId),
+  ...PACK1_ADMISSION_CARD_IDS,
+];
+/** A4a｜26 张退役卡（逐字归档；不进运行时卡源，但仍是审查输入的账目候选集）。 */
+const ARCHIVED_IDS = RETIRED_TRUTH_CARD_IDS;
+/** 账目候选集 = 运行时 57 ∪ 归档 26 = 83（`PN-TRUTH-201~283`）。 */
+const ALL_TRUTH_2XX_IDS = [...RUNTIME_PACK_IDS, ...ARCHIVED_IDS].sort();
+const CANDIDATE_IDS = ALL_TRUTH_2XX_IDS;
+
+/** 三个分组（键在 `bar-fit-review-input.ts`）：第一包 3 / Bootstrap 2 / A9 重构批 52。 */
 const FIRST_PACK_IDS = FORMAL_TRUTH_CARDS.map((card) => card.cardId);
 const BOOTSTRAP_IDS = FORMAL_TRUTH_BOOTSTRAP_CARDS.map((card) => card.cardId);
-const CANDIDATE_IDS = [...FIRST_PACK_IDS, ...BOOTSTRAP_IDS];
+const PACK1_IDS = PACK1_ADMISSION_CARD_IDS;
+
+/** A3｜Human 冻结的 KEEP 5（保持 Formal）。 */
+const KEEP_IDS = ["PN-TRUTH-203", "PN-TRUTH-205", "PN-TRUTH-209", "PN-TRUTH-227", "PN-TRUTH-229"] as const;
+/** A9｜活跃 PASS = KEEP 5 ∪ 重构批 52 = 57。 */
+const ACTIVE_PASS_IDS = [...KEEP_IDS, ...PACK1_IDS].sort();
 
 const expectation: ReviewSelfCheckExpectation = {
   expectedCardIds: CANDIDATE_IDS,
   firstPackIds: FIRST_PACK_IDS,
   bootstrapIds: BOOTSTRAP_IDS,
+  extraGroups: { [TRUTH_PACK1_ADMISSION_GROUP]: PACK1_IDS },
   libraryIds: verdictRows.map((row) => row.cardId),
   verdictRows,
 };
@@ -57,8 +83,8 @@ const expectation: ReviewSelfCheckExpectation = {
 const clone = (): ReviewInputPayload => JSON.parse(JSON.stringify(review)) as ReviewInputPayload;
 const sha256 = (value: string): string => createHash("sha256").update(value, "utf8").digest("hex");
 
-describe("R3｜审查输入结构自校验四条（真产物）", () => {
-  it("四条自校验全过（条目数 / cardId 唯一 / reviewed 自洽 / 汇总自洽）", () => {
+describe("A3/A9｜审查输入结构自校验五条（真产物）", () => {
+  it("五条自校验全过（条目数 / cardId 唯一 / reviewed 自洽 / 汇总自洽 / 历史覆盖）", () => {
     const result = checkReviewInput(review, expectation, rawReview);
     expect(result.violations).toEqual([]);
     expect(result.ok).toBe(true);
@@ -67,23 +93,27 @@ describe("R3｜审查输入结构自校验四条（真产物）", () => {
       "card-id-unique",
       "reviewed-consistency",
       "summary-self-consistent",
+      "history-coverage",
     ]);
     for (const item of result.items) expect(item.ok, `${item.id}: ${item.detail}`).toBe(true);
   });
 
-  it("① 逐卡条目数 = 候选总数；键集恰为「第一包 24 + Bootstrap 7」", () => {
+  it("① 逐卡条目数 = 候选总数；键集恰为「运行时 57 + 归档 26」", () => {
     expect(Object.keys(review.entries)).toHaveLength(CANDIDATE_IDS.length);
     expect(Object.keys(review.entries).sort()).toEqual([...CANDIDATE_IDS].sort());
-    // 数量从内容源派生，不写死。
-    expect(CANDIDATE_IDS.length).toBe(FORMAL_TRUTH_CARDS.length + FORMAL_TRUTH_BOOTSTRAP_CARDS.length);
+    // 数量从内容源派生，不写死：运行时 57 + 归档 26 = 83。
+    expect(CANDIDATE_IDS.length).toBe(RUNTIME_PACK_IDS.length + ARCHIVED_IDS.length);
+    expect(RUNTIME_PACK_IDS).toHaveLength(57);
+    expect(ARCHIVED_IDS).toHaveLength(26);
+    expect(PACK1_IDS).toHaveLength(52);
   });
 
-  it("② cardId 唯一：磁盘原文里每个候选 cardId 键出现且仅出现一次", () => {
+  it("② cardId 唯一：磁盘原文里每个候选 cardId 键出现且仅出现一次（历史归档用 cardId 字段，不重复占键）", () => {
     for (const id of CANDIDATE_IDS) {
       const pattern = new RegExp(`"${id}"\\s*:`, "g");
       expect(rawReview.match(pattern) ?? [], `${id} 键出现次数`).toHaveLength(1);
     }
-    // 顺序：既有 24 条保持原序，Bootstrap 7 张按 cardId 升序追加在末尾。
+    // 顺序：既有 201~231 保持原序，A9 重构批 232~283 按 cardId 升序追加在末尾。
     expect(Object.keys(review.entries)).toEqual(CANDIDATE_IDS);
   });
 
@@ -110,19 +140,23 @@ describe("R3｜审查输入结构自校验四条（真产物）", () => {
     );
     expect({ total: pack.total, PASS: pack.PASS, SUSPECT: pack.SUSPECT, HARD_FAIL_PATTERN: pack.HARD_FAIL_PATTERN }).toEqual(sum);
     // 每组数字必须等于逐卡重算值（手填一个数字就会被这条抓住）
-    expect(tallyVerdicts(verdictRows, FIRST_PACK_IDS)).toEqual({
-      total: pack.groups[TRUTH_FIRST_PACK_GROUP]!.total,
-      PASS: pack.groups[TRUTH_FIRST_PACK_GROUP]!.PASS,
-      SUSPECT: pack.groups[TRUTH_FIRST_PACK_GROUP]!.SUSPECT,
-      HARD_FAIL_PATTERN: pack.groups[TRUTH_FIRST_PACK_GROUP]!.HARD_FAIL_PATTERN,
-    });
-    expect(tallyVerdicts(verdictRows, BOOTSTRAP_IDS)).toEqual({
-      total: pack.groups[TRUTH_BOOTSTRAP_GROUP]!.total,
-      PASS: pack.groups[TRUTH_BOOTSTRAP_GROUP]!.PASS,
-      SUSPECT: pack.groups[TRUTH_BOOTSTRAP_GROUP]!.SUSPECT,
-      HARD_FAIL_PATTERN: pack.groups[TRUTH_BOOTSTRAP_GROUP]!.HARD_FAIL_PATTERN,
-    });
-    // library 组 = 整库 canonical 全量（当前 421），数字同样来自逐卡重算
+    for (const [key, ids] of [
+      [TRUTH_FIRST_PACK_GROUP, FIRST_PACK_IDS],
+      [TRUTH_BOOTSTRAP_GROUP, BOOTSTRAP_IDS],
+      [TRUTH_PACK1_ADMISSION_GROUP, PACK1_IDS],
+    ] as const) {
+      expect(tallyVerdicts(verdictRows, ids), key).toEqual({
+        total: pack.groups[key]!.total,
+        PASS: pack.groups[key]!.PASS,
+        SUSPECT: pack.groups[key]!.SUSPECT,
+        HARD_FAIL_PATTERN: pack.groups[key]!.HARD_FAIL_PATTERN,
+      });
+    }
+    // 三个分组键恰为固定集合（不多不少）
+    expect(Object.keys(pack.groups).sort()).toEqual(
+      [TRUTH_FIRST_PACK_GROUP, TRUTH_BOOTSTRAP_GROUP, TRUTH_PACK1_ADMISSION_GROUP].sort(),
+    );
+    // library 组 = 整库 canonical 全量，数字同样来自逐卡重算
     expect(review.libraryMachineVerdictSummary.total).toBe(verdictRows.length);
     expect(review.libraryMachineVerdictSummary.total).toBe(audit.sets.frozenFixed414.cardCount);
     expect(tallyVerdicts(verdictRows, expectation.libraryIds)).toEqual({
@@ -136,50 +170,112 @@ describe("R3｜审查输入结构自校验四条（真产物）", () => {
   });
 });
 
-describe("R3｜Bootstrap 7 张：结论已由独立 reviewer 回填、身份如实", () => {
-  it("Bootstrap 7 张一律 humanBarFit=PASS / reviewed=true（B5 复判后）", () => {
-    for (const id of BOOTSTRAP_IDS) {
-      const entry = review.entries[id];
-      expect(entry, `${id} 缺 entry`).toBeDefined();
-      expect(entry!.humanBarFit, id).toBe("PASS");
-      expect(entry!.reviewed, id).toBe(true);
-      expect(entry!.note, `${id} 结论不得是占位语`).not.toContain("待独立 reviewer 填写");
-      expect(entry!.note.length, `${id} 结论必须写明真实理由`).toBeGreaterThan(40);
-    }
-    // 结论逐条只出现一次，且分布恰为 PASS 7 / BORDERLINE 0 / FAIL 0
-    const fits = BOOTSTRAP_IDS.map((id) => review.entries[id]!.humanBarFit);
-    expect(fits).toEqual(["PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS"]);
-  });
-
-  it("首轮判 BORDERLINE 的 3 张（226/228/230）note 必须写明「由 BORDERLINE 升 PASS」的复判依据", () => {
-    for (const id of ["PN-TRUTH-226", "PN-TRUTH-228", "PN-TRUTH-230"]) {
-      expect(review.entries[id]!.note, id).toContain("BORDERLINE");
-      expect(review.entries[id]!.note, id).toContain("REVIEW-BOOTSTRAP-7-RECHECK.md");
-    }
-    // 首轮即 PASS 的 4 张引用第一轮报告
-    for (const id of ["PN-TRUTH-225", "PN-TRUTH-227", "PN-TRUTH-229", "PN-TRUTH-231"]) {
-      expect(review.entries[id]!.note, id).toContain("第一轮即 PASS");
+describe("A9｜活跃状态：KEEP 5 ＋ 重构批 52 保持 Formal，26 张旧版本退出", () => {
+  it("active reviewed=true / humanBarFit=PASS 恰为 57（KEEP 5 ＋ 52，逐张）", () => {
+    const active = Object.entries(review.entries)
+      .filter(([, entry]) => entry.reviewed)
+      .map(([cardId]) => cardId)
+      .sort();
+    expect(active).toEqual(ACTIVE_PASS_IDS);
+    for (const id of ACTIVE_PASS_IDS) {
+      expect(review.entries[id]!.humanBarFit, id).toBe("PASS");
+      expect(review.entries[id]!.reviewed, id).toBe(true);
     }
   });
 
-  it("7 张机器档位由逐卡数据得出（全部 PASS），但机器档位不是定档依据", () => {
-    const tally = tallyVerdicts(verdictRows, BOOTSTRAP_IDS);
-    expect(tally).toEqual({ total: 7, PASS: 7, SUSPECT: 0, HARD_FAIL_PATTERN: 0 });
-    // 定档来源必须在文本里可辨：复判报告 + 「机器档位不是本次定档的依据」
-    expect(review.note).toContain("不是**本次定档的依据");
+  it("52 张 active entry 的 note 载内容主审轮次 / 审计来源 / 分批构成与 ID 清单", () => {
+    const batches: ReadonlyArray<[string, readonly string[]]> = [
+      ["Golden 12", PACK1_IDS.filter((id) => Number(id.slice("PN-TRUTH-".length)) <= 243)],
+      ["REWRITE 7", PACK1_IDS.filter((id) => Number(id.slice("PN-TRUTH-".length)) >= 244 && Number(id.slice("PN-TRUTH-".length)) <= 250)],
+      ["REPLACE 19", PACK1_IDS.filter((id) => Number(id.slice("PN-TRUTH-".length)) >= 251 && Number(id.slice("PN-TRUTH-".length)) <= 269)],
+      ["补卡 14", PACK1_IDS.filter((id) => Number(id.slice("PN-TRUTH-".length)) >= 270)],
+    ];
+    for (const id of PACK1_IDS) {
+      const note = review.entries[id]!.note;
+      expect(note, `${id} 主审轮次`).toContain("Round-1");
+      expect(note, `${id} 主审轮次`).toContain("Round-3");
+      expect(note, `${id} 返工`).toContain("A4b~A8");
+      expect(note, `${id} 审计来源`).toContain("temp/BAR-AUDIT-PACK1-31.md");
+      expect(note, `${id} 202/225 改判`).toContain("202/225");
+      for (const [label, ids] of batches) {
+        expect(note, `${id} 分批标签 ${label}`).toContain(label);
+        for (const batchId of ids) expect(note, `${id} 缺 ID ${batchId}`).toContain(batchId);
+      }
+    }
+    // 抽样展示一张完整 note（编号 267，含 admission 待收字段落地说明的来源）
+    expect(review.entries["PN-TRUTH-267"]!.note.length).toBeGreaterThan(200);
   });
 
-  it("reviewerKind 保持合法值 ai-role（身份如实，不冒充 human）", () => {
+  it("26 张（7 REWRITE + 19 REPLACE）一律 UNREVIEWED / reviewed=false，note 写明退出事实", () => {
+    const retired = CANDIDATE_IDS.filter((id) => !ACTIVE_PASS_IDS.includes(id));
+    expect(retired).toHaveLength(26);
+    for (const id of retired) {
+      const entry = review.entries[id]!;
+      expect(entry.humanBarFit, id).toBe("UNREVIEWED");
+      expect(entry.reviewed, id).toBe(false);
+      expect(entry.note, id).toBe(RETIRED_FROM_FORMAL_NOTE);
+      expect(entry.note, id).toContain("已退出 Formal，待重构后重新审查");
+    }
+    expect(retired.sort()).toEqual([...ARCHIVED_IDS].sort());
+  });
+
+  it("retirement 登记 == 活跃 reviewed=false 集合（派生核对，非手填）", () => {
+    const retired = CANDIDATE_IDS.filter((id) => !ACTIVE_PASS_IDS.includes(id)).sort();
+    expect([...review.retirement.cardIds].sort()).toEqual(retired);
+    expect(review.retirement.retiredAt).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
+    expect(review.retirement.reason).toContain("KEEP 5");
+  });
+
+  it("reviewerKind 保持合法值 ai-role（身份如实，不冒充 human；不参与准入判定）", () => {
     expect(review.reviewerKind).toBe("ai-role");
-    expect(review.source).toContain("Bootstrap 7 张（PN-TRUTH-225~231）经两轮独立审查");
-    expect(review.source).toContain("第一轮 PASS 4 / BORDERLINE 3");
-    expect(review.source).toContain("复判 PASS 7");
-    expect(review.reviewedAt).toContain("Bootstrap 7 张经两轮独立审查");
-    expect(review.reviewedAt).toContain("第一轮 PASS 4 / BORDERLINE 3");
-    expect(review.reviewedAt).toContain("复判 PASS 7");
+    expect(review.source).toContain("A3 状态推进");
+    expect(review.source).toContain("A9 admission");
+    expect(review.source).toContain("Round-1/2/3");
+    expect(review.reviewedAt).toContain("A9 追加");
+    // 产物 buildInfo 也如实带身份，且与输入一致
+    expect(FIXED_CONTENT_MANIFEST.buildInfo.reviewerKind).toBe("ai-role");
+    expect(FIXED_CONTENT_MANIFEST.buildInfo.reviewerKind).toBe(review.reviewerKind);
+    expect(FIXED_CONTENT_MANIFEST.buildInfo.humanReviewSource).toBe(review.source);
+  });
+});
+
+describe("A3｜历史留痕未删除（归档 + 指纹锁定）", () => {
+  it("history 恰好覆盖全部候选（每卡一条），cardId 不重复", () => {
+    const ids = review.history.map((entry) => entry.cardId);
+    expect(ids).toHaveLength(CANDIDATE_IDS.length);
+    expect([...ids].sort()).toEqual([...CANDIDATE_IDS].sort());
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("R3 追加语幂等：source / reviewedAt / note 里的标记各出现且仅出现一次（重跑不叠字）", () => {
+  it("31 张旧候选的历史留痕指纹 === 冻结常量（退出 Formal 只改活跃 entries，历史一字未改）", () => {
+    const legacyIds = [...ARCHIVED_IDS, ...KEEP_IDS].sort();
+    const fingerprint = sha256(reviewHistoryFingerprintInput(review.history, legacyIds));
+    expect(fingerprint).toBe(FROZEN_REVIEW_HISTORY_SHA256);
+  });
+
+  it("26 张的历史结论逐字保留（原独立审查 PASS 结论与 note 未删除）", () => {
+    const byId = new Map<string, ReviewHistoryEntry>(review.history.map((entry) => [entry.cardId, entry]));
+    for (const id of ARCHIVED_IDS) {
+      const historical = byId.get(id)!;
+      expect(historical.humanBarFit, `${id} 历史定档`).toBe("PASS");
+      expect(historical.reviewed, `${id} 历史 reviewed`).toBe(true);
+      expect(historical.note.length, `${id} 历史 note 必须保留`).toBeGreaterThan(20);
+      // 活跃 note 已换成退出说明 ⇒ 历史结论只能从归档读到（证明确实「没删、只是迁走」）。
+      expect(historical.note, id).not.toBe(RETIRED_FROM_FORMAL_NOTE);
+    }
+    expect(byId.get("PN-TRUTH-216")!.note).toContain("已标 ex-partner 雷区标签");
+    expect(byId.get("PN-TRUTH-226")!.note).toContain("BORDERLINE 升 PASS");
+  });
+
+  it("KEEP 5 的活跃 note === history 同卡 note（逐字保留，未被改写）", () => {
+    const byId = new Map<string, ReviewHistoryEntry>(review.history.map((entry) => [entry.cardId, entry]));
+    for (const id of KEEP_IDS) {
+      expect(review.entries[id]!.note, id).toBe(byId.get(id)!.note);
+    }
+    expect(byId.get("PN-TRUTH-209")!.note).toContain("说一个具体行为");
+  });
+
+  it("R3/A9 追加语幂等：source / reviewedAt / note 里的标记各出现且仅出现一次（重跑不叠字）", () => {
     for (const [field, text] of [
       ["source", review.source],
       ["reviewedAt", review.reviewedAt],
@@ -188,26 +284,26 @@ describe("R3｜Bootstrap 7 张：结论已由独立 reviewer 回填、身份如�
       expect(text.split(R3_APPEND_MARK).length - 1, field).toBe(1);
       expect(stripAppendedSuffix(text), field).not.toContain(R3_APPEND_MARK);
     }
-    // 砍掉追加段是幂等的：即使历史上被叠了两遍，一次也能清干净（旧版 bug 的回归锁）
     const doubled = `${stripAppendedSuffix(review.source)} ｜ 【${R3_APPEND_MARK}】旧追加段 ｜ 【${R3_APPEND_MARK}】新追加段`;
     expect(stripAppendedSuffix(doubled)).toBe(stripAppendedSuffix(review.source));
     expect(stripAppendedSuffix(stripAppendedSuffix(doubled))).toBe(stripAppendedSuffix(review.source));
   });
 });
 
-describe("R3｜既有第一包 24 条结论：指纹锁定（一字未改）", () => {
-  it("24 条 entries 指纹 === 冻结常量", () => {
-    const fingerprint = sha256(reviewEntriesFingerprintInput(review.entries, FIRST_PACK_IDS));
-    expect(fingerprint).toBe(FIRST_PACK_REVIEW_ENTRIES_SHA256);
+describe("A9｜Formal Fixed 清单恰好 = KEEP 5 ＋ 重构批 52（由审查输入 + 内容源派生）", () => {
+  it("formalFixed.allowedCardIds 逐张 == 57（KEEP 5 ＋ 52）", () => {
+    expect([...FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds].sort()).toEqual(ACTIVE_PASS_IDS);
+    expect([...formalFixedIdSet()].sort()).toEqual(ACTIVE_PASS_IDS);
+    expect(FIXED_CONTENT_MANIFEST.tracks.formalFixed.counts.total).toBe(57);
   });
 
-  it("24 条仍全部 reviewed=true / humanBarFit=PASS（Formal 准入不因此漂移）", () => {
-    const pass = FIRST_PACK_IDS.filter((id) => review.entries[id]!.reviewed && review.entries[id]!.humanBarFit === "PASS");
-    expect(pass).toEqual(FIRST_PACK_IDS);
+  it("26 张退出者一律不在 formalFixed.allowedCardIds（逐张）", () => {
+    const formal = new Set(FIXED_CONTENT_MANIFEST.tracks.formalFixed.allowedCardIds);
+    for (const id of ARCHIVED_IDS) expect(formal.has(id), `${id} 不得在 Formal 清单内`).toBe(false);
   });
 });
 
-describe("R3｜构造性反例：篡改使其不自洽 ⇒ 自校验必须变红", () => {
+describe("A3/A9｜构造性反例：篡改使其不自洽 ⇒ 自校验必须变红", () => {
   it("篡改 library 汇总（total+1）⇒ summary-self-consistent 失败", () => {
     const tampered = clone();
     tampered.libraryMachineVerdictSummary = {
@@ -256,6 +352,36 @@ describe("R3｜构造性反例：篡改使其不自洽 ⇒ 自校验必须变红
     const result = checkReviewInput(tampered, expectation, JSON.stringify(tampered));
     expect(result.ok).toBe(false);
     expect(result.violations.join("\n")).toContain("entries-count");
+  });
+
+  it("把某张「退出」改回 PASS（退出登记与活跃状态脱节）⇒ history-coverage 失败", () => {
+    const tampered = clone();
+    tampered.entries = {
+      ...tampered.entries,
+      [ARCHIVED_IDS[0]!]: { reviewed: true, humanBarFit: "PASS", note: "偷偷放回" },
+    };
+    const result = checkReviewInput(tampered, expectation, JSON.stringify(tampered));
+    expect(result.ok).toBe(false);
+    expect(result.violations.join("\n")).toContain("history-coverage");
+  });
+
+  it("把 A9 某张撤回 UNREVIEWED（活跃 PASS 被人为抽走）⇒ history-coverage 失败", () => {
+    const tampered = clone();
+    tampered.entries = {
+      ...tampered.entries,
+      [PACK1_IDS[0]!]: { reviewed: false, humanBarFit: "UNREVIEWED", note: RETIRED_FROM_FORMAL_NOTE },
+    };
+    const result = checkReviewInput(tampered, expectation, JSON.stringify(tampered));
+    expect(result.ok).toBe(false);
+    expect(result.violations.join("\n")).toContain("history-coverage");
+  });
+
+  it("删掉一条历史归档 ⇒ history-coverage 失败（历史留痕不得残缺）", () => {
+    const tampered = clone();
+    tampered.history = tampered.history.filter((entry) => entry.cardId !== ARCHIVED_IDS[0]!);
+    const result = checkReviewInput(tampered, expectation, JSON.stringify(tampered));
+    expect(result.ok).toBe(false);
+    expect(result.violations.join("\n")).toContain("history-coverage");
   });
 
   it("原文出现重复 cardId 键 ⇒ card-id-unique 失败（JSON.parse 会静默吞键）", () => {
