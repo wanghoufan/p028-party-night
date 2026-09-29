@@ -7,6 +7,8 @@
 
 > 复核方式：逐 diff 通读全部 32 项改动；独立复算第一包 24 条指纹（用 `git show HEAD:` 旧件重算 sha256，与冻结常量逐字比对）；独立复读 3 份 reviewer 落盘件（`temp/HEAT-REVIEW-205.md` / `temp/REVIEW-BOOTSTRAP-7.md` / `temp/REVIEW-BOOTSTRAP-7-RECHECK.md`）并逐卡对照落地值；实读 MC / 生产链 / 审计 / manifest 四份产物数字；独立复跑 extend `--check`（指纹相等=true，四条自校验全过）与 5 个关键测试文件（76/76 绿）；全仓 stale 字符串 grep 0 命中。
 
+> ⚠️（2026-09-29 neat-freak 收尾注，未改写本评审结论）本单复核的 32 项工作区改动已随 `730c025`（Truth H1 Bootstrap，formal 24→31）提交并 push `main`；原文「未 commit / 未 push」（:4 / :53）为该时点事实，保留留痕。
+
 ## 十问逐答
 
 ### 1. Heat/审查纪律是否守住 —— ✅ 是

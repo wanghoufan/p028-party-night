@@ -271,6 +271,7 @@
 > 并列对照（不同口径，不得混用）：uniform-baseline estimate（假设等概率均匀抽题、忽略 Router 过滤与 Heat 门控）下，「中及以上」期望 6.91 题/局、「高」期望 2.29 题/局。真实 Router 模拟是上一条，不是这一条。
 > ⚠️（2026-09-28 neat-freak 加注，未改写生成内容）本节 Q5 的运行时数字（58.5% / 7.49 / 2.34 / 2.85 / 9.12 / 41.5% / 1,660）已由 2026-09-28 重跑取代，真源见 `docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（4,000/4,000 跑满、dead-end 0、heatAtDraw 100% H1、matchesCreated 0）。
 > ⚠️（2026-09-28 第二轮 neat-freak 补注，仍未改写生成内容）第一包 24 张 Formal Fixed 入池后，现行运行时真源＝`docs/qa/content-audit/FORMAL-TRUTH-MC.json` / `FORMAL-TRUTH-PRODUCTION-CHAIN.json`（`ROUTER-MONTE-CARLO.json` 为入池前 formal=0 快照）。本文件的静态内容口径（350 张语义/主题分布）不经 Router，仍有效。
+> ⚠️（2026-09-29 neat-freak 三注，仍未改写生成内容）第一包经「Truth H1 Bootstrap」后 Formal 由 **24 → 31**（第一包 24 ＋ Bootstrap 7），`heatMin=1` 的 Formal 由 3 → 11，Engine 口径冷启动已解除；上条「第一包 24 张 Formal」的现值已过期。运行时真源不变，仍为 `docs/qa/content-audit/FORMAL-TRUTH-MC.json` ＋ `docs/qa/content-audit/FORMAL-TRUTH-PRODUCTION-CHAIN.json`（此二文件在 `docs/qa/content-audit/`，**不在** `content-audit-v2/`）。本文件静态内容口径（350 张语义/主题分布）仍有效。
 
 ## 15. 结论（供 Human 决策，本轮不执行）
 

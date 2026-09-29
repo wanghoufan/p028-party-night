@@ -6,6 +6,7 @@
 > 已排除玩法：spin-bottle（转瓶子为 cardless 玩法，不在 V2_MAINLINE_PACK_IDS，createV2MainlineRouter 对它恒返回空集，即 Phase A bug 1）
 > ⚠️（2026-09-28 neat-freak 加注，未改写生成内容）本报告全部运行时数字已由 2026-09-28 重跑取代，真源见 `docs/qa/content-audit/ROUTER-MONTE-CARLO.json`（4,000/4,000 跑满、dead-end 0、heatAtDraw 100% H1、matchesCreated 0）。
 > ⚠️（2026-09-28 第二轮 neat-freak 补注，仍未改写生成内容）CONTENT-01 第一包 24 张 Formal Fixed 已入池后，连上面引用的 `ROUTER-MONTE-CARLO.json` 也只是**入池前（formal=0）快照**；含 Formal 卡的现行运行时真源＝`docs/qa/content-audit/FORMAL-TRUTH-MC.json` ＋ `docs/qa/content-audit/FORMAL-TRUTH-PRODUCTION-CHAIN.json`（单包 truth-dare 口径：ceiling=1 dead-end 67.2%、H3 2.6%、H4＝0、窗口 count≥12 不可达）。本文件不重算、不重写数字。
+> ⚠️（2026-09-29 neat-freak 三注，仍未改写生成内容）第一包经「Truth H1 Bootstrap」后 Formal 由 **24 → 31**（第一包 24 ＋ Bootstrap 7），`heatMin=1` 的 Formal 由 3 → 11、Engine 口径冷启动已解除；上条「第一包 24 张 Formal」的现值已过期。含 Formal 卡的运行时真源仍为 `docs/qa/content-audit/FORMAL-TRUTH-MC.json` ＋ `docs/qa/content-audit/FORMAL-TRUTH-PRODUCTION-CHAIN.json`（在 `docs/qa/content-audit/`，**不在** `content-audit-v2/`）。本文件不重算、不重写数字。
 
 ## 0. 读这份报告前必须知道的四件事
 
