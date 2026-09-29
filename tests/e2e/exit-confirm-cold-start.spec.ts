@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EXIT_GUARD_ARMED_ATTR, EXIT_GUARD_SENTINEL_DEPTH, EXIT_GUARD_STATE_KEY } from "@/lib/system/exit-guard";
+import { EXIT_TITLE, expectAtHomeRoot } from "./helpers/exit-guard-shared";
 
 /**
  * Change A 返工（EXIT-GUARD-001）：冷启动直开静态导出路由时的「装配空窗」。
@@ -12,10 +13,11 @@ import { EXIT_GUARD_ARMED_ATTR, EXIT_GUARD_SENTINEL_DEPTH, EXIT_GUARD_STATE_KEY 
  * 那一刻**本页还没有任何一行代码执行过**，任何 in-page 手段都覆盖不到（beforeunload 明确不采纳）。
  * 所以这里取「文档刚解析完（DOMContentLoaded）」——用户真能按到返回键的最早时刻：修前此刻守门
  * 仍未 armed（实测 3/3 为 null），修后必定已 armed（实测 12/12），是同一场景的确定性等价口径。
+ *
+ * 「回到首页」断言统一走 helpers/exit-guard-shared.ts 的 expectAtHomeRoot（从 baseURL 派生，
+ * 不写死 host:port——端口由 PLAYWRIGHT_BASE_URL 决定）。
  */
 
-const EXIT_TITLE = "要退出 Party Night 吗？";
-const HOME_URL = /127\.0\.0\.1:3000\/$/;
 const GUARD_ROUTES = ["/setup", "/settings/ai"];
 
 function escapeRegExp(value: string): string {
@@ -85,7 +87,7 @@ test("冷启动直开 /setup，等 armed 后再返回：只有一条哨兵、只
   await expect(page).toHaveURL(/\/setup\/?$/);
 });
 
-test("冷启动首页连按两次返回：第一下弹框、第二下只关框，始终不退出", async ({ page }) => {
+test("冷启动首页连按两次返回：第一下弹框、第二下只关框，始终不退出", async ({ page, baseURL }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute(EXIT_GUARD_ARMED_ATTR);
 
@@ -95,6 +97,6 @@ test("冷启动首页连按两次返回：第一下弹框、第二下只关框�
 
   await page.goBack();
   await expect(dialog).toHaveCount(0);
-  await expect(page).toHaveURL(HOME_URL);
+  await expectAtHomeRoot(page, baseURL);
   await expect(page).not.toHaveURL(/^about:blank/);
 });
