@@ -100,3 +100,4 @@ scripts/check-channel-preflight.sh
 Scripts/check-channel-preflight.sh
 # macOS 外置盘产生的 AppleDouble 元数据
 ._*
+/.arts/
