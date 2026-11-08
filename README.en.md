@@ -1,105 +1,70 @@
-# Party Night
+# Party Night · Bar Social Game
 
-[Simplified Chinese](./README.md) | English
+Four or five people, one phone passed around—questions follow your relationship depth and comfort level, and any topic someone turns off never reaches the table.
 
-A zero-account, offline-capable mobile party-game PWA for starting games quickly at bars, house parties, and icebreakers.
+[简体中文](./README.md) · [Open online](https://party-night-v1-2.vercel.app/)
 
-![Party Night](./public/brand/party-night-logo.svg)
+## What it is
+
+A social icebreaker for a small bar table. The host holds the phone and hands it to each person in turn. Rather than chasing "edgier" prompts, it uses questions with real, repeatable information value so the table actually learns about each other.
+
+The core rule is **boundaries before content**: before the first round, each person can turn off exact topics they do not want; if anyone turns one off, that topic never appears in the session. Sensitive cards also require a live consent gate.
 
 ## What it does
 
-- Configure two or more players, relationships, vibes, intensity, and content boundaries before starting a full game.
-- Play Truth or Dare, Most Likely To, Never Have I Ever, and AI Improv either separately or in mixed mode.
-- Also play Would You Rather, Pointing Game, Compatibility Test, or Spin the Bottle separately, or switch games mid-session without losing the session, players, or intensity.
-- Use the Random Picker and Random Groups tools to warm up; look up 8 common drinking-table rules (Miss Card, King's Cup, etc., with variants and no-alcohol options) in the game-pack rule library.
-- Prepare the entire deck before play. Once saved, the current session can continue, swap cards, skip, refresh, and recover without a network connection.
-- Start entirely from local seed cards, or configure DeepSeek Official, OpenCode Go, or a custom OpenAI-compatible provider.
-- Create, edit, enable, disable, and delete custom game packs stored only on the current device.
-- Adjust intensity, pause or resume, add or temporarily deactivate players, and view a lightweight end-of-game summary.
+- **Setup and rounds**: choose the number of players and relationship type, then play 20 or 25 rounds, one card at a time.
+- **One phone, one person**: only one person sees and answers a card, then passes the phone on.
+- **Separate axes**: Heat (relationship progression) and Intensity (explicitness) are computed separately, so deep questions exist at low intensity too.
+- **Exact-topic filtering**: cards match exact topic tags, and any participant turning one off removes it—rather than a disclaimer buried in settings.
+- **Consent gate**: cards touching sensitive boundaries require on-the-spot confirmation; a refusal skips the card with no explanation demanded.
+- **Fixed-bank mainline**: official sessions use the frozen fixed question bank, and each card's provenance is checked; AI generation is off by default and cannot be bypassed.
+- **Offline and recovery**: session snapshots restore, so a dropped connection does not end the game.
+- **Self-contained build**: a static version can be opened directly when no deployment is available.
 
-## Quick start
+## Run it
 
-Requires Node.js 24.x and pnpm 11.x.
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) and select **Tonight's Game**. AI configuration is optional: choose the local seed-deck action on the generation screen to play without a provider.
-
-## AI providers and API keys
-
-Open **AI Model Settings** from the home screen:
-
-1. DeepSeek Official (`https://api.deepseek.com` / `deepseek-flash`) is selected by default.
-2. Enter an API key and choose whether to persist it locally with Web Crypto encryption. If persistence is unchecked, the key lasts only for the current browser session.
-3. You can test the connection before saving the configuration.
-4. OpenCode Go is experimental and must be selected manually. It is never the default or an automatic fallback. Its official endpoint primarily targets OpenCode and similar coding agents, so compatibility may change.
-5. Custom OpenAI-compatible providers must use a public HTTPS endpoint. The server rejects localhost outside development, private, link-local, metadata, DNS-resolved non-public addresses, and redirects.
-
-To remove a key, use the separate red Danger Zone at the bottom of the settings page. The first click only opens a confirmation dialog. Cancel keeps the key; deletion occurs only after selecting the red **Confirm clear** action.
-
-### Development-only environment fallback
-
-Normal users do not need an `.env` file. For local integration work, copy the provided sample:
+Requires Node.js 20+ and npm.
 
 ```bash
-cp .env.example .env.local
+npm install
+npm run dev            # local development
+npm run build          # production build
+npm run build:export   # self-contained static export
+npm test               # vitest unit tests
+npm run test:e2e       # Playwright end-to-end
+npm run typecheck
 ```
 
-```dotenv
-PARTY_NIGHT_ENABLE_ENV_AI_FALLBACK=false
-PARTY_NIGHT_DEV_AI_API_KEY=
-```
-
-The sample defaults to off; change `false` to `true` for local integration work. This fallback is used only outside production, only when explicitly enabled, and only when the request does not carry a user key. Never commit `.env.local` or a real key, and never expose a secret through a `NEXT_PUBLIC_` variable.
-
-## Data and security
-
-- Player preferences, game packs, sessions, deck snapshots, and summaries remain in the current browser's `party-night-v1` IndexedDB database. They are not uploaded to a cloud database.
-- Persisted API keys use AES-GCM encryption. IndexedDB stores only ciphertext, a random IV, and a non-extractable `CryptoKey`. If secure persistence is unavailable, the app falls back to session-only storage instead of writing plaintext.
-- A key is sent temporarily to the same-origin proxy only during a connection test or deck generation. It is not placed in URLs, sessions, ordinary preferences, logs, or server-side persistent storage.
-- The Service Worker excludes `/api/` requests, so AI traffic never enters Cache Storage.
-
-### Backup and deletion
-
-V1 does not include built-in data export or import. To retain local data, back up the corresponding browser profile and avoid clearing storage for the site. Clearing site data removes preferences, custom packs, sessions, and encrypted key records. To remove only an API key, use the AI settings Danger Zone.
-
-## PWA installation and offline use
-
-Production deployments should use HTTPS; localhost is the development exception. Install Party Night with the browser's **Add to Home Screen** or **Install app** action. After a page has been visited online and a deck has been prepared, the cached current session can reload and continue locally while fully offline.
-
-## Production build and Docker
+### Android shell (Capacitor)
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm test:e2e
-pnpm build
-pnpm start
+npm run android:sync     # sync web output into the native project
+npm run android:release  # build a release package (signing and version rules in docs)
 ```
 
-The Docker image does not need to contain a personal API key:
+### AI switch
 
-```bash
-docker build -t party-night .
-docker run --rm -p 3000:3000 party-night
+The mainline defaults to `AI_MAINLINE_ENABLED=false`; the server, the generating-page redirect, and the deck-generation entry all reject generation requests. Re-enabling AI requires passing the fixed-bank acceptance gates and explicit human approval—see `docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md`.
+
+## Data and privacy
+
+- Answers are used only to advance the current session; nothing is uploaded and no profiles are built.
+- Session snapshots stay on-device; there is no account system.
+- The repository's question bank is fixed content and contains no real player answers.
+
+## Known limitations
+
+- AI generation is paused; official sessions use the fixed bank only.
+- The primary scenario is a 4–5 person bar table; other player counts and settings are not yet accepted.
+- The fixed bank is still being filled out, so some topics have limited rounds; "shuffle and replay" is hidden when no legal cards remain.
+
+## Layout
+
+```text
+app/          # Next.js pages and routes
+lib/          # question bank, router, boundaries, consent logic
+scripts/      # static export, fixed-bank manifest, Android build
+docs/         # plans, QA, reviews, governance
 ```
 
-Deploy only on a trusted machine, and provide HTTPS through a reverse proxy or private-network ingress.
-
-## Technical notes
-
-- Next.js 16.3.3, React 19, TypeScript 5, Tailwind CSS 4, and CSS design tokens
-- Zod validation for AI output, sessions, and local data
-- IndexedDB through `idb`, with Web Crypto for local secret encryption
-- Vitest, Testing Library, and Playwright
-
-The Party Game Engine is decoupled from game packs. The engine owns players, card selection, intensity, boundaries, rounds, and persistence, while each pack provides only its definition and cards.
-
-## V1 scope
-
-Party Night V1 is a single-device, local-first application. It does not provide accounts, payments, a cloud database, a public community, or real-time multiplayer rooms.
-
+See `docs/pm/PRODUCT_PLAN_V2.2-FIXED-CONTENT-FIRST.md` for the latest plan.
